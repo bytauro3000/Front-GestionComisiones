@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
 import { IdleTimeoutService } from './auth/idle-timeout.service';
 import { TokenRefreshService } from './auth/token-refresh.service';
+import { TokenService } from './auth/token.service';
 import { EmpresaService } from './services/empresa.service';
+import { WebSocketService } from './services/websocket.service';
 import { Title, Meta } from '@angular/platform-browser';
 
 
@@ -20,11 +23,22 @@ export class App implements OnInit {
     private empresaService: EmpresaService,
     private titleService: Title,
     private metaService: Meta,
+    private tokenService: TokenService,
+    private wsService: WebSocketService,
   ) {}
 
   ngOnInit(): void {
     this.idleTimeoutService.startWatching();
     this.tokenRefreshService.start();
+
+    // Conexión STOMP compartida: actualizaciones en tiempo real + chat.
+    const token = this.tokenService.getToken();
+    if (token && !this.tokenService.isTokenExpired()) {
+      try {
+        const decoded: { sub?: string } = jwtDecode(token);
+        if (decoded?.sub) this.wsService.conectar(decoded.sub);
+      } catch { /* token inválido: el interceptor HTTP lo maneja */ }
+    }
     this.empresaService.obtenerEmpresa().subscribe(e => {
       if (!e) return;
       const nombre = e.nombreComercial || 'Inmobiliaria Ivan';

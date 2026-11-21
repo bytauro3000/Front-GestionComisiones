@@ -1,7 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { jwtDecode } from 'jwt-decode';
@@ -12,6 +14,7 @@ import { LetrasCambioService } from '../../services/letracambio.service';
 import { PagoLetraService } from '../../services/pagoletra.service';
 import { MoraService } from '../../services/mora.service';
 import { TokenService } from '../../auth/token.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 import { Programa } from '../../models/programa.model';
 import { LetraCambio } from '../../models/letra-cambio.model';
@@ -51,7 +54,7 @@ interface LetraCambioConSeleccion extends LetraCambio {
   templateUrl: './pagoletra-listar.html',
   styleUrls: ['./pagoletra-listar.scss'],
 })
-export class PagoletraListarComponent implements OnInit {
+export class PagoletraListarComponent implements OnInit, OnDestroy {
 
   programas: Programa[] = [];
   programaSeleccionado: number | null = null;
@@ -117,6 +120,8 @@ export class PagoletraListarComponent implements OnInit {
   private readonly LS_INTENTOS = 'pin_intentos';
   private readonly LS_BLOQ_HASTA = 'pin_bloqueo_hasta';
   private readonly LS_BLOQ_PERM  = 'pin_bloqueo_permanente';
+
+  private destroy$ = new Subject<void>();
 
   private get pinIntentos(): number {
     return Number(localStorage.getItem(this.LS_INTENTOS)) || 0;
@@ -297,11 +302,27 @@ export class PagoletraListarComponent implements OnInit {
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef,
     private tokenService: TokenService,
+    private wsService: WebSocketService,
   ) {}
 
   ngOnInit(): void {
     this.cargarProgramas();
     this.verificarRol();
+
+    // Tiempo real: recargar letras/resumen cuando otro usuario modifica datos
+    this.wsService.actualizaciones$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.contratoEncontrado) {
+          this.cargarLetrasPendientes(this.contratoEncontrado.idContrato);
+          this.cargarResumenMora(this.contratoEncontrado.idContrato);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private verificarRol(): void {

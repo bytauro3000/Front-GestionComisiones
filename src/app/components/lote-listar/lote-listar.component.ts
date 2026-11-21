@@ -1,11 +1,14 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 import { LoteResumen } from '../../dto/loteresumen.dto';
 import { LoteService } from '../../services/lote.service';
 import { ProgramaService } from '../../services/programa.service';
+import { WebSocketService } from '../../services/websocket.service';
 import { Programa } from '../../models/programa.model';
 import { LotesInsertarEditar } from '../lotes-insertar-editar/lotes-insertar-editar';
 
@@ -16,7 +19,7 @@ import { LotesInsertarEditar } from '../lotes-insertar-editar/lotes-insertar-edi
   templateUrl: './lote-listar.html',
   styleUrls: ['./lote-listar.scss']
 })
-export class LoteLitarComponent implements OnInit {
+export class LoteLitarComponent implements OnInit, OnDestroy {
   @ViewChild('loteModal') loteModal!: LotesInsertarEditar;
 
   lotes: LoteResumen[] = [];
@@ -33,14 +36,27 @@ export class LoteLitarComponent implements OnInit {
   currentPage: number = 1;
   totalPages: number = 0;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private loteService: LoteService,
-    private programaService: ProgramaService
+    private programaService: ProgramaService,
+    private wsService: WebSocketService
   ) {}
 
   ngOnInit(): void {
     this.idProgramaSeleccionado = 4;
     this.cargarProgramasYSeleccionar();
+
+    // Tiempo real: recargar lotes cuando otro usuario modifica datos
+    this.wsService.actualizaciones$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onProgramaChange());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   cargarProgramasYSeleccionar(): void {

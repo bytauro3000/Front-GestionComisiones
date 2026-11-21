@@ -1,27 +1,30 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core'; 
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router'; 
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 import { SeparacionResumen } from '../../dto/separacionresumen.dto';
 import { SeparacionService } from '../../services/separacion.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-separacion',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterModule, 
-    CurrencyPipe, 
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    CurrencyPipe,
     DatePipe
-  ], 
+  ],
   templateUrl: './separacion-crud.html',
   styleUrl: './separacion-crud.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SeparacionComponent implements OnInit {
+export class SeparacionComponent implements OnInit, OnDestroy {
   separaciones: SeparacionResumen[] = [];
   paginasSeparaciones: SeparacionResumen[] = [];
 
@@ -33,16 +36,29 @@ export class SeparacionComponent implements OnInit {
   // 'todas' → secretaría (resumen general). 'mias' → vendedor logueado (solo sus separaciones).
   modo: 'todas' | 'mias' = 'todas';
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private separacionService: SeparacionService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef 
+    private cdr: ChangeDetectorRef,
+    private wsService: WebSocketService
   ) {}
 
   ngOnInit(): void {
     this.modo = (this.route.snapshot.data['modo'] === 'mias') ? 'mias' : 'todas';
     this.cargarDatos();
+
+    // Tiempo real: recargar separaciones cuando otro usuario modifica datos
+    this.wsService.actualizaciones$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cargarDatos());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   cargarDatos(): void {

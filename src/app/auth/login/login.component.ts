@@ -10,6 +10,7 @@ import { TokenRefreshService } from '../token-refresh.service';
 import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
 import { EmpresaService } from '../../services/empresa.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +35,8 @@ export class LoginComponent implements OnInit {
     private toastr: ToastrService,
     private titleService: Title,
     private tokenRefreshService: TokenRefreshService,
-    private empresaService: EmpresaService
+    private empresaService: EmpresaService,
+    private wsService: WebSocketService
   ) {}
 
   ngOnInit(): void {
@@ -74,6 +76,10 @@ export class LoginComponent implements OnInit {
         this.idleTimeoutService.startWatching();
 
         const decodedToken: any = jwtDecode(token);
+
+        // Conectar (o reconectar si cambió de usuario) el WebSocket compartido
+        this.wsService.conectar(decodedToken.sub);
+
         const userRole = decodedToken.rol;
 
         this.toastr.success('¡Bienvenido al SGI!', 'Acceso Exitoso');

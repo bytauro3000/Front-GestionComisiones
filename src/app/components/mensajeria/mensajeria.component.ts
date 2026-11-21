@@ -57,8 +57,9 @@ export class MensajeriaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // No desconectar el WebSocket: la conexión es compartida con la
+    // suscripción de actualizaciones en tiempo real (App la administra).
     this.subs.forEach(s => s.unsubscribe());
-    this.wsService.desconectar();
   }
 
   private cargarSesion(): void {

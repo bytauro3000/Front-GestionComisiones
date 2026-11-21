@@ -13,6 +13,7 @@ import { EstadoContrato } from '../../enums/Estadocontrato.enum';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { TokenService } from '../../auth/token.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-contrato-listar',
@@ -74,12 +75,18 @@ export class ContratoListarComponent implements OnInit, OnDestroy, AfterViewInit
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private tokenSvc: TokenService
+    private tokenSvc: TokenService,
+    private wsService: WebSocketService
   ) { }
 
   ngOnInit(): void {
     this.cargarContratos();
     this.cargarProgramas();
+
+    // Tiempo real: recargar la lista cuando otro usuario modifica datos
+    this.wsService.actualizaciones$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cargarContratos());
 
     // switchMap cancela la petición HTTP anterior cuando llega un nuevo valor
     // — resuelve la race condition: si borras el texto mientras carga,

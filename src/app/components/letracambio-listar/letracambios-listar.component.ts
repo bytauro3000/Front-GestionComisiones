@@ -1,8 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { LetrasCambioService } from '../../services/letracambio.service';
 import { ContratoService } from '../../services/contrato.service';
+import { WebSocketService } from '../../services/websocket.service';
 import { LetraCambio } from '../../models/letra-cambio.model';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
@@ -21,7 +24,7 @@ import { faPrint, faCalendarAlt, faTrash, faPencilAlt } from '@fortawesome/free-
   styleUrls: ['./letracambios-listar.scss'],
   imports: [CommonModule, FormsModule, FontAwesomeModule],
 })
-export class LetracambioListarComponent implements OnInit, AfterViewInit {
+export class LetracambioListarComponent implements OnInit, AfterViewInit, OnDestroy {
   letras: LetraCambio[] = [];
   letrasFiltradas: LetraCambio[] = [];
   paginatedLetras: LetraCambio[] = [];
@@ -56,6 +59,8 @@ export class LetracambioListarComponent implements OnInit, AfterViewInit {
   monedaContrato: string = 'USD'; // Se carga al obtener las letras
   valorTemporal: string | number = '';
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private letrasService: LetrasCambioService,
     private contratoService: ContratoService,
@@ -63,6 +68,7 @@ export class LetracambioListarComponent implements OnInit, AfterViewInit {
     private router: Router,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef,
+    private wsService: WebSocketService,
     //Inyecta la librería de iconos en el constructor
     library: FaIconLibrary
   ) {
@@ -82,6 +88,18 @@ export class LetracambioListarComponent implements OnInit, AfterViewInit {
         this.error = 'ID de contrato inválido.';
       }
     });
+
+    // Tiempo real: recargar letras cuando otro usuario modifica datos
+    this.wsService.actualizaciones$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.idContrato > 0) this.cargarLetras();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {

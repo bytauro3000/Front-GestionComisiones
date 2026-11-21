@@ -1,8 +1,10 @@
 import {
-  Component, EventEmitter, Input, OnInit, Output,
+  Component, EventEmitter, Input, OnInit, OnDestroy, Output,
   ViewChild, ElementRef, AfterViewInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import * as bootstrap from 'bootstrap';
 import Swal from 'sweetalert2';
@@ -13,6 +15,7 @@ import { MoraResponse } from '../../dto/moraresponse.dto';
 import { MoraPagarComponent } from '../mora-pagar/mora-pagar.component';
 import { MoraMultiplePagarComponent } from '../mora-multiple-pagar/mora-multiple-pagar.component';
 import { TokenService } from '../../auth/token.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-mora-listar',
@@ -21,7 +24,7 @@ import { TokenService } from '../../auth/token.service';
   templateUrl: './mora-listar.html',
   styleUrls: ['./mora-listar.scss']
 })
-export class MoraListarComponent implements OnInit, AfterViewInit {
+export class MoraListarComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('modalElement') modalElement!: ElementRef;
   private modal?: bootstrap.Modal;
 
@@ -40,15 +43,28 @@ export class MoraListarComponent implements OnInit, AfterViewInit {
   modoPagoMultiple = false;
   morasSeleccionadasTemp: MoraResponse[] = [];
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private moraService: MoraService,
     private tokenService: TokenService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private wsService: WebSocketService
   ) {}
 
   ngOnInit(): void {
     this.verificarRol();
     this.cargarMoras();
+
+    // Tiempo real: recargar moras cuando otro usuario paga/anula
+    this.wsService.actualizaciones$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cargarMoras());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {
