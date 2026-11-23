@@ -1,48 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { LoginComponent } from './login.component';
-import { EmpresaService } from '../../services/empresa.service';
-import { EmpresaPublic } from '../../models/empresa.model';
-import { environment } from '../../../environments/environment';
+import { Router, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-login-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, LoginComponent],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './login-layout.component.html',
   styleUrls: ['./login-layout.component.scss']
 })
-export class LoginLayoutComponent implements OnInit {
+export class LoginLayoutComponent {
 
   readonly anioActual = new Date().getFullYear();
-  empresaData: EmpresaPublic | null = null;
-  isMerruic = environment.apiUrl.includes('ms-gateway-latest');
+  readonly nombreSistema = 'Vende Lote';
 
-  constructor(private empresaService: EmpresaService) {}
+  constructor(private router: Router) {}
 
-  ngOnInit(): void {
-    this.empresaService.obtenerEmpresa().subscribe(e => this.empresaData = e);
+  /** true cuando se muestra el auto-registro público. */
+  get esRegistro(): boolean {
+    return this.router.url.startsWith('/registro');
   }
 
-  get telefonoLimpio(): string {
-    return this.empresaData?.whatsapp?.replace(/[^\d]/g, '') || '51987891788';
+  get titulo(): string {
+    return this.esRegistro ? 'Crear tu cuenta' : 'Iniciar sesión';
   }
 
-  get whatsappUrl(): string {
-    const num = this.telefonoLimpio;
-    return `https://wa.me/${num}?text=${encodeURIComponent('Hola, necesito ayuda con el acceso al sistema.')}`;
-  }
-
-  get logoBranding(): string {
-    const ivanFallback = 'https://res.cloudinary.com/dlgqaifrk/image/upload/f_auto,q_auto,w_280/v1773725974/logogrande_rfvxhu.png';
-    const merruicFallback = 'https://res.cloudinary.com/dlgqaifrk/image/upload/f_auto,q_auto/v1785274320/ChatGPT%20Image%2028%20jul%202026%2C%2003_48_23%20p.m._1785274320104.png';
-    return this.empresaData?.logoSmallUrl || this.empresaData?.logoUrl || (this.isMerruic ? merruicFallback : ivanFallback);
-  }
-
-  get logoMobile(): string {
-    const ivanFallback = 'https://res.cloudinary.com/dlgqaifrk/image/upload/f_auto,q_auto,w_160/v1773725974/logogrande_rfvxhu.png';
-    const merruicFallback = 'https://res.cloudinary.com/dlgqaifrk/image/upload/f_auto,q_auto/v1785274320/ChatGPT%20Image%2028%20jul%202026%2C%2003_48_23%20p.m._1785274320104.png';
-    return this.empresaData?.logoSmallUrl || this.empresaData?.logoUrl || (this.isMerruic ? merruicFallback : ivanFallback);
+  get subtitulo(): string {
+    return this.esRegistro
+      ? 'Regístrate como vendedor; el administrador aprobará tu cuenta'
+      : 'Ingresa tus credenciales para acceder al sistema';
   }
 }

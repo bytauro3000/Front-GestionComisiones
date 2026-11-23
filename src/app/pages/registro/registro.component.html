@@ -1,0 +1,81 @@
+<form (ngSubmit)="onRegistrar()" class="registro-form">
+  <div class="form-row">
+    <div class="form-field">
+      <label>Nombres *</label>
+      <input type="text" name="nombres" [(ngModel)]="form.nombres" placeholder="Tus nombres" required autocomplete="given-name">
+    </div>
+    <div class="form-field">
+      <label>Apellidos *</label>
+      <input type="text" name="apellidos" [(ngModel)]="form.apellidos" placeholder="Tus apellidos" required autocomplete="family-name">
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>Correo electrónico *</label>
+    <input type="email" name="correo" [(ngModel)]="form.correo" placeholder="correo@ejemplo.com" required autocomplete="email"
+           [class.input-error]="correoDuplicado">
+    @if (correoDuplicado) {
+      <small class="field-error">Este correo ya está registrado. <a routerLink="/login">Inicia sesión</a></small>
+    }
+  </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <label>DNI (opcional)</label>
+      <input type="text" name="dni" [(ngModel)]="form.dni" placeholder="8 dígitos" maxlength="8" autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label>Celulares</label>
+      <div class="tel-lista">
+        @for (tel of telefonos; track $index) {
+          <div class="tel-fila">
+            <div class="tel-campo" [class.con-agregar]="$last">
+              <input type="tel" name="tel{{ $index }}" [(ngModel)]="telefonos[$index]"
+                     placeholder="Celular {{ $index + 1 }}" maxlength="15" autocomplete="off">
+              @if ($last) {
+                <button type="button" class="btn-agregar-tel" (click)="agregarTelefono()"
+                        title="Agregar celular">+</button>
+              }
+            </div>
+            @if (telefonos.length > 1) {
+              <button type="button" class="btn-quitar-tel" (click)="quitarTelefono($index)"
+                      title="Quitar celular">&times;</button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>Contraseña *</label>
+    <div class="password-wrap">
+      <input [type]="verContrasena ? 'text' : 'password'" name="contrasena" [(ngModel)]="form.contrasena"
+             placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+      <i class="fas" [ngClass]="verContrasena ? 'fa-eye-slash' : 'fa-eye'" (click)="verContrasena = !verContrasena"></i>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>Confirmar contraseña *</label>
+    <input type="password" name="confirmarContrasena" [(ngModel)]="confirmarContrasena"
+           placeholder="Repite tu contraseña" required autocomplete="new-password">
+  </div>
+
+  <div class="aviso-aprobacion">
+    <i class="fas fa-user-clock"></i>
+    <span>Tu cuenta quedará <strong>pendiente de aprobación</strong> por un administrador antes de poder iniciar sesión.</span>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-block" [disabled]="cargando">
+    @if (cargando) {
+      <i class="fas fa-spinner fa-spin"></i> Creando cuenta...
+    } @else {
+      <i class="fas fa-user-plus"></i> Crear cuenta
+    }
+  </button>
+
+  <p class="link-login">
+    ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+  </p>
+</form>

@@ -1,0 +1,150 @@
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$gray-700:      #334155;
+$radius:        16px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.welcome-hero {
+  background: linear-gradient(135deg, $dark 0%, rgba(79, 70, 229, 0.85) 100%);
+  border-radius: $radius;
+  padding: 30px 34px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.35) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .welcome-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.97rem;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .welcome-hero {
+    padding: 24px;
+
+    .welcome-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 1.25rem;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    p {
+      font-size: 0.92rem;
+    }
+  }
+
+  .modulos {
+    padding: 18px;
+  }
+}
+
+.modulos {
+  background: white;
+  border-radius: $radius;
+  padding: 22px 24px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  border: 1px solid $gray-200;
+
+  h2 {
+    margin: 0 0 16px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: $dark;
+
+    i { color: $primary; margin-right: 8px; }
+  }
+}
+
+.modulos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+  gap: 12px;
+}
+
+.modulo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border: 1.5px solid $gray-200;
+  border-radius: 12px;
+  padding: 15px 16px;
+  text-decoration: none;
+  background: $gray-100;
+  transition: all 0.2s $ease;
+
+  i {
+    font-size: 1.25rem;
+    color: $primary;
+    margin-bottom: 4px;
+  }
+
+  strong {
+    color: $dark;
+    font-size: 0.93rem;
+    font-weight: 700;
+  }
+
+  span {
+    color: $gray-500;
+    font-size: 0.79rem;
+    line-height: 1.4;
+  }
+
+  &:hover {
+    border-color: $primary-light;
+    background: rgba(99, 102, 241, 0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.12);
+  }
+}

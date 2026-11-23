@@ -1,80 +1,49 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { Cliente } from '../models/cliente.model';
-import { Page } from '../models/page.model';
-import { ConsultaDniDTO } from '../dto/consultadni.dto'; 
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface Cliente {
+  id?: number;
+  idVendedor?: number;
+  tipoDocumento?: string;
+  numDocumento: string;
+  nombres: string;
+  apellidos?: string;
+  telefono?: string;
+  correo?: string;
+  direccion?: string;
+  fechaRegistro?: string;
+}
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ClienteService {
-  private readonly apiUrl = `${environment.apiUrl}/api/clientes`;
+
+  private readonly URL = `${environment.apiUrl}/api/clientes`;
 
   constructor(private http: HttpClient) { }
 
-  // 🔹 Listar todos los clientes (sin paginación - para dropdowns)
-  listarClientes(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(`${this.apiUrl}/listar`);
+  listar(q?: string): Observable<Cliente[]> {
+    let params = new HttpParams();
+    if (q && q.trim()) {
+      params = params.set('q', q.trim());
+    }
+    return this.http.get<Cliente[]>(this.URL, { params });
   }
 
-  // 🔹 Listar clientes con paginación
-  listarClientesPaginado(page: number, size: number): Observable<Page<Cliente>> {
-    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
-    return this.http.get<Page<Cliente>>(`${this.apiUrl}/listar`, { params });
+  obtener(id: number): Observable<Cliente> {
+    return this.http.get<Cliente>(`${this.URL}/${id}`);
   }
 
-  // ✅ Nuevo: Obtener cliente por ID para la edición
-  obtenerClientePorId(id: number): Observable<Cliente> {
-    return this.http.get<Cliente>(`${this.apiUrl}/buscar/${id}`);
+  crear(dto: Cliente): Observable<Cliente> {
+    return this.http.post<Cliente>(this.URL, dto);
   }
 
-  // 🔹 Buscar cliente por número de documento (numDoc)
-  obtenerClientePorNumDoc(numDoc: string): Observable<Cliente> {
-    return this.http.get<Cliente>(`${this.apiUrl}/buscar/numDoc/${numDoc}`);
+  editar(id: number, dto: Cliente): Observable<Cliente> {
+    return this.http.put<Cliente>(`${this.URL}/${id}`, dto);
   }
 
-  // 🔹 NUEVO: Consultar DNI en API externa a través del Backend
-  consultarDniExterno(dni: string): Observable<ConsultaDniDTO> {
-    return this.http.get<ConsultaDniDTO>(`${this.apiUrl}/externo/reniec/${dni}`);
-  }
-
-  buscarClientesPorFiltro(termino: string, tipo: string): Observable<Cliente[]> {
-    // Usamos HttpParams para enviar los parámetros de forma limpia en la URL
-    return this.http.get<Cliente[]>(`${this.apiUrl}/buscar/filtro`, {
-      params: {
-        termino: termino,
-        tipo: tipo
-      }
-    });
-  }
-
-  // 🔹 Agregar nuevo cliente
-  agregarCliente(cliente: Cliente): Observable<Cliente> {
-    return this.http.post<Cliente>(`${this.apiUrl}/agregar`, cliente).pipe(
-      catchError(error => {
-        let errorMessage = 'Ocurrió un error inesperado al insertar el cliente.';
-        if (error.error instanceof ErrorEvent) {
-          errorMessage = `Error: ${error.error.message}`;
-        } else {
-          errorMessage = error.error;
-        }
-        console.error(errorMessage);
-        return throwError(() => new Error(errorMessage));
-      })
-    );
-  }
-
-  // 🔹 Actualizar cliente
-  actualizarCliente(id: number, cliente: Cliente): Observable<Cliente> {
-    return this.http.put<Cliente>(`${this.apiUrl}/actualizar/${id}`, cliente);
-  }
-
-  // 🔹 Eliminar cliente
-  eliminarCliente(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/eliminar/${id}`);
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.URL}/${id}`);
   }
 }

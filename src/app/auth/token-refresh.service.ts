@@ -10,7 +10,7 @@ import { LoginService } from './login.service';
 })
 export class TokenRefreshService implements OnDestroy {
   private static readonly SAFETY_MARGIN_MS = 30_000;
-  private static readonly LOCK_KEY = 'mr_refresh_lock';
+  private static readonly LOCK_KEY = 'vl_refresh_lock';
   private static readonly LOCK_TIMEOUT_MS = 15_000;
 
   private pendingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -86,7 +86,6 @@ export class TokenRefreshService implements OnDestroy {
         const currentExp = currentToken ? TokenRefreshService.getExpMs(currentToken) : 0;
 
         if (!lock && currentToken && currentExp > startExp) {
-          // Otra pestaña terminó y actualizó el token
           clearInterval(timer);
           this.scheduleNext();
           subscriber.next(currentToken);
@@ -94,7 +93,6 @@ export class TokenRefreshService implements OnDestroy {
           return;
         }
         if (!lock) {
-          // Sin lock y token sin actualizar (otra pestaña falló o no hizo nada)
           clearInterval(timer);
           if (currentToken) {
             subscriber.next(currentToken);

@@ -1,12 +1,13 @@
-@use "sass:color";
-
 /* ============================================== */
 /* Design Tokens                                  */
 /* ============================================== */
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
 $primary:       #4f46e5;
 $primary-2:     #6366f1;
 $primary-light: #818cf8;
-$primary-bg:    rgba(99, 102, 241, 0.08);
 $primary-glow:  rgba(99, 102, 241, 0.2);
 
 $dark:          #0f172a;
@@ -31,18 +32,6 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 
-.login-box {
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  color: $dark;
-  padding: 0;
-}
-
-.login-title {
-  display: none;
-}
-
 /* ── Input groups ───────────────────────────── */
 .input-group-modern {
   position: relative;
@@ -62,15 +51,19 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
   .eye-icon {
     position: absolute;
-    right: 14px;
+    right: 8px;
     color: $gray-500;
     font-size: 1rem;
     cursor: pointer;
     z-index: 3;
     transition: color 0.2s $ease;
-    padding: 8px;
     background: none;
     border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
 
     &:hover { color: $primary; }
   }
@@ -86,7 +79,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   color: $dark !important;
   height: 50px;
   width: 100%;
-  font-size: 0.95rem;
+  font-size: 1rem; /* 16px: evita el zoom automático de iOS al enfocar */
   font-family: inherit;
   transition: all 0.2s $ease;
 
@@ -110,7 +103,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     transition: background-color 5000s ease-in-out 0s;
   }
   &:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px white inset, 0 0 0 4px $primary-glow !important;
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important, 0 0 0 4px $primary-glow !important;
   }
 }
 
@@ -118,7 +111,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   padding-right: 16px !important;
 }
 
-/* ── Opciones extra (recordar / olvidé) ─────── */
+/* ── Opciones extra (recordar) ──────────────── */
 .extra-options-container {
   display: flex;
   justify-content: space-between;
@@ -142,6 +135,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
       transition: all 0.2s $ease;
       flex-shrink: 0;
+      accent-color: $primary;
 
       &:checked {
         background-color: $primary;
@@ -158,19 +152,6 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       font-size: 0.85rem;
       cursor: pointer;
       user-select: none;
-    }
-  }
-
-  .forgot-password-link {
-    color: $primary;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: color 0.2s;
-
-    &:hover {
-      color: $primary-2;
-      text-decoration: underline;
     }
   }
 }
@@ -205,10 +186,26 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+/* ── Enlace a registro ───────────────────────── */
+.link-registro {
+  text-align: center;
+  font-size: 0.87rem;
+  color: $gray-500;
+  margin: 16px 0 0;
+
+  a {
+    color: $primary;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
 /* ============================================== */
 /* RESPONSIVE                                     */
 /* ============================================== */
-@media (max-width: 576px) {
+@media (max-width: $bp-sm) {
   .extra-options-container {
     flex-direction: column;
     align-items: flex-start;

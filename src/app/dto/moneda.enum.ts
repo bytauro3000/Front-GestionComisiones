@@ -1,1 +1,0 @@
-export type Moneda = 'USD' | 'PEN';

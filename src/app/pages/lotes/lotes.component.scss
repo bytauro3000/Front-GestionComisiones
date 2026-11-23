@@ -1,0 +1,613 @@
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$gray-700:      #334155;
+$radius:        12px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: $dark;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-500;
+    font-size: 0.95rem;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 360px;
+
+    i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-500;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid $gray-200;
+      border-radius: 10px;
+      padding: 0 14px 0 40px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: white;
+      transition: all 0.2s $ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-light;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+    }
+  }
+
+  .filtro-select {
+    height: 42px;
+    border: 1.5px solid $gray-200;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 600;
+    color: $gray-700;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s $ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+  }
+
+  /* Filtro combinado: proyecto + Mz + Lt (aplicado al instante) */
+  .filtro-lotes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    flex-wrap: wrap;
+
+    .filtro-proyecto {
+      flex: 1;
+      min-width: 220px;
+      max-width: 360px;
+    }
+
+    .filtro-input {
+      width: 92px;
+      height: 42px;
+      border: 1.5px solid $gray-200;
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: $gray-700;
+      background: white;
+      text-transform: uppercase;
+      transition: all 0.2s $ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-light;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+
+      &::placeholder {
+        color: $gray-500;
+        text-transform: none;
+      }
+    }
+  }
+
+  .contador {
+    font-size: 0.85rem;
+    color: $gray-500;
+    font-weight: 600;
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+}
+
+.celda-mzlt {
+  font-weight: 700;
+  color: $dark;
+  white-space: nowrap;
+}
+
+// Cuota mensual: en negrita (lo que paga el cliente cada mes)
+.celda-cuota {
+  font-weight: 800;
+  color: $dark;
+  white-space: nowrap;
+}
+
+.empty-cell {
+  text-align: center;
+  color: $gray-500;
+  padding: 36px 16px !important;
+
+  i { margin-right: 6px; }
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+
+  .btn + .btn { margin-left: 6px; }
+}
+
+// ── Switch de estado (marcar VENDIDO desde la fila) ──────────────────────────
+.estado-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Lote con venta activa: no hay switch, solo el candado (lo libera la anulación) */
+.estado-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $gray-100;
+  color: $gray-500;
+  font-size: 0.72rem;
+  cursor: help;
+}
+
+/* Acción rápida: separar (reservar) el lote */
+.btn-separar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid $gray-200;
+  border-radius: 6px;
+  background: white;
+  color: $gray-500;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s $ease;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-light;
+    color: $primary;
+    background: rgba(79, 70, 229, 0.06);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ── Modal de separación ─────────────────────────────────────────────────────
+.modal-separacion {
+  max-width: 480px;
+}
+
+.separacion-lote {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: $gray-100;
+  border: 1px solid $gray-200;
+  border-radius: 10px;
+  font-size: 0.9rem;
+
+  .separacion-precio {
+    font-weight: 700;
+    color: $dark;
+    white-space: nowrap;
+  }
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preset-chip {
+  padding: 7px 12px;
+  border: 1.5px solid $gray-200;
+  border-radius: 999px;
+  background: white;
+  color: $gray-700;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s $ease;
+
+  &:hover {
+    border-color: $primary-light;
+    color: $primary;
+  }
+
+  &.activa {
+    background: $primary;
+    border-color: $primary;
+    color: white;
+  }
+}
+
+.input-fecha {
+  height: 42px;
+  border: 1.5px solid $gray-200;
+  border-radius: $radius;
+  padding: 0 14px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: $dark;
+  background: white;
+}
+
+.check-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+
+  input {
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    accent-color: $primary;
+    cursor: pointer;
+  }
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: $gray-200;
+    border-radius: 20px;
+    transition: background 0.2s $ease;
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+      transition: transform 0.2s $ease;
+    }
+  }
+
+  input:checked + .slider {
+    background: #10b981; // verde = VENDIDO
+
+    &::before {
+      transform: translateX(16px);
+    }
+  }
+
+  input:focus-visible + .slider {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+  }
+
+  input:disabled + .slider {
+    opacity: 0.55;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+// Campo calculado (saldo) — solo lectura
+.campo-calculado {
+  background: $gray-100;
+  font-weight: 700;
+  color: $dark;
+  cursor: default;
+}
+
+// Bloque de cuota mensual estimada (misma idea que el sistema InmobiliariaIvan)
+.cuota-display {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: $gray-100;
+  border: 1px solid $gray-200;
+  border-radius: 8px;
+
+  .cuota-valor {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $dark;
+  }
+
+  .cuota-detalle {
+    font-size: 0.75rem;
+    color: $gray-500;
+    font-style: italic;
+  }
+
+  .cuota-vacia {
+    font-size: 0.8rem;
+    color: $gray-500;
+    font-style: italic;
+  }
+}
+
+// Select de proyecto con botón + DENTRO, al extremo derecho
+.select-accion {
+  position: relative;
+
+  select {
+    width: 100%;
+    padding-right: 42px;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+  }
+
+  .btn-agregar-proyecto {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: $primary;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s $ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(79, 70, 229, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.modal-proyecto-rapido {
+  max-width: 420px;
+}
+
+// ── Paginación ──────────────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 18px;
+
+  .paginas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .pagina-num {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 6px;
+    border: 1.5px solid $gray-200;
+    border-radius: 9px;
+    background: white;
+    color: $gray-700;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.18s $ease;
+
+    &:hover {
+      border-color: $primary-light;
+      color: $primary;
+    }
+
+    &.activa {
+      background: $primary;
+      border-color: $primary;
+      color: white;
+      cursor: default;
+
+      &:hover { color: white; border-color: $primary; }
+    }
+  }
+
+  .pag-gap {
+    color: $gray-500;
+    font-weight: 700;
+    padding: 0 2px;
+    user-select: none;
+  }
+
+  .pag-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .page-info {
+    font-size: 0.85rem;
+    color: $gray-500;
+    text-align: center;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .page-header {
+    h1 {
+      font-size: 1.3rem;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 44px;
+    }
+  }
+
+  .toolbar {
+    .search-box {
+      max-width: none;
+      flex: 1 1 100%;
+
+      input {
+        font-size: 1rem;
+      }
+    }
+
+    .filtro-lotes {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+
+      .filtro-proyecto {
+        max-width: none;
+        min-width: 0;
+      }
+
+      .filtro-input {
+        width: 100%;
+        min-height: 44px;
+      }
+    }
+
+    .filtro-select {
+      flex: 1 1 100%;
+      font-size: 1rem;
+      min-height: 44px;
+    }
+
+    .contador {
+      width: 100%;
+    }
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  // Paginación móvil: números arriba, botones a ancho completo y detalle abajo
+  .pagination {
+    gap: 10px;
+
+    .paginas {
+      order: 1;
+      flex: 1 1 100%;
+    }
+
+    .pag-btn {
+      order: 2;
+      flex: 1 1 40%;
+      justify-content: center;
+      min-height: 44px;
+      font-size: 0.95rem;
+    }
+
+    .page-info {
+      order: 3;
+      flex: 1 1 100%;
+      font-size: 0.82rem;
+    }
+
+    .pagina-num {
+      min-width: 40px;
+      height: 40px;
+      font-size: 0.9rem;
+    }
+  }
+}

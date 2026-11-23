@@ -1,0 +1,81 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Auditoría</h1>
+      <p>Historial de accesos y operaciones del sistema</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por correo..." [(ngModel)]="buscar"
+             (keyup.enter)="filtrar()">
+    </div>
+
+    <select [(ngModel)]="accion" (change)="filtrar()" class="filter-select">
+      <option value="">Todas las acciones</option>
+      @for (a of acciones; track a) {
+        <option [value]="a">{{ a }}</option>
+      }
+    </select>
+
+    <button class="btn btn-outline" (click)="filtrar()">
+      <i class="fas fa-filter"></i> Filtrar
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Fecha y hora</th>
+          <th>Usuario</th>
+          <th>Acción</th>
+          <th>Entidad</th>
+          <th>Descripción</th>
+          <th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="6" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (!pagina || pagina.elementos.length === 0) {
+          <tr><td colspan="6" class="empty-cell">No hay registros de auditoría</td></tr>
+        } @else {
+          @for (f of pagina.elementos; track f.idAuditoria) {
+            <tr>
+              <td class="cell-fecha" data-label="Fecha y hora">{{ f.fechaHora | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+              <td data-label="Usuario">
+                <strong class="cell-email">{{ f.usuarioEmail }}</strong>
+              </td>
+              <td data-label="Acción">
+                <span class="badge" [ngClass]="claseAccion(f.accion)">{{ f.accion }}</span>
+              </td>
+              <td data-label="Entidad">
+                <div class="cell-value">
+                  {{ f.entidad }}
+                  @if (f.idEntidad) { <small class="cell-id">#{{ f.idEntidad }}</small> }
+                </div>
+              </td>
+              <td class="cell-desc" data-label="Descripción">{{ f.descripcion || '—' }}</td>
+              <td data-label="IP"><code>{{ f.ipOrigen || '—' }}</code></td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (pagina && pagina.totalPaginas > 1) {
+    <div class="pagination">
+      <button class="btn btn-outline btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaActual === 0">
+        <i class="fas fa-chevron-left"></i> Anterior
+      </button>
+      <span class="page-info">Página {{ paginaActual + 1 }} de {{ pagina.totalPaginas }} ({{ pagina.totalElementos }} registros)</span>
+      <button class="btn btn-outline btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaActual >= pagina.totalPaginas - 1">
+        Siguiente <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  }
+</div>

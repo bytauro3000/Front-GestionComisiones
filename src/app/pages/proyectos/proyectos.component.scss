@@ -1,0 +1,455 @@
+﻿@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$gray-700:      #334155;
+$radius:        12px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: $dark;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-500;
+    font-size: 0.95rem;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 360px;
+
+    i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-500;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid $gray-200;
+      border-radius: 10px;
+      padding: 0 14px 0 40px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: white;
+      transition: all 0.2s $ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-light;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+    }
+  }
+
+  .filtro-select {
+    height: 42px;
+    border: 1.5px solid $gray-200;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 600;
+    color: $gray-700;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s $ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+  }
+
+  .contador {
+    font-size: 0.85rem;
+    color: $gray-500;
+    font-weight: 600;
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+}
+
+.empty-cell {
+  text-align: center;
+  color: $gray-500;
+  padding: 36px 16px !important;
+
+  i { margin-right: 6px; }
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+
+  .btn + .btn { margin-left: 6px; }
+}
+
+.form-row {
+  display: grid;
+  // crear: una sola columna (el nombre ocupa todo el ancho)
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+
+  // editar: nombre (crece) + estado (select reducido de 150px)
+  &.con-estado {
+    grid-template-columns: minmax(0, 1fr) 150px;
+  }
+}
+
+// ── Miniatura del plano en la tabla ─────────────────────────────────────────
+.cell-plano {
+  width: 74px;
+}
+
+.mini-plano {
+  width: 56px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid $gray-200;
+  cursor: pointer;
+  transition: transform 0.15s $ease;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+}
+
+.mini-cargando {
+  color: $gray-500;
+}
+
+/* Chapa representativa (plano/ubicación) para PDF o miniatura no disponible */
+.mini-plano-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 42px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(79, 70, 229, 0.28);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(129, 140, 248, 0.18));
+  color: $primary;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: all 0.15s $ease;
+
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.22);
+  }
+}
+
+.sin-plano {
+  color: $gray-500;
+  font-size: 0.8rem;
+}
+
+// ── Modal más ancho (mapa) ──────────────────────────────────────────────────
+.modal-card.modal-proyectos {
+  max-width: 720px;
+}
+
+// ── Buscador de dirección (lupa dentro del input, extremo derecho) ──────────
+.input-accion {
+  position: relative;
+  display: flex;
+
+  input {
+    width: 100%;
+    padding-right: 44px;
+  }
+
+  .btn-buscar {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: $primary;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s $ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ── Mapa interactivo (Leaflet): click = pin + dirección ─────────────────────
+.mapa {
+  position: relative;
+  z-index: 0; // stacking context: los z-index de Leaflet no se salen del modal
+  display: block;
+  width: 100%;
+  height: 280px;
+  border: 1px solid $gray-200;
+  border-radius: 10px;
+  margin-top: 6px;
+  background: $gray-100;
+  overflow: hidden;
+}
+
+/* Pin personalizado (divIcon de Leaflet) */
+.mapa-pin {
+  background: transparent;
+  border: none;
+
+  i {
+    color: #ef4444;
+    font-size: 30px;
+    line-height: 1;
+    filter: drop-shadow(0 3px 4px rgba(15, 23, 42, 0.35));
+  }
+}
+
+.link-mapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $primary;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ── Plano: preview / subir ──────────────────────────────────────────────────
+.plano-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  img {
+    max-width: 100%;
+    max-height: 240px;
+    border-radius: 10px;
+    border: 1px solid $gray-200;
+    object-fit: contain;
+    background: $gray-100;
+    cursor: zoom-in;
+  }
+}
+
+// ── Plano PDF embebido en el modal ─────────────────────────────────────────
+.plano-pdf {
+  display: block;
+  width: 100%;
+  height: 280px;
+  border: 1px solid $gray-200;
+  border-radius: 10px;
+  background: $gray-100;
+}
+
+.plano-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-subir-plano {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ── Editor de recorte ──────────────────────────────────────────────────────
+.editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  touch-action: none;
+}
+
+.editor-card {
+  background: white;
+  border-radius: 14px;
+  width: min(680px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.editor-header {
+  h4 {
+    margin: 0 0 2px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $dark;
+
+    i { color: $primary; margin-right: 6px; }
+  }
+
+  small { color: $gray-500; font-size: 0.85rem; }
+}
+
+.editor-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  background: $gray-100;
+  user-select: none;
+  align-self: center;
+  touch-action: none;
+
+  canvas {
+    display: block;
+  }
+}
+
+.marco-recorte {
+  position: absolute;
+  border: 2px solid $primary-light;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.5);
+  cursor: move;
+  touch-action: none;
+
+  .esquina {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 2px solid $primary;
+    border-radius: 50%;
+
+    &.nw { left: -9px; top: -9px; cursor: nwse-resize; }
+    &.ne { right: -9px; top: -9px; cursor: nesw-resize; }
+    &.sw { left: -9px; bottom: -9px; cursor: nesw-resize; }
+    &.se { right: -9px; bottom: -9px; cursor: nwse-resize; }
+  }
+}
+
+.editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  .editor-botones {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: $bp-sm) {
+  .page-header {
+    h1 {
+      font-size: 1.3rem;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 44px;
+    }
+  }
+
+  .toolbar {
+    .search-box {
+      max-width: none;
+      flex: 1 1 100%;
+
+      input {
+        font-size: 1rem;
+      }
+    }
+
+    .filtro-select {
+      flex: 1 1 100%;
+      font-size: 1rem;
+      min-height: 44px;
+    }
+
+    .contador {
+      width: 100%;
+    }
+  }
+
+  .form-row,
+  .form-row.con-estado {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .mapa {
+    height: 220px;
+  }
+
+  .mini-plano {
+    width: 64px;
+    height: 48px;
+  }
+}

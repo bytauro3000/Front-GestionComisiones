@@ -1,0 +1,391 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de lotes</h1>
+      <p>Administra los lotes disponibles, reservados y vendidos</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nuevo lote
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="filtro-lotes">
+      <select class="filtro-select filtro-proyecto" [(ngModel)]="filtroProyecto"
+              (ngModelChange)="alCambiarFiltro()">
+        <option [ngValue]="''">Todos los proyectos</option>
+        @for (p of proyectosFiltro; track p.id) {
+          <option [ngValue]="p.id">{{ p.nombre }}</option>
+        }
+      </select>
+
+      <input type="text" class="filtro-input filtro-mz" [(ngModel)]="filtroMz"
+             (ngModelChange)="alCambiarFiltro()"
+             placeholder="Mz" maxlength="10" autocomplete="off" title="Manzana">
+      <input type="text" class="filtro-input filtro-lt" [(ngModel)]="filtroLt"
+             (ngModelChange)="alCambiarFiltro()"
+             placeholder="Lt" maxlength="10" autocomplete="off" title="Lote">
+
+      <select class="filtro-select" [(ngModel)]="filtroEstado"
+              (ngModelChange)="alCambiarFiltro()">
+        <option value="">Todos los estados</option>
+        <option value="DISPONIBLE">DISPONIBLE</option>
+        <option value="RESERVADO">RESERVADO</option>
+        <option value="VENDIDO">VENDIDO</option>
+      </select>
+    </div>
+
+    <span class="contador">{{ xFiltrados.length }} lote(s) · {{ tamanoPagina }} por página</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>MZ/LT</th>
+          <th>Área</th>
+          <th>Descripción</th>
+          <th>Precio/m²</th>
+          <th>Precio</th>
+          <th>Inicial</th>
+          <th>Saldo</th>
+          <th>Cuota mensual</th>
+          <th>Estado</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="10" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (xFiltrados.length === 0) {
+          <tr><td colspan="10" class="empty-cell">No se encontraron lotes</td></tr>
+        } @else {
+          @for (l of lotesPagina; track l.id) {
+            <tr>
+              <td data-label="MZ/LT" class="celda-mzlt">Mz.{{ l.manzana }} Lt.{{ l.numero }}</td>
+              <td data-label="Área">{{ l.areaM2 ? (l.areaM2 + ' m²') : '—' }}</td>
+              <td data-label="Descripción">{{ l.descripcion || '—' }}</td>
+              <td data-label="Precio/m²">{{ l.precioM2 != null ? (l.precioM2 | currency:'USD':'symbol-narrow':'1.0-2') : '—' }}</td>
+              <td data-label="Precio">{{ l.precio | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Inicial">{{ l.inicial != null ? (l.inicial | currency:'USD':'symbol-narrow':'1.0-2') : '—' }}</td>
+              <td data-label="Saldo">{{ l.saldo != null ? (l.saldo | currency:'USD':'symbol-narrow':'1.0-2') : '—' }}</td>
+              <td data-label="Cuota mensual" class="celda-cuota">{{ cuotaDe(l) }}</td>
+              <td data-label="Estado">
+                <div class="estado-switch">
+                  <span class="badge"
+                        [class.badge-activo]="l.estado === 'DISPONIBLE'"
+                        [class.badge-warning]="l.estado === 'RESERVADO'"
+                        [class.badge-inactivo]="l.estado === 'VENDIDO'"
+                        [title]="l.motivoEstado ? 'Motivo: ' + l.motivoEstado : ''">
+                    {{ l.estado || 'DISPONIBLE' }}
+                  </span>
+                  @if (l.ventaActiva) {
+                    <span class="estado-lock"
+                          title="Tiene una venta activa en el sistema: anule la venta en Ventas para liberar el lote">
+                      <i class="fas fa-lock"></i>
+                    </span>
+                  } @else {
+                    @if (l.estado === 'RESERVADO') {
+                      <button type="button" class="btn-separar-icon" (click)="liberarSeparacion(l)"
+                              [disabled]="procesandoId === l.id"
+                              title="Liberar la separación (volver a DISPONIBLE)">
+                        <i class="fas fa-lock-open"></i>
+                      </button>
+                    } @else {
+                      <button type="button" class="btn-separar-icon" (click)="abrirSeparar(l)"
+                              title="Separar el lote por un plazo (reserva)">
+                        <i class="fas fa-hourglass-half"></i>
+                      </button>
+                    }
+                    <label class="switch"
+                           [title]="l.motivoEstado ? 'Motivo: ' + l.motivoEstado : 'Marcar / desmarcar VENDIDO'">
+                      <input type="checkbox" role="switch"
+                             [checked]="l.estado === 'VENDIDO'"
+                             [disabled]="procesandoId === l.id"
+                             [attr.aria-label]="'Marcar como vendido Mz.' + l.manzana + ' Lt.' + l.numero"
+                             (change)="alternarVendido(l, $event)">
+                      <span class="slider"></span>
+                    </label>
+                  }
+                </div>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirEditar(l)" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="eliminar(l)"
+                        [disabled]="procesandoId === l.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (!cargando && totalPaginas > 1) {
+    <nav class="pagination" aria-label="Paginación de lotes">
+      <button type="button" class="btn btn-outline btn-sm pag-btn"
+              [disabled]="pagina === 0" (click)="irPagina(pagina - 1)"
+              title="Página anterior" aria-label="Página anterior">
+        <i class="fas fa-chevron-left"></i>
+        <span class="pag-btn-txt">Anterior</span>
+      </button>
+
+      <div class="paginas">
+        @for (p of ventanaPaginas; track $index) {
+          @if (p === -1) {
+            <span class="pag-gap" aria-hidden="true">…</span>
+          } @else {
+            <button type="button" class="pagina-num" [class.activa]="p === pagina"
+                    [attr.aria-current]="p === pagina ? 'page' : null"
+                    [attr.aria-label]="'Página ' + (p + 1)"
+                    (click)="irPagina(p)">{{ p + 1 }}</button>
+          }
+        }
+      </div>
+
+      <button type="button" class="btn btn-outline btn-sm pag-btn"
+              [disabled]="pagina >= totalPaginas - 1" (click)="irPagina(pagina + 1)"
+              title="Página siguiente" aria-label="Página siguiente">
+        <span class="pag-btn-txt">Siguiente</span>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <span class="page-info">
+        Página {{ pagina + 1 }} de {{ totalPaginas }} · {{ rangoInicio }}–{{ rangoFin }} de {{ xFiltrados.length }} lote(s)
+      </span>
+    </nav>
+  }
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar lote' : 'Nuevo lote' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Empresa *</label>
+          <select [(ngModel)]="form.idEmpresa" (change)="onEmpresaCambiada()">
+            <option [ngValue]="0" disabled>Seleccione una empresa</option>
+            @for (e of empresas; track e.id) {
+              <option [ngValue]="e.id">{{ e.razonSocial }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Proyecto *</label>
+          <div class="select-accion">
+            <select [(ngModel)]="form.idProyecto" [disabled]="!form.idEmpresa">
+              <option [ngValue]="undefined" disabled>
+                {{ form.idEmpresa ? 'Seleccione un proyecto' : 'Primero seleccione una empresa' }}
+              </option>
+              @for (p of proyectosDisponibles; track p.id) {
+                <option [ngValue]="p.id">{{ p.nombre }}</option>
+              }
+            </select>
+            <button type="button" class="btn-agregar-proyecto" (click)="abrirProyectoRapido()"
+                    title="Nuevo proyecto" [disabled]="!form.idEmpresa">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Manzana *</label>
+            <input type="text" [(ngModel)]="form.manzana" placeholder="Mz.">
+          </div>
+          <div class="form-field">
+            <label>Número *</label>
+            <input type="text" [(ngModel)]="form.numero" placeholder="Lt.">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Área (m²)</label>
+            <input type="number" [(ngModel)]="form.areaM2" placeholder="Opcional" min="0"
+                   (ngModelChange)="sugerirPrecio()">
+          </div>
+          <div class="form-field">
+            <label>Precio/m²</label>
+            <input type="number" [(ngModel)]="form.precioM2" placeholder="Opcional" step="0.01" min="0"
+                   (ngModelChange)="sugerirPrecio()">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Descripción</label>
+          <input type="text" [(ngModel)]="form.descripcion" maxlength="150"
+                 placeholder="Opcional. Ej. Lote avenida">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Precio (valor final) *</label>
+            <input type="number" [(ngModel)]="form.precio" placeholder="0.00" step="0.01" min="0">
+            <small class="field-hint">Con área y precio/m² se sugiere automáticamente.</small>
+          </div>
+          <div class="form-field">
+            <label>Estado</label>
+            <select [(ngModel)]="form.estado">
+              <option value="DISPONIBLE">DISPONIBLE</option>
+              <option value="RESERVADO">RESERVADO</option>
+              <option value="VENDIDO">VENDIDO</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Inicial (USD)</label>
+            <input type="number" [(ngModel)]="form.inicial" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="form-field">
+            <label>Saldo</label>
+            <input type="text" class="campo-calculado" [value]="formatearMoneda(saldoCalc)" disabled>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>N° de cuotas</label>
+            <input type="number" [(ngModel)]="form.numCuotas" placeholder="150" min="0" max="160">
+            <small class="field-hint">Usual 150 · máximo 160.</small>
+          </div>
+          <div class="form-field">
+            <label>Cuota mensual estimada</label>
+            <div class="cuota-display">
+              @if (cuotaMensual > 0) {
+                <span class="cuota-valor">{{ formatearMoneda(cuotaMensual) }}</span>
+                @if (tieneResiduo) {
+                  <span class="cuota-detalle">· última: {{ formatearMoneda(ultimaCuota) }}</span>
+                }
+              } @else {
+                <span class="cuota-vacia">Ingresa saldo y cantidad de cuotas</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear lote' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: separar (reservar) un lote por un plazo -->
+@if (modalSeparacion && loteSeparando) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-separacion">
+      <div class="modal-header">
+        <h3>Separar lote</h3>
+        <button class="modal-close" (click)="cerrarSeparar()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="separacion-lote">
+          <strong>{{ loteSeparando.proyecto }} Mz.{{ loteSeparando.manzana }} Lt.{{ loteSeparando.numero }}</strong>
+          <span class="separacion-precio">{{ loteSeparando.precio | currency:'USD':'symbol-narrow':'1.0-2' }}</span>
+        </div>
+
+        <div class="form-field">
+          <label>Plazo de la separación *</label>
+          <div class="preset-row">
+            @for (p of separacionPresets; track p.dias) {
+              <button type="button" class="preset-chip"
+                      [class.activa]="sepFechaVence === fechaDesde(p.dias)"
+                      (click)="aplicarPreset(p)">
+                {{ p.etiqueta }}
+              </button>
+            }
+          </div>
+          <input type="date" [(ngModel)]="sepFechaVence" class="input-fecha">
+          <small class="field-hint">La separación vence y el lote vuelve a DISPONIBLE.</small>
+        </div>
+
+        <div class="form-field">
+          <label>Monto pagado por la separación</label>
+          <input type="number" [(ngModel)]="sepMonto" placeholder="50.00" step="0.01" min="0">
+        </div>
+
+        <div class="form-field">
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="sepAjena">
+            <span>La separación la hizo <strong>otro vendedor</strong> (me la informó la oficina)</span>
+          </label>
+          <small class="field-hint">
+            @if (sepAjena) {
+              El lote queda bloqueado: no podré venderlo mientras la separación esté vigente.
+            } @else {
+              Es mi separación: puedo venderle el lote a mi cliente dentro del plazo.
+            }
+          </small>
+        </div>
+
+        <div class="form-field">
+          <label>Nota (opcional)</label>
+          <input type="text" [(ngModel)]="sepNota" maxlength="300" placeholder="Ej.: cliente Juan Pérez">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarSeparar()">Cancelar</button>
+        <button class="btn btn-primary" (click)="confirmarSeparar()" [disabled]="separando">
+          @if (separando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-hourglass-half"></i> Separar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (modalProyectoRapido) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-proyecto-rapido">
+      <div class="modal-header">
+        <h3>Nuevo proyecto</h3>
+        <button class="modal-close" (click)="cerrarProyectoRapido()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Nombre del proyecto *</label>
+          <input type="text" [(ngModel)]="nombreProyectoRapido"
+                 placeholder="Ej. La Florida" maxlength="120"
+                 (keyup.enter)="crearProyectoRapido()">
+        </div>
+        <small class="field-hint field-hint-block">
+          Se guardará para la empresa seleccionada y quedará listo para usar.
+        </small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarProyectoRapido()">Cancelar</button>
+        <button class="btn btn-primary" (click)="crearProyectoRapido()"
+                [disabled]="creandoProyectoRapido">
+          @if (creandoProyectoRapido) {
+            <i class="fas fa-spinner fa-spin"></i> Creando...
+          } @else {
+            <i class="fas fa-plus"></i> Crear y seleccionar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,170 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Parámetros de comisión</h1>
+      <p>Configura los porcentajes, anticipos y reglas de comisión (general o por empresa)</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nuevo parámetro
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <span class="contador">{{ parametros.length }} parámetro(s) configurado(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Alcance</th>
+          <th>% Contado</th>
+          <th>% Financiado</th>
+          <th>Anticipo</th>
+          <th>Cuota</th>
+          <th>Espera</th>
+          <th>Vigencia</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="8" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (parametros.length === 0) {
+          <tr><td colspan="8" class="empty-cell">No hay parámetros de comisión registrados</td></tr>
+        } @else {
+          @for (p of parametros; track p.id) {
+            <tr>
+              <td data-label="Alcance">
+                @if (p.idEmpresa == null) {
+                  <span class="badge badge-info">GENERAL</span>
+                } @else {
+                  <strong class="alcance-empresa">{{ nombreEmpresa(p.idEmpresa) }}</strong>
+                }
+              </td>
+              <td data-label="% Contado">{{ p.porcentajeComisionContado * 100 | number:'1.2-2' }}%</td>
+              <td data-label="% Financiado">{{ p.porcentajeComision * 100 | number:'1.2-2' }}%</td>
+              <td data-label="Anticipo">
+                @if (p.anticipoMontoFijo != null) {
+                  <span class="badge badge-info">{{ p.anticipoMontoFijo | currency:'USD':'symbol-narrow':'1.0-2' }} fijo</span>
+                } @else {
+                  {{ p.anticipoPorcentaje * 100 | number:'1.2-2' }}%
+                }
+              </td>
+              <td data-label="Cuota">{{ p.montoCuota | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Espera">{{ p.mesesEspera }} meses</td>
+              <td class="cell-vigencia" data-label="Vigencia">
+                <div class="cell-value">
+                  {{ p.fechaInicioVigencia ? (p.fechaInicioVigencia | date:'dd/MM/yyyy') : 'Hoy' }}
+                  <span class="sep-vigencia">—</span>
+                  {{ p.fechaFinVigencia ? (p.fechaFinVigencia | date:'dd/MM/yyyy') : 'Hoy' }}
+                </div>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirEditar(p)" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="eliminar(p)"
+                        [disabled]="procesandoId === p.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar parámetro de comisión' : 'Nuevo parámetro de comisión' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Alcance *</label>
+          <select [(ngModel)]="form.idEmpresa">
+            <option [ngValue]="null">GENERAL (toda la empresa)</option>
+            @for (e of empresas; track e.id) {
+              <option [ngValue]="e.id">{{ e.nombreComercial?.trim() || e.razonSocial }}</option>
+            }
+          </select>
+          <small class="field-hint">GENERAL aplica a todas las empresas sin parámetro propio.</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>% Comisión contado *</label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="form.porcentajeComisionContado">
+            <small class="field-hint">
+              <strong>{{ form.porcentajeComisionContado * 100 | number:'1.0-2' }}%</strong>
+              — Use 0.03 = 3%
+            </small>
+          </div>
+          <div class="form-field">
+            <label>% Comisión financiado *</label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="form.porcentajeComision">
+            <small class="field-hint">
+              <strong>{{ form.porcentajeComision * 100 | number:'1.0-2' }}%</strong>
+              — Use 0.03 = 3%
+            </small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>% Anticipo *</label>
+            <input type="number" step="0.0001" min="0" max="1" [(ngModel)]="form.anticipoPorcentaje">
+            <small class="field-hint">
+              <strong>{{ form.anticipoPorcentaje * 100 | number:'1.0-2' }}%</strong>
+              — Use 0.20 = 20%
+            </small>
+          </div>
+          <div class="form-field">
+            <label>Anticipo monto fijo (opcional)</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="form.anticipoMontoFijo" placeholder="USD">
+            <small class="field-hint">Si tiene valor, el backend lo usa en lugar del % de anticipo.</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Cuota (USD) *</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="form.montoCuota">
+          </div>
+          <div class="form-field">
+            <label>Meses de espera *</label>
+            <input type="number" min="0" step="1" [(ngModel)]="form.mesesEspera">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Inicio de vigencia</label>
+            <input type="date" [(ngModel)]="form.fechaInicioVigencia">
+          </div>
+          <div class="form-field">
+            <label>Fin de vigencia</label>
+            <input type="date" [(ngModel)]="form.fechaFinVigencia">
+          </div>
+        </div>
+        <small class="field-hint field-hint-block">Fechas vacías = sin límite de vigencia.</small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear parámetro' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

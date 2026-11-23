@@ -1,0 +1,62 @@
+<div class="admin-shell">
+  <!-- Topbar móvil (solo pantallas pequeñas) -->
+  <header class="mobile-topbar">
+    <button
+      class="menu-toggle"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuAbierto"
+      aria-label="Abrir menú de navegación">
+      <i class="fas" [ngClass]="menuAbierto ? 'fa-times' : 'fa-bars'"></i>
+    </button>
+    <div class="topbar-brand">
+      <div class="brand-mark"><i class="fas fa-chart-line"></i></div>
+      <span class="brand-name">Vende Lote</span>
+    </div>
+    <button class="btn-logout btn-logout-top" (click)="logout()" title="Cerrar sesión">
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="menuAbierto">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><i class="fas fa-chart-line"></i></div>
+      <span class="brand-name">Vende Lote</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/inicio" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a routerLink="/admin/usuarios" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-users"></i><span>Usuarios</span>
+      </a>
+      <a routerLink="/admin/sesiones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-desktop"></i><span>Sesiones activas</span>
+      </a>
+      <a routerLink="/admin/auditoria" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-history"></i><span>Auditoría</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar">{{ nombreUsuario.charAt(0) }}</div>
+        <div class="user-info">
+          <strong>{{ nombreUsuario }}</strong>
+          <small>Administrador</small>
+        </div>
+      </div>
+      <button class="btn-logout" (click)="logout()" title="Cerrar sesión">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </aside>
+
+  <div class="nav-overlay" [class.open]="menuAbierto" (click)="cerrarMenu()" aria-hidden="true"></div>
+
+  <!-- Contenido -->
+  <main class="admin-content">
+    <router-outlet />
+  </main>
+</div>

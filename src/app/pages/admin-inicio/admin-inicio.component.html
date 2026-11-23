@@ -1,0 +1,66 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Inicio</h1>
+    <p>Resumen general del sistema</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon indigo"><i class="fas fa-users"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ totalUsuarios }}</span>
+        <span class="stat-label">Usuarios totales</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="fas fa-user-tie"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ totalVendedores }}</span>
+        <span class="stat-label">Vendedores</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon amber"><i class="fas fa-user-shield"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ totalAdmins }}</span>
+        <span class="stat-label">Administradores</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="fas fa-desktop"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ sesiones?.totalActivas ?? '—' }}</span>
+        <span class="stat-label">Sesiones activas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-grid">
+    <a routerLink="/admin/usuarios" class="quick-card">
+      <i class="fas fa-users-cog"></i>
+      <strong>Gestionar usuarios</strong>
+      <span>Crear, editar y restablecer contraseñas</span>
+    </a>
+    <a routerLink="/admin/sesiones" class="quick-card">
+      <i class="fas fa-desktop"></i>
+      <strong>Sesiones activas</strong>
+      <span>Ver quién está conectado ahora</span>
+    </a>
+    <a routerLink="/admin/auditoria" class="quick-card">
+      <i class="fas fa-history"></i>
+      <strong>Auditoría</strong>
+      <span>Historial de logins y operaciones</span>
+    </a>
+  </div>
+
+  <div class="info-banner">
+    <i class="fas fa-info-circle"></i>
+    <div>
+      <strong>Fase 1: autenticación</strong>
+      <p>El registro de ventas y comisiones de vendedores estará disponible en la siguiente fase.</p>
+    </div>
+  </div>
+</div>

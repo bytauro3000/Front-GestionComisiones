@@ -1,0 +1,321 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Proformas</h1>
+      <p>Ofertas de lotes para tus clientes</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nueva proforma
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por número, cliente o estado..." [(ngModel)]="terminoBusqueda">
+    </div>
+    <span class="contador">{{ xFiltrados.length }} proforma(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th style="text-align: center;">Ítems</th>
+          <th style="text-align: right;">Total USD</th>
+          <th>Estado</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="7" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (xFiltrados.length === 0) {
+          <tr><td colspan="7" class="empty-cell">No se encontraron proformas</td></tr>
+        } @else {
+          @for (p of xFiltrados; track p.id) {
+            <tr>
+              <td data-label="Número">
+                <strong class="num-proforma">{{ p.numero }}</strong>
+              </td>
+              <td data-label="Fecha">{{ p.fecha ? (p.fecha | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+              <td data-label="Cliente">{{ nombreCliente(p) }}</td>
+              <td data-label="Ítems" style="text-align: center;">{{ p.detalles.length || 0 }}</td>
+              <td data-label="Total" style="text-align: right;">
+                <strong>{{ p.total | number:'1.2-2' }}</strong>
+              </td>
+              <td data-label="Estado">
+                <span class="badge" [ngClass]="claseEstado(p)">{{ etiquetaEstado(p) }}</span>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="ver(p)" title="Ver e imprimir">
+                  <i class="fas fa-eye"></i>
+                </button>
+                @if (esEditable(p)) {
+                  <button class="btn btn-outline btn-sm" (click)="abrirEditar(p)" title="Editar">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm" (click)="cambiarEstado(p, 'ACEPTADA')"
+                          [disabled]="procesandoId === p.id" title="Marcar aceptada">
+                    <i class="fas fa-check"></i>
+                  </button>
+                }
+                @if (p.estado !== 'ANULADA') {
+                  <button class="btn btn-outline btn-sm" (click)="cambiarEstado(p, 'ANULADA')"
+                          [disabled]="procesandoId === p.id" title="Anular">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                }
+                <button class="btn btn-danger btn-sm" (click)="eliminar(p)"
+                        [disabled]="procesandoId === p.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar proforma ' + (proformaEditando?.numero || '') : 'Nueva proforma' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Empresa *</label>
+            <select [(ngModel)]="form.idEmpresa" (ngModelChange)="onEmpresaChange()">
+              <option [ngValue]="null" disabled>Seleccione una empresa...</option>
+              @for (emp of empresas; track emp.id) {
+                <option [ngValue]="emp.id">{{ emp.razonSocial }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Cliente *</label>
+            <select [(ngModel)]="form.idCliente">
+              <option [ngValue]="null" disabled>Seleccione un cliente...</option>
+              @for (cli of clientes; track cli.id) {
+                <option [ngValue]="cli.id">{{ cli.nombres }} {{ cli.apellidos || '' }} — {{ cli.numDocumento }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="detalles-block">
+          <div class="detalles-head">
+            <label>Lotes de la proforma *</label>
+            <button type="button" class="btn btn-outline btn-sm" (click)="agregarFila()">
+              <i class="fas fa-plus"></i> Agregar lote
+            </button>
+          </div>
+
+          @for (fila of filas; track $index; let i = $index) {
+            <div class="fila-lote">
+              <div class="campo-lote">
+                <select [(ngModel)]="fila.idLote" (ngModelChange)="onLoteSeleccionado(i)">
+                  <option [ngValue]="null">Seleccione un lote...</option>
+                  @for (l of lotesParaFila(i); track l.id) {
+                    <option [ngValue]="l.id">{{ l.proyecto ? l.proyecto + ' · ' : '' }}Mz {{ l.manzana }} N° {{ l.numero }} ({{ l.areaM2 || 0 }} m²)</option>
+                  }
+                </select>
+              </div>
+              <div class="campo-precio">
+                <span class="prefijo">USD</span>
+                <input type="number" [(ngModel)]="fila.precioUnitario" min="0" step="0.01" placeholder="0.00">
+              </div>
+              <button type="button" class="btn-quitar-fila" (click)="quitarFila(i)"
+                      [disabled]="filas.length === 1" title="Quitar fila">&times;</button>
+            </div>
+          }
+
+          <div class="total-linea">
+            <span>Total de la proforma</span>
+            <strong>USD {{ totalForm | number:'1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Observaciones</label>
+          <textarea [(ngModel)]="form.observaciones" rows="3" maxlength="500"
+                    placeholder="Condiciones, forma de pago, vigencia... (opcional)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Emitir proforma' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Vista previa imprimible -->
+@if (vistaPrevia; as vp) {
+  <div class="modal-overlay print-area">
+    <div class="modal-card proforma-doc">
+      <div class="modal-header no-print">
+        <h3>Proforma {{ vp.numero }}</h3>
+        <button class="modal-close" (click)="cerrarVista()">&times;</button>
+      </div>
+
+      <div class="modal-body doc">
+        <header class="doc-head">
+          <div class="doc-vendedor">
+            <div class="doc-etiqueta-vendedor">ASESOR / VENDEDOR</div>
+            <h2>{{ vendedorNombre }}</h2>
+            <div class="doc-datos">
+              @if (vendedorDni) {
+                <span><i class="fas fa-id-card"></i> DNI {{ vendedorDni }}</span>
+              }
+              @if (vendedorTelefono) {
+                <span><i class="fas fa-phone"></i> {{ vendedorTelefono }}</span>
+              }
+              @if (vendedorCorreo) {
+                <span><i class="fas fa-envelope"></i> {{ vendedorCorreo }}</span>
+              }
+            </div>
+          </div>
+          <div class="doc-titulo">
+            <div class="doc-etiqueta">PROFORMA</div>
+            <div class="doc-numero">{{ vp.numero }}</div>
+            <div class="doc-fecha">Fecha: {{ vp.fecha ? (vp.fecha | date:'dd/MM/yyyy') : '—' }}</div>
+            <span class="badge" [ngClass]="claseEstado(vp)">{{ etiquetaEstado(vp) }}</span>
+          </div>
+        </header>
+
+        <section class="doc-cliente">
+          <h4>Datos del cliente</h4>
+          <div class="doc-cliente-grid">
+            <div><span class="etiqueta">Cliente:</span> <strong>{{ nombreCliente(vp) }}</strong></div>
+            <div>
+              <span class="etiqueta">Documento:</span>
+              {{ clienteDe(vp.idCliente)?.numDocumento || '—' }}
+            </div>
+            <div>
+              <span class="etiqueta">Teléfono:</span>
+              {{ clienteDe(vp.idCliente)?.telefono || '—' }}
+            </div>
+            <div>
+              <span class="etiqueta">Correo:</span>
+              {{ clienteDe(vp.idCliente)?.correo || '—' }}
+            </div>
+            <div class="doc-dir">
+              <span class="etiqueta">Dirección:</span>
+              {{ clienteDe(vp.idCliente)?.direccion || '—' }}
+            </div>
+          </div>
+        </section>
+
+        <table class="doc-tabla">
+          <thead>
+            <tr>
+              <th style="width: 34px;">#</th>
+              <th>Lote</th>
+              <th style="text-align: right;">Área (m²)</th>
+              <th style="text-align: right;">Precio USD</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of vp.detalles; track $index; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ d.descripcion || '—' }}</td>
+                <td style="text-align: right;">{{ d.areaM2 != null ? (d.areaM2 | number:'1.2-2') : '—' }}</td>
+                <td style="text-align: right;">{{ d.precioUnitario | number:'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="3">TOTAL</th>
+              <th style="text-align: right;">{{ vp.total | number:'1.2-2' }}</th>
+            </tr>
+          </tfoot>
+        </table>
+
+        @if (inicialDoc > 0 || numCuotasDoc > 0) {
+          <section class="doc-pago">
+            <h4>Condiciones de pago</h4>
+            <div class="doc-pago-grid">
+              <div>
+                <span class="etiqueta">Inicial:</span>
+                <strong>{{ inicialDoc | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div>
+                <span class="etiqueta">Saldo a financiar:</span>
+                <strong>{{ saldoDoc | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div>
+                <span class="etiqueta">N° de cuotas (letras):</span>
+                <strong>{{ numCuotasDoc || '—' }}</strong>
+              </div>
+              <div>
+                <span class="etiqueta">Importe por cuota:</span>
+                <strong>{{ cuotaDoc | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+            </div>
+            @if (tieneResiduoDoc) {
+              <small class="doc-pago-nota">
+                La última letra absorbe la diferencia: {{ ultimaCuotaDoc | currency:'USD':'symbol-narrow':'1.0-2' }}.
+              </small>
+            }
+          </section>
+        }
+
+        @if (vp.observaciones) {
+          <section class="doc-obs">
+            <h4>Observaciones</h4>
+            <p>{{ vp.observaciones }}</p>
+          </section>
+        }
+
+        <footer class="doc-pie">
+          <div class="doc-firma">
+            <span class="linea-firma"></span>
+            <span class="etiqueta">{{ nombreCliente(vp) }}</span>
+          </div>
+          <div class="doc-firma">
+            <span class="linea-firma"></span>
+            <span class="etiqueta">{{ vendedorNombre }}</span>
+          </div>
+        </footer>
+
+        <p class="doc-nota">
+          Proforma emitida por el asesor comercial como oferta de venta. Este documento no constituye
+          comprobante de pago ni reserva el lote hasta su formalización.
+        </p>
+      </div>
+
+      <div class="modal-footer no-print">
+        @if (esEditable(vp)) {
+          <button class="btn btn-outline" (click)="cambiarEstado(vp, 'ACEPTADA')">
+            <i class="fas fa-check"></i> Marcar aceptada
+          </button>
+          <button class="btn btn-danger" (click)="cambiarEstado(vp, 'ANULADA')">
+            <i class="fas fa-ban"></i> Anular
+          </button>
+        }
+        <button class="btn btn-primary" (click)="imprimir()">
+          <i class="fas fa-print"></i> Imprimir / Guardar PDF
+        </button>
+        <button class="btn btn-outline" (click)="cerrarVista()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

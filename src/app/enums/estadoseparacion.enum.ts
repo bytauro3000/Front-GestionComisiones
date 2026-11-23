@@ -1,5 +1,0 @@
-export enum EstadoSeparacion{
-	EN_PROCESO = 'EN_PROCESO', 
-	CONCRETADO = 'CONCRETADO', 
-	FINALIZADO = 'FINALIZADO'
-}

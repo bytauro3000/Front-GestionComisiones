@@ -1,0 +1,9 @@
+/* ============================================== */
+/* Tokens compartidos entre globales y componentes */
+/* Uso: @use '../../../styles/tokens' as t;        */
+/* ============================================== */
+
+/* Breakpoints estándar de la app */
+$bp-sm: 576px;  // móvil
+$bp-md: 768px;  // tablet
+$bp-lg: 992px;  // escritorio

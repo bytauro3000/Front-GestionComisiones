@@ -1,0 +1,58 @@
+<div class="welcome">
+  <div class="welcome-hero">
+    <div class="welcome-icon"><i class="fas fa-hand-holding-usd"></i></div>
+    <h1>Hola, {{ nombreUsuario }} 👋</h1>
+    <p>Bienvenido a tu panel de comisiones.</p>
+  </div>
+
+  <div class="modulos">
+    <h2><i class="fas fa-th-large"></i> Tus módulos</h2>
+    <div class="modulos-grid">
+      <a routerLink="/vendedor/empresas" class="modulo-card">
+        <i class="fas fa-building"></i>
+        <strong>Empresas</strong>
+        <span>Clientes con RUC a los que les facturas</span>
+      </a>
+      <a routerLink="/vendedor/clientes" class="modulo-card">
+        <i class="fas fa-address-book"></i>
+        <strong>Clientes</strong>
+        <span>Compradores con DNI/RUC autocompletados</span>
+      </a>
+      <a routerLink="/vendedor/proyectos" class="modulo-card">
+        <i class="fas fa-drafting-compass"></i>
+        <strong>Proyectos</strong>
+        <span>Ubicación en mapa y datos de cada proyecto</span>
+      </a>
+      <a routerLink="/vendedor/lotes" class="modulo-card">
+        <i class="fas fa-map-pin"></i>
+        <strong>Lotes</strong>
+        <span>Inventario por proyecto, manzana y lote</span>
+      </a>
+      <a routerLink="/vendedor/proformas" class="modulo-card">
+        <i class="fas fa-file-signature"></i>
+        <strong>Proformas</strong>
+        <span>Ofertas de lotes con número correlativo</span>
+      </a>
+      <a routerLink="/vendedor/parametros-comision" class="modulo-card">
+        <i class="fas fa-percent"></i>
+        <strong>Parámetros</strong>
+        <span>Porcentajes de comisión y cuotas</span>
+      </a>
+      <a routerLink="/vendedor/ventas" class="modulo-card">
+        <i class="fas fa-handshake"></i>
+        <strong>Ventas</strong>
+        <span>Contado y financiado con comisión automática</span>
+      </a>
+      <a routerLink="/vendedor/comisiones" class="modulo-card">
+        <i class="fas fa-coins"></i>
+        <strong>Comisiones</strong>
+        <span>Anticipo, cuotas y cobros</span>
+      </a>
+      <a routerLink="/vendedor/comprobantes" class="modulo-card">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <strong>Facturación</strong>
+        <span>Facturas electrónicas con IGV y detracción</span>
+      </a>
+    </div>
+  </div>
+</div>

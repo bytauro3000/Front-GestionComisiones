@@ -1,0 +1,370 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Facturación electrónica</h1>
+      <p>Emite facturas agrupando los pagos cobrados y envíalas a SUNAT vía api-sunat</p>
+    </div>
+    <div class="header-acciones">
+      <button class="btn btn-outline" (click)="abrirIntegracion()">
+        <i class="fas fa-cog"></i> Integración SUNAT
+      </button>
+      <button class="btn btn-primary" (click)="abrirEmitir()">
+        <i class="fas fa-file-invoice"></i> Emitir factura
+      </button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="info-nota">
+      <i class="fas fa-info-circle"></i>
+      Las facturas se emiten en <strong>USD</strong> con IGV 18%. Cada factura cubre 1..N pagos de una misma empresa.
+    </span>
+    <span class="contador">{{ comprobantes.length }} comprobante(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>N° Comprobante</th>
+          <th>Fecha</th>
+          <th>Empresa</th>
+          <th>Subtotal</th>
+          <th>IGV</th>
+          <th>Total</th>
+          <th>Estado SUNAT</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="8" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (comprobantes.length === 0) {
+          <tr><td colspan="8" class="empty-cell">Aún no se han emitido comprobantes</td></tr>
+        } @else {
+          @for (c of comprobantes; track c.id) {
+            <tr>
+              <td data-label="N° Comprobante">
+                <div class="cell-value">
+                  <strong class="comp-numero">{{ c.serie ? c.serie + '-' + (c.correlativo || c.id) : ' #' + c.id }}</strong>
+                  @if (c.tipo === 'FACTURA') {
+                    <span class="badge badge-info">Factura 01</span>
+                  }
+                </div>
+              </td>
+              <td data-label="Fecha">{{ c.fechaEmision | date:'dd/MM/yyyy' }}</td>
+              <td data-label="Empresa">
+                <div class="cell-value">
+                  {{ c.empresaNombre }}
+                  <small class="doc-secundario">RUC {{ c.empresaRuc }}</small>
+                </div>
+              </td>
+              <td data-label="Subtotal">{{ c.subtotal | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="IGV">{{ c.igv | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Total"><strong>{{ c.total | currency:'USD':'symbol-narrow':'1.0-2' }}</strong></td>
+              <td data-label="Estado SUNAT">
+                <div class="cell-value">
+                  <span class="badge" [ngClass]="claseEstado(c.estado)">
+                    {{ etiquetaEstado(c.estado) }}
+                  </span>
+                  @if (c.aplicaDetraccion) {
+                    <span class="badge badge-warning" title="Detracción">
+                      <i class="fas fa-percentage"></i> Detracción
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirDetalle(c)" title="Ver detalle">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-outline btn-sm" (click)="sincronizar(c)" title="Sincronizar estado con SUNAT">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-outline btn-sm" (click)="descargarPdf(c)" title="Descargar PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: emitir factura -->
+@if (emitirAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3><i class="fas fa-file-invoice"></i> Emitir factura</h3>
+        <button class="modal-close" (click)="cerrarEmitir()">&times;</button>
+      </div>
+      <div class="modal-body">
+        @if (consultandoPagos) {
+          <p class="vacio"><i class="fas fa-spinner fa-spin"></i> Cargando pagos cobrados disponibles...</p>
+        } @else if (empresasConPagos.length === 0) {
+          <p class="vacio">No hay pagos cobrados sin facturar. Registra un cobro en Comisiones.</p>
+        } @else {
+          <div class="form-field">
+            <label>Empresa (receptor de la factura) *</label>
+            <div class="empresa-chips">
+              @for (emp of empresasConPagos; track emp.idEmpresa) {
+                <button type="button" class="chip-empresa"
+                        [class.seleccionada]="idEmpresaSeleccionada === emp.idEmpresa"
+                        (click)="seleccionarEmpresa(emp.idEmpresa)">
+                  <strong>{{ emp.empresaNombre }}</strong>
+                  <span>{{ emp.total | currency:'USD':'symbol-narrow':'1.0-2' }} cobrados</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (idEmpresaSeleccionada != null) {
+            <div class="form-row">
+              <div class="form-field">
+                <label>Fecha de emisión *</label>
+                <input type="date" [(ngModel)]="fechaEmision" [max]="hoy">
+              </div>
+              <div class="form-field">
+                <label>Descripción libre (opcional)</label>
+                <input type="text" [(ngModel)]="conceptoExtra" maxlength="200"
+                       placeholder="Ej: Plan de pagos mensual">
+              </div>
+            </div>
+
+            <label class="seccion-pagos">Pagos incluidos (1..N de esta empresa)</label>
+            <div class="tabla-pagos">
+              <table class="data-table tabla-cards">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;"></th>
+                    <th>Pago</th>
+                    <th>Lote</th>
+                    <th>Fecha pago</th>
+                    <th style="text-align: right;">Monto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of pagosDeEmpresa; track p.idPago) {
+                    <tr>
+                      <td data-label="Incluir">
+                        <input type="checkbox" [ngModel]="pagoIds.includes(p.idPago)"
+                               (ngModelChange)="togglePago(p.idPago)">
+                      </td>
+                      <td data-label="Pago">
+                        <div class="cell-value">
+                          <strong>{{ p.tipo === 'ANTICIPO' ? 'Anticipo' : (p.tipo === 'CUOTA' ? 'Cuota #' + p.numeroCuota : 'Total') }}</strong>
+                          <small class="doc-secundario">{{ p.formaPago || '—' }}</small>
+                        </div>
+                      </td>
+                      <td data-label="Lote">{{ p.loteEtiqueta }}</td>
+                      <td data-label="Fecha pago">{{ p.fechaPago | date:'dd/MM/yyyy' }}</td>
+                      <td data-label="Monto" style="text-align: right;">{{ p.monto | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="resumen">
+              <div class="resumen-fila">
+                <span>Pagos seleccionados</span>
+                <strong>{{ pagoIds.length }}</strong>
+              </div>
+              <div class="resumen-fila">
+                <span>Subtotal</span>
+                <strong>{{ subtotalSeleccionado | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="resumen-fila">
+                <span>IGV (18%)</span>
+                <strong>{{ igvSeleccionado | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="resumen-fila total">
+                <span>Total factura</span>
+                <strong>{{ totalSeleccionado | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+            </div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarEmitir()">Cancelar</button>
+        <button class="btn btn-primary" (click)="emitir()" [disabled]="emitiendo || consultandoPagos || pagoIds.length === 0">
+          @if (emitiendo) {
+            <i class="fas fa-spinner fa-spin"></i> Enviando a SUNAT...
+          } @else {
+            <i class="fas fa-paper-plane"></i> Emitir factura
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: detalle -->
+@if (detalle) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fas fa-file-invoice"></i>
+          {{ detalle.serie ? detalle.serie + '-' + (detalle.correlativo || detalle.id) : 'Comprobante #' + detalle.id }}
+        </h3>
+        <button class="modal-close" (click)="detalle = null">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detalle-grid">
+          <div><label>Estado</label>
+            <span class="badge" [ngClass]="claseEstado(detalle.estado)">{{ etiquetaEstado(detalle.estado) }}</span>
+          </div>
+          <div><label>Fecha de emisión</label><span>{{ detalle.fechaEmision | date:'dd/MM/yyyy' }}</span></div>
+          <div><label>Empresa</label><span>{{ detalle.empresaNombre }} (RUC {{ detalle.empresaRuc }})</span></div>
+          <div><label>ID api-sunat</label><span>{{ formatoNumero(detalle.idApiSunat) }}</span></div>
+        </div>
+
+        @if (detalle.concepto) {
+          <div class="detalle-concepto">
+            <label>Descripción</label>
+            <p>{{ detalle.concepto }}</p>
+          </div>
+        }
+
+        <div class="detalle-montos">
+          <div><span>Subtotal</span><strong>{{ detalle.subtotal | currency:'USD':'symbol-narrow':'1.0-2' }}</strong></div>
+          <div><span>IGV 18%</span><strong>{{ detalle.igv | currency:'USD':'symbol-narrow':'1.0-2' }}</strong></div>
+          <div class="total"><span>Total</span><strong>{{ detalle.total | currency:'USD':'symbol-narrow':'1.0-2' }}</strong></div>
+          @if (detalle.aplicaDetraccion) {
+            <div class="detraccion">
+              <span>Detracción</span>
+              <strong>{{ detalle.montoDetraccion | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+          }
+        </div>
+
+        <label class="seccion-pagos">Pagos cubiertos</label>
+        <div class="tabla-pagos">
+          <table class="data-table tabla-cards">
+            <thead>
+              <tr><th>Pago</th><th>Fecha pago</th><th style="text-align: right;">Monto</th></tr>
+            </thead>
+            <tbody>
+              @for (p of detalle.pagos; track p.id) {
+                <tr>
+                  <td data-label="Pago">{{ p.tipo === 'ANTICIPO' ? 'Anticipo' : (p.tipo === 'CUOTA' ? 'Cuota #' + p.numeroCuota : 'Total') }}</td>
+                  <td data-label="Fecha pago">{{ p.fechaPago | date:'dd/MM/yyyy' }}</td>
+                  <td data-label="Monto" style="text-align: right;">{{ p.monto | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="detalle = null">Cerrar</button>
+        <button class="btn btn-outline" (click)="sincronizar(detalle)">
+          <i class="fas fa-sync-alt"></i> Sincronizar
+        </button>
+        <button class="btn btn-primary" (click)="descargarPdf(detalle)">
+          <i class="fas fa-file-pdf"></i> Descargar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: integración SUNAT -->
+@if (integAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3><i class="fas fa-cog"></i> Integración SUNAT (api-sunat)</h3>
+        <button class="modal-close" (click)="cerrarIntegracion()">&times;</button>
+      </div>
+      <div class="modal-body">
+        @if (!integ) {
+          <p class="vacio"><i class="fas fa-spinner fa-spin"></i> Cargando configuración...</p>
+        } @else {
+          <div class="form-field">
+            <label>URL de api-sunat (vacío = global del servidor)</label>
+            <input type="text" [(ngModel)]="integ.apiUrl" placeholder="http://localhost:8000/api/v1">
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>API Key</label>
+              <input type="password" [(ngModel)]="integ.apiKey" placeholder="X-Api-Key">
+              @if (integ.apiKeyConfigurado && !integ.apiKey) {
+                <small class="campo-guardado"><i class="fas fa-lock"></i> Clave guardada (dejar vacío para mantener)</small>
+              }
+            </div>
+            <div class="form-field">
+              <label>API Secret</label>
+              <input type="password" [(ngModel)]="integ.apiSecret" placeholder="X-Api-Secret">
+              @if (integ.apiSecretConfigurado && !integ.apiSecret) {
+                <small class="campo-guardado"><i class="fas fa-lock"></i> Secreto guardado (dejar vacío para mantener)</small>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Serie de facturas *</label>
+              <input type="text" [(ngModel)]="integ.serieFactura" maxlength="4" placeholder="F001">
+            </div>
+            <div class="form-field">
+              <label>Cuenta bancaria (detracción)</label>
+              <input type="text" [(ngModel)]="integ.ctaBanco" placeholder="N° de cuenta interbank">
+            </div>
+          </div>
+
+          <div class="seccion-detraccion">
+            <label class="check-detraccion">
+              <input type="checkbox" [(ngModel)]="integ.aplicarDetraccion">
+              <span>Aplicar <strong>detracción</strong> cuando el total supere el umbral (regla SUNAT: operaciones &gt; S/ 700)</span>
+            </label>
+
+            @if (integ.aplicarDetraccion) {
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Código de bien (Cat. 54)</label>
+                  <input type="text" [(ngModel)]="integ.codBienDetraccion" maxlength="3" placeholder="037">
+                  <small class="campo-ayuda">037 = Demás servicios gravados</small>
+                </div>
+                <div class="form-field">
+                  <label>Porcentaje (%)</label>
+                  <input type="number" [(ngModel)]="integ.porcentajeDetraccion" min="0" max="100" step="0.5">
+                </div>
+                <div class="form-field">
+                  <label>Umbral (USD)</label>
+                  <input type="number" [(ngModel)]="integ.umbralDetraccion" min="0" step="1">
+                  <small class="campo-ayuda">≈ S/ 700 al tipo de cambio</small>
+                </div>
+                <div class="form-field">
+                  <label>Medio de pago (Cat. 59)</label>
+                  <input type="text" [(ngModel)]="integ.codMedioPago" maxlength="3" placeholder="003">
+                  <small class="campo-ayuda">003 = Transferencia</small>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="zona-prueba">
+            <button class="btn btn-outline" (click)="probarConexion()" [disabled]="probando">
+              @if (probando) { <i class="fas fa-spinner fa-spin"></i> Probando... }
+              @else { <i class="fas fa-plug"></i> Probar conexión }
+            </button>
+            <span class="ayuda">Valida API Key/Secret contra <code>GET /sucursales</code> de api-sunat.</span>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarIntegracion()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardarIntegracion()" [disabled]="guardandoInteg || !integ">
+          @if (guardandoInteg) { <i class="fas fa-spinner fa-spin"></i> Guardando... }
+          @else { <i class="fas fa-save"></i> Guardar configuración }
+        </button>
+      </div>
+    </div>
+  </div>
+}

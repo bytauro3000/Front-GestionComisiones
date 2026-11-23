@@ -1,142 +1,101 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
-import { LoteResumen } from '../dto/loteresumen.dto';
-import { EstadoLote } from '../enums/estadolote.enum';
-import { Lote } from '../models/lote.model';
-import { LoteProgramaDTO } from '../dto/lote-programa-response.dto';
-import { environment } from '../../environments/environment'; 
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface Lote {
+  id?: number;
+  idVendedor?: number;
+  idEmpresa: number;
+  idProyecto?: number;
+  proyecto: string;
+  manzana: string;
+  numero: string;
+  descripcion?: string;
+  areaM2?: number;
+  precioM2?: number;
+  precio: number;
+  inicial?: number;
+  saldo?: number;
+  numCuotas?: number;
+  estado?: string;
+  /** Motivo del cambio manual a VENDIDO (switch de la tabla). */
+  motivoEstado?: string;
+  /** true = el lote tiene una venta propia ACTIVA (solo la anulación lo libera). */
+  ventaActiva?: boolean;
+  /** Fecha de vencimiento de la separación (RESERVADO). */
+  fechaVinceSeparacion?: string;
+  /** Monto pagado por la separación (15 días = $50, 1 mes = $100). */
+  montoSeparacion?: number;
+  /** true = la separación la hizo otro vendedor (bloquea la venta). */
+  separacionAjena?: boolean;
+  fechaRegistro?: string;
+}
+
+export interface LoteSeparacion {
+  fechaVence: string;
+  monto?: number;
+  ajena: boolean;
+  nota?: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class LoteService {
 
-  private readonly apiUrl = `${environment.apiUrl}/api/lotes`;
+  private readonly URL = `${environment.apiUrl}/api/lotes`;
 
   constructor(private http: HttpClient) { }
 
-  // 🔹 Listado principal (Resumen para la tabla)
-  obtenerLotesResumen(): Observable<LoteResumen[]> {
-    return this.http.get<any[]>(this.apiUrl).pipe(
-      map((lotes) =>
-        lotes.map((lote) => ({
-          idLote: lote.idLote,
-          manzana: lote.manzana,
-          numeroLote: lote.numeroLote,
-          area: lote.area,
-          precioM2: lote.precioM2,
-          estado: lote.estado as EstadoLote,
-          programaNombre: lote.programa?.nombrePrograma ?? 'Sin programa'
-        }))
-      )
-    );
+  listar(filtro?: { idEmpresa?: number; idProyecto?: number; estado?: string }): Observable<Lote[]> {
+    let params = new HttpParams();
+    if (filtro?.idEmpresa != null) {
+      params = params.set('idEmpresa', filtro.idEmpresa);
+    }
+    if (filtro?.idProyecto != null) {
+      params = params.set('idProyecto', filtro.idProyecto);
+    }
+    if (filtro?.estado) {
+      params = params.set('estado', filtro.estado);
+    }
+    return this.http.get<Lote[]>(this.URL, { params });
   }
 
-  // 🔹 Listado Completo (Entidad Lote)
-  listarLotes(): Observable<Lote[]> {
-    return this.http.get<Lote[]>(this.apiUrl);
+  obtener(id: number): Observable<Lote> {
+    return this.http.get<Lote>(`${this.URL}/${id}`);
   }
 
-  // Listado para reporte — ordenado por programa, manzana y numero de lote
-  listarLotesParaReporte(): Observable<Lote[]> {
-    return this.http.get<Lote[]>(`${this.apiUrl}/reporte`);
+  crear(dto: Lote): Observable<Lote> {
+    return this.http.post<Lote>(this.URL, dto);
   }
 
-  // 🔹 Listar lotes por programa usando el DTO optimizado
-  listarLotesPorPrograma(idPrograma: number): Observable<LoteProgramaDTO[]> {
-    return this.http.get<LoteProgramaDTO[]>(`${this.apiUrl}/listarPorPrograma/${idPrograma}`);
+  editar(id: number, dto: Lote): Observable<Lote> {
+    return this.http.put<Lote>(`${this.URL}/${id}`, dto);
   }
 
-  // 🔹 Obtener un objeto Lote por Id
-  obtenerLotePorId(id: number): Observable<Lote> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-      map((lote) => ({
-        ...lote,
-        programa: lote.idPrograma != null
-          ? { idPrograma: lote.idPrograma, nombrePrograma: lote.nombrePrograma }
-          : undefined
-      }))
-    );
+  /** Cambio rápido de estado desde la tabla (switch "vendido"). */
+  cambiarEstado(id: number, estado: string, motivo?: string): Observable<Lote> {
+    return this.http.patch<Lote>(`${this.URL}/${id}/estado`, {
+      estado,
+      motivo: motivo ?? null
+    });
   }
 
-  // 🔹 Obtener la entidad completa por programa
-  listarLotesEntidadPorPrograma(idPrograma: number): Observable<Lote[]> {
-    return this.http.get<Lote[]>(`${this.apiUrl}/gestion/programa/${idPrograma}`);
+  /** Separa (reserva) el lote por un plazo. Las ajenas bloquean la venta. */
+  separar(id: number, dto: LoteSeparacion): Observable<Lote> {
+    return this.http.patch<Lote>(`${this.URL}/${id}/separacion`, dto);
   }
 
-  // 🔹 Crear Lote (POST)
-  crearLote(lote: Lote): Observable<Lote> {
-    return this.http.post<Lote>(this.apiUrl, lote);
+  /** Libera la separación: el lote vuelve a DISPONIBLE. */
+  liberarSeparacion(id: number): Observable<Lote> {
+    return this.http.delete<Lote>(`${this.URL}/${id}/separacion`);
   }
 
-  /**
-   * 🔹 Actualizar Lote (PUT)
-   * CORRECCIÓN: Se cambió .post por .put para coincidir con el @PutMapping del Backend
-   * y evitar el error 403 Forbidden provocado por desajuste de métodos.
-   */
-  actualizarLote(id: number, lote: Lote): Observable<Lote> {
-    return this.http.put<Lote>(`${this.apiUrl}/${id}`, lote);
+  /** Lotes separados (RESERVADO) del vendedor. */
+  listarSeparaciones(): Observable<Lote[]> {
+    return this.http.get<Lote[]>(`${this.URL}/separaciones`);
   }
 
-  // 🔹 Eliminar Lote (DELETE)
-  eliminarLote(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  //========================================================================
-  buscarLotesGestion(idPrograma: number, manzana: string = '', numeroLote: string = ''): Observable<LoteResumen[]> {
-    // Configuramos los parámetros de la URL
-    let params = new HttpParams()
-      .set('idPrograma', idPrograma.toString())
-      .set('manzana', manzana)
-      .set('numeroLote', numeroLote);
-
-    return this.http.get<any[]>(`${this.apiUrl}/buscar`, { params }).pipe(
-      map((lotes) =>
-        lotes.map((lote) => ({
-          idLote: lote.idLote,
-          manzana: lote.manzana,
-          numeroLote: lote.numeroLote,
-          area: lote.area,
-          precioM2: lote.precioM2,
-          estado: lote.estado as EstadoLote,
-          programaNombre: lote.nombrePrograma ?? 'Sin programa'
-        }))
-      )
-    );
-  }
-
-  //Obtener todos los lotes de un programa (entidad completa para gestión)
-  obtenerLotesPorProgramaGestion(idPrograma: number): Observable<LoteResumen[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/gestion/programa/${idPrograma}`).pipe(
-      map((lotes) =>
-        lotes.map((lote) => ({
-          idLote: lote.idLote,
-          manzana: lote.manzana,
-          numeroLote: lote.numeroLote,
-          area: lote.area,
-          precioM2: lote.precioM2,
-          estado: lote.estado as EstadoLote,
-          programaNombre: lote.nombrePrograma ?? 'Sin programa'
-        }))
-      )
-    );
-  }
-
-  obtenerPrecioVenta(idLote: number): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/precio-venta/${idLote}`);
-  }
-
-  obtenerDetalleVenta(idLote: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/detalle-venta/${idLote}`);
-  }
-
-  validarLoteExistente(idPrograma: number, manzana: string, numeroLote: string): Observable<boolean> {
-    const params = new HttpParams()
-      .set('idPrograma', idPrograma.toString())
-      .set('manzana', manzana)
-      .set('numeroLote', numeroLote);
-    return this.http.get<boolean>(`${this.apiUrl}/validar-duplicado`, { params });
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.URL}/${id}`);
   }
 }

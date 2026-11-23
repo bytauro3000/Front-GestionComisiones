@@ -1,9 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { LoginRequest } from './interfaces/login-request';
-import { LoginResponse } from './interfaces/login-response';
 import { environment } from '../../environments/environment';
+
+export interface LoginRequest {
+  correo: string;
+  contrasena: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  refreshToken?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -34,5 +42,3 @@ export class LoginService {
     });
   }
 }
-
-export type { LoginRequest, LoginResponse };

@@ -8,8 +8,6 @@ export class TokenService {
   private readonly TOKEN_KEY = 'jwtToken';
 
   setToken(token: string): void {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem(this.TOKEN_KEY);
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
@@ -19,7 +17,6 @@ export class TokenService {
 
   removeToken(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem('jwt_token');
   }
 
   getRole(): string | null {
@@ -33,14 +30,14 @@ export class TokenService {
     }
   }
 
-  getIdVendedor(): number | null {
+  getNombreCompleto(): string {
     const token = this.getToken();
-    if (!token) return null;
+    if (!token) return '';
     try {
       const decoded: any = jwtDecode(token);
-      return decoded.idVendedor ?? null;
+      return `${decoded.nombre || ''} ${decoded.apellidos || ''}`.trim();
     } catch {
-      return null;
+      return '';
     }
   }
 

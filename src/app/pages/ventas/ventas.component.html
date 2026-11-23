@@ -1,0 +1,509 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Ventas</h1>
+      <p>Registro y seguimiento de ventas de lotes con sus comisiones</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nueva venta
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <span class="contador">{{ ventas.length }} venta(s) registrada(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Fecha venta</th>
+          <th>Lote(s)</th>
+          <th>Cliente(s)</th>
+          <th>Empresa</th>
+          <th>Modalidad</th>
+          <th>Precio</th>
+          <th>Inicial</th>
+          <th>Comisión</th>
+          <th>Estado</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="10" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (ventas.length === 0) {
+          <tr><td colspan="10" class="empty-cell">No hay ventas registradas</td></tr>
+        } @else {
+          @for (v of ventas; track v.id) {
+            <tr>
+              <td class="cell-fecha" data-label="Fecha venta">{{ v.fechaVenta | date:'dd/MM/yyyy' }}</td>
+              <td data-label="Lote(s)"><strong>{{ v.loteEtiqueta }}</strong></td>
+              <td data-label="Cliente(s)">{{ v.clienteNombre }}</td>
+              <td data-label="Empresa">{{ v.empresaNombre }}</td>
+              <td data-label="Modalidad">
+                <span class="badge" [ngClass]="claseModalidad(v.modalidad)">{{ v.modalidad }}</span>
+              </td>
+              <td data-label="Precio">{{ v.precioVenta | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Inicial">
+                @if (v.montoInicial != null) {
+                  {{ v.montoInicial | currency:'USD':'symbol-narrow':'1.0-2' }}
+                } @else {
+                  <span class="texto-suave">—</span>
+                }
+              </td>
+              <td data-label="Comisión">
+                @if (v.comisionTotal != null) {
+                  <div class="comision-celda">
+                    <strong>{{ v.comisionPagada | currency:'USD':'symbol-narrow':'1.0-2' }}
+                      / {{ v.comisionTotal | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+                    <span class="badge" [ngClass]="claseEstadoComision(v.comisionEstado)">
+                      {{ v.comisionEstado || 'Pendiente' }}
+                    </span>
+                  </div>
+                } @else {
+                  <span class="texto-suave">—</span>
+                }
+              </td>
+              <td data-label="Estado">
+                <span class="badge" [ngClass]="claseEstadoVenta(v.estado)">{{ v.estado }}</span>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirDetalle(v)" title="Ver detalle">
+                  <i class="fas fa-eye"></i>
+                </button>
+                @if (v.estado === 'ACTIVA') {
+                  <button class="btn btn-danger btn-sm" (click)="anular(v.id)" title="Anular venta">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal nueva venta (venta agrupada: empresa → programa → lotes + clientes) -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3><i class="fas fa-cart-plus"></i> Nueva venta</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        @if (cargandoCatalogos) {
+          <div class="cargando-catalogos">
+            <i class="fas fa-spinner fa-spin"></i> Cargando empresas, programas y clientes...
+          </div>
+        } @else {
+          <div class="form-row">
+            <div class="form-field">
+              <label>Empresa *</label>
+              <div class="custom-select-container" #empresaBusquedaContainer>
+                <input type="text" #empresaInput class="custom-select-input" placeholder="Buscar empresa por nombre o RUC"
+                  [(ngModel)]="filtroEmpresa" (input)="filtrarEmpresas()" (focus)="abrirEmpresas()"
+                  autocomplete="off">
+                <i class="fas fa-chevron-down select-arrow"></i>
+                @if (mostrarEmpresas) {
+                  <ul class="custom-select-list">
+                    @for (e of empresasFiltradas; track e.id) {
+                      <li (mousedown)="seleccionarEmpresa(e)">
+                        <span class="list-item-main">
+                          <i class="fas fa-building"></i>
+                          {{ e.nombreComercial?.trim() || e.razonSocial }}
+                        </span>
+                        <span class="list-badge">{{ e.ruc }}</span>
+                      </li>
+                    } @empty {
+                      <li class="no-data"><i class="fas fa-search"></i> No se encontraron empresas</li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Programa *</label>
+              <div class="custom-select-container" #proyectoBusquedaContainer>
+                <input type="text" #proyectoInput class="custom-select-input" placeholder="Buscar programa..."
+                  [disabled]="!form.idEmpresa"
+                  [(ngModel)]="filtroProyecto" (input)="filtrarProyectos()" (focus)="abrirProyectos()"
+                  autocomplete="off">
+                <i class="fas fa-chevron-down select-arrow"></i>
+                @if (mostrarProyectos) {
+                  <ul class="custom-select-list">
+                    @for (p of proyectosFiltrados; track p.id) {
+                      <li (mousedown)="seleccionarProyecto(p)">
+                        <span class="list-item-main"><i class="fas fa-map"></i> {{ p.nombre }}</span>
+                      </li>
+                    } @empty {
+                      <li class="no-data"><i class="fas fa-search"></i>
+                        @if (form.idEmpresa) {
+                          No se encontraron programas
+                        } @else {
+                          Primero seleccione una empresa
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Agregar lote * ({{ lotesSeleccionados.length }})</label>
+              <div class="custom-select-container" #loteBusquedaContainer>
+                <input type="text" class="custom-select-input"
+                  placeholder="Buscar Manzana, Lt. o descripción..."
+                  [disabled]="!form.idProyecto"
+                  [(ngModel)]="filtroLote" (input)="filtrarLotes()" (focus)="filtrarLotes()"
+                  autocomplete="off">
+                <i class="fas fa-chevron-down select-arrow"></i>
+                @if (mostrarLotes) {
+                  <ul class="custom-select-list">
+                    @for (l of lotesFiltrados; track l.id) {
+                      <li (mousedown)="seleccionarLote(l)">
+                        <div class="lote-list-item">
+                          <span><i class="fas fa-map-marker-alt"></i> {{ etiquetaLote(l) }}</span>
+                          <span class="list-badge green">{{ formatearMoneda(l.precio) }}</span>
+                        </div>
+                      </li>
+                    } @empty {
+                      <li class="no-data"><i class="fas fa-search"></i>
+                        @if (form.idProyecto) {
+                          No hay lotes disponibles
+                        } @else {
+                          Primero seleccione un programa
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+              @if (lotesSeleccionados.length > 0) {
+                <ul class="selected-items-list">
+                  @for (l of lotesSeleccionados; track l.id) {
+                    <li class="item-tag lote-tag">
+                      <span><i class="fas fa-map-marker-alt"></i> {{ etiquetaLote(l) }}</span>
+                      <div class="lote-tag-right">
+                        <span class="lote-precio">{{ formatearMoneda(l.precio) }}</span>
+                        <button type="button" (click)="eliminarLote(l.id)" title="Quitar">✕</button>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+            <div class="form-field">
+              <label>Agregar cliente * ({{ clientesSeleccionados.length }})</label>
+              <div class="custom-select-container" #clienteBusquedaContainer>
+                <input type="text" class="custom-select-input" placeholder="Buscar por nombre o DNI"
+                  [(ngModel)]="filtroCliente" (input)="filtrarClientes()" (focus)="filtrarClientes()"
+                  autocomplete="off">
+                <i class="fas fa-chevron-down select-arrow"></i>
+                @if (mostrarClientes) {
+                  <ul class="custom-select-list">
+                    @for (c of clientesFiltrados; track c.id) {
+                      <li (mousedown)="seleccionarCliente(c)">
+                        <span class="list-item-main">
+                          <i class="fas fa-user"></i> {{ etiquetaCliente(c) }}
+                        </span>
+                        <span class="list-badge">{{ c.tipoDocumento || 'DNI' }} {{ c.numDocumento }}</span>
+                      </li>
+                    } @empty {
+                      <li class="no-data"><i class="fas fa-search"></i> No se encontraron clientes</li>
+                    }
+                  </ul>
+                }
+              </div>
+              @if (clientesSeleccionados.length > 0) {
+                <ul class="selected-items-list">
+                  @for (c of clientesSeleccionados; track c.id) {
+                    <li class="item-tag">
+                      <span><i class="fas fa-user"></i> {{ etiquetaCliente(c) }}</span>
+                      <button type="button" (click)="eliminarCliente(c.id)" title="Quitar">✕</button>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Fecha de venta *</label>
+              <input type="date" [(ngModel)]="form.fechaVenta" [max]="hoy()">
+            </div>
+            <div class="form-field">
+              <label>Precio de venta (total) *</label>
+              <input type="text" appCurrencyFormatter currencySymbol="$ "
+                [(ngModel)]="form.precioVenta" placeholder="$ 0.00">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Modalidad *</label>
+            <div class="opciones-radio">
+              <label class="radio-op" [class.radio-activo]="form.modalidad === 'CONTADO'">
+                <input type="radio" name="modalidad" value="CONTADO" [(ngModel)]="form.modalidad">
+                Contado
+              </label>
+              <label class="radio-op" [class.radio-activo]="form.modalidad === 'FINANCIADO'">
+                <input type="radio" name="modalidad" value="FINANCIADO" [(ngModel)]="form.modalidad">
+                Financiado
+              </label>
+            </div>
+          </div>
+
+          @if (form.modalidad === 'FINANCIADO') {
+            <div class="form-row">
+              <div class="form-field">
+                <label>Monto inicial *</label>
+                <input type="text" appCurrencyFormatter currencySymbol="$ "
+                  [(ngModel)]="form.montoInicial" placeholder="$ 0.00">
+              </div>
+              <div class="form-field">
+                <label>N° de cuotas</label>
+                <input type="number" min="0" max="160" [(ngModel)]="form.numCuotas" placeholder="150">
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Cuota mensual estimada</label>
+              <div class="cuota-display">
+                @if (cuotaMensual > 0) {
+                  <span class="cuota-valor">{{ formatearMoneda(cuotaMensual) }}</span>
+                  @if (tieneResiduo) {
+                    <span class="cuota-detalle">· última: {{ formatearMoneda(ultimaCuota) }}</span>
+                  }
+                } @else {
+                  <span class="cuota-vacia">Ingresa inicial y cantidad de cuotas</span>
+                }
+              </div>
+            </div>
+          } @else {
+            <p class="nota-info">
+              <i class="fas fa-info-circle"></i>
+              La inicial = total de la venta y la comisión se paga de una vez.
+            </p>
+          }
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Comisión manual (opcional)</label>
+              <input type="text" appCurrencyFormatter currencySymbol="$ "
+                [(ngModel)]="form.comisionManual" placeholder="$">
+              <small class="field-hint">Vacío = % del parámetro vigente (contado/financiado).</small>
+            </div>
+            <div class="form-field">
+              <label>Notas</label>
+              <textarea rows="3" [(ngModel)]="form.notas" placeholder="Observaciones (opcional)"></textarea>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando || cargandoCatalogos">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Registrando...
+          } @else {
+            <i class="fas fa-save"></i> Registrar venta
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal detalle -->
+@if (detalleAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-xl">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-file-invoice-dollar"></i>
+          Detalle de venta @if (detalle) { — #{{ detalle.id }} }
+        </h3>
+        <button class="modal-close" (click)="cerrarDetalle()">&times;</button>
+      </div>
+      <div class="modal-body">
+        @if (cargandoDetalle) {
+          <div class="cargando-catalogos">
+            <i class="fas fa-spinner fa-spin"></i> Cargando detalle...
+          </div>
+        } @else if (detalle) {
+          <div class="detalle-grid">
+            <div class="dato">
+              <span>Fecha venta</span>
+              <strong>{{ detalle.fechaVenta | date:'dd/MM/yyyy' }}</strong>
+            </div>
+            <div class="dato">
+              <span>Modalidad</span>
+              <strong>
+                <span class="badge" [ngClass]="claseModalidad(detalle.modalidad)">{{ detalle.modalidad }}</span>
+              </strong>
+            </div>
+            <div class="dato">
+              <span>Estado</span>
+              <strong>
+                <span class="badge" [ngClass]="claseEstadoVenta(detalle.estado)">{{ detalle.estado }}</span>
+              </strong>
+            </div>
+            <div class="dato">
+              <span>Precio</span>
+              <strong>{{ detalle.precioVenta | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="dato">
+              <span>Inicial</span>
+              <strong>
+                @if (detalle.montoInicial != null) {
+                  {{ detalle.montoInicial | currency:'USD':'symbol-narrow':'1.0-2' }}
+                } @else {
+                  —
+                }
+              </strong>
+            </div>
+            <div class="dato">
+              <span>Inicio de cuotas</span>
+              <strong>
+                @if (detalle.fechaInicioCuotas) {
+                  {{ detalle.fechaInicioCuotas | date:'dd/MM/yyyy' }}
+                } @else {
+                  —
+                }
+              </strong>
+            </div>
+            <div class="dato">
+              <span>Lote(s)</span>
+              <strong>{{ detalle.loteEtiqueta }}</strong>
+            </div>
+            <div class="dato">
+              <span>Empresa</span>
+              <strong>{{ detalle.empresaNombre }}</strong>
+            </div>
+            <div class="dato">
+              <span>Cliente(s)</span>
+              <strong>
+                {{ detalle.clienteNombre }}
+                <small class="dato-sub">{{ detalle.clienteDocumento }}</small>
+              </strong>
+            </div>
+            <div class="dato dato-full">
+              <span>Notas</span>
+              <strong>{{ detalle.notas || '—' }}</strong>
+            </div>
+          </div>
+
+          @if (detalle.comision) {
+            <h4 class="seccion-titulo"><i class="fas fa-percent"></i> Resumen de comisión</h4>
+            <div class="detalle-grid">
+              <div class="dato">
+                <span>Total</span>
+                <strong>{{ detalle.comision.montoTotal | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="dato">
+                <span>Anticipo</span>
+                <strong>{{ detalle.comision.montoAnticipo | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="dato">
+                <span>Saldo</span>
+                <strong>{{ detalle.comision.montoSaldo | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="dato">
+                <span>Pagado</span>
+                <strong>{{ detalle.comision.montoPagado | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="dato">
+                <span>Cuotas</span>
+                <strong>{{ detalle.comision.cantidadCuotas ?? '—' }}</strong>
+              </div>
+              <div class="dato">
+                <span>Estado</span>
+                <strong>
+                  <span class="badge" [ngClass]="claseEstadoComision(detalle.comision.estado)">
+                    {{ detalle.comision.estado }}
+                  </span>
+                </strong>
+              </div>
+              <div class="dato">
+                <span>Inicio de cuotas</span>
+                <strong>
+                  @if (detalle.comision.fechaInicioCuotas) {
+                    {{ detalle.comision.fechaInicioCuotas | date:'dd/MM/yyyy' }}
+                  } @else {
+                    —
+                  }
+                </strong>
+              </div>
+            </div>
+
+            <h4 class="seccion-titulo"><i class="fas fa-list"></i> Pagos de la comisión</h4>
+            <div class="table-wrap">
+              <table class="data-table tabla-cards">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Monto</th>
+                    <th>F. programada</th>
+                    <th>F. pago</th>
+                    <th>Estado</th>
+                    <th>Forma pago</th>
+                    <th>Referencia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (pagosDetalle.length === 0) {
+                    <tr><td colspan="7" class="empty-cell">Sin pagos registrados</td></tr>
+                  } @else {
+                    @for (p of pagosDetalle; track p.id) {
+                      <tr>
+                        <td data-label="Tipo"><strong>{{ etiquetaTipoPago(p) }}</strong></td>
+                        <td data-label="Monto">{{ p.monto | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+                        <td data-label="F. programada">
+                          @if (p.fechaProgramada) {
+                            {{ p.fechaProgramada | date:'dd/MM/yyyy' }}
+                          } @else { — }
+                        </td>
+                        <td data-label="F. pago">
+                          @if (p.fechaPago) {
+                            {{ p.fechaPago | date:'dd/MM/yyyy' }}
+                          } @else { — }
+                        </td>
+                        <td data-label="Estado">
+                          <span class="badge"
+                                [class.badge-activo]="p.estado === 'PAGADO'"
+                                [class.badge-warning]="p.estado !== 'PAGADO'">
+                            {{ p.estado === 'PAGADO' ? 'Pagado' : 'Pendiente' }}
+                          </span>
+                        </td>
+                        <td data-label="Forma pago">{{ p.formaPago || '—' }}</td>
+                        <td data-label="Referencia">{{ p.referencia || '—' }}</td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="sin-comision">
+              <i class="fas fa-info-circle"></i> Sin comisión registrada
+            </div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarDetalle()">Cerrar</button>
+        @if (detalle && detalle.estado === 'ACTIVA') {
+          <button class="btn btn-danger" (click)="anular(detalle!.id)">
+            <i class="fas fa-ban"></i> Anular venta
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

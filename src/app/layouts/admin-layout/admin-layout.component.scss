@@ -1,0 +1,325 @@
+@use '../../../styles/tokens' as t;
+
+$bp-lg: t.$bp-lg;
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-50:       #f8fafc;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$gray-700:      #334155;
+$radius:        12px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+}
+
+/* ── Topbar móvil (oculto en escritorio) ───── */
+.mobile-topbar {
+  display: none;
+}
+
+.menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  background: white;
+  border: 1.5px solid $gray-200;
+  border-radius: 10px;
+  color: $dark;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s $ease;
+
+  &:hover {
+    border-color: $primary-light;
+    color: $primary;
+  }
+}
+
+/* Overlay del drawer (solo se muestra en móvil) */
+.nav-overlay {
+  display: none;
+}
+
+.btn-logout-top {
+  margin-left: auto;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s $ease;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+}
+
+/* ── Sidebar ──────────────────────────────── */
+.sidebar {
+  background: $dark;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.3px;
+  }
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px;
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s $ease;
+
+    i { width: 18px; text-align: center; }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+  }
+}
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    strong {
+      font-size: 0.84rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    small {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  .btn-logout {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.2s $ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: white;
+    }
+  }
+}
+
+/* ── Contenido ────────────────────────────── */
+.admin-content {
+  padding: 32px;
+  background: $gray-50;
+  min-width: 0;
+}
+
+/* ── Responsive ───────────────────────────── */
+@media (max-width: $bp-lg) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  /* Topbar móvil visible; el topbar queda por encima del drawer */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 330;
+    background: white;
+    border-bottom: 1px solid $gray-200;
+    padding: 10px 16px;
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.95rem;
+      }
+
+      .brand-name {
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: $dark;
+        letter-spacing: -0.3px;
+      }
+    }
+  }
+
+  /* Sidebar → drawer lateral */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 320;
+    width: 280px;
+    max-width: 85vw;
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.28s $ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 8px 0 30px rgba(15, 23, 42, 0.25);
+
+    &.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-brand {
+      display: none;
+    }
+
+    .sidebar-nav {
+      flex: 0 0 auto;
+      padding-top: 64px;
+
+      .nav-item {
+        min-height: 48px;
+        font-size: 0.95rem;
+      }
+    }
+
+    .sidebar-footer {
+      .btn-logout {
+        display: none;
+      }
+    }
+  }
+
+  .nav-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 310;
+    background: rgba(15, 23, 42, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.28s $ease, visibility 0.28s $ease;
+
+    &.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+  }
+
+  .admin-content {
+    padding: 18px;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .admin-content {
+    padding: 12px;
+  }
+}

@@ -1,252 +1,146 @@
 import { Routes } from '@angular/router';
-import { LoginLayoutComponent } from './auth/login/login-layout.component';
-import { LandingComponent } from './components/landing/landing.component';
-import { LandingMerruicComponent } from './components/landing-merruic/landing-merruic';
-import { HomeComponent } from './components/home/home';
 import { authGuard } from './auth/auth.guard';
 import { roleGuard } from './auth/role.guard';
-import { portalGuard } from './auth/portal.guard';
-
-// Portal del cliente (solo lectura, login con Google)
-import { PortalLoginComponent } from './components/portal-login/portal-login.component';
-import { PortalMenuComponent } from './components/portal-menu/portal-menu.component';
-import { PortalResumenComponent } from './components/portal-resumen/portal-resumen.component';
-import { PortalLetrasComponent } from './components/portal-letras/portal-letras.component';
-import { PortalDatosComponent } from './components/portal-datos/portal-datos.component';
-
-// Importacion de Mensajeria
-import { MensajeriaComponent } from './components/mensajeria/mensajeria.component';
-
-// Importa los componentes de menú
-import { SecretariaMenuComponent } from './components/menu-secretaria/secretaria-menu.component';
-import { SoporteMenuComponent } from './components/menu-soporte/soporte-menu.component';
-import { AdminMenuComponent } from './components/menu-admin/admin-menu.component';
-import { VendedorMenuComponent } from './components/menu-vendedor/vendedor-menu.component';
-import { VendedorPanelLotesComponent } from './components/vendedor-panel-lotes/vendedor-panel-lotes.component';
-
-// Importa los dashboards para los menús
-import { SecretariaDashboard } from './components/secretaria-dashboard/secretaria-dashboard';
-
-// ── Admin: subrutas ──────────────────────────────────────────────────────────
-import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
-import { AdminGestionUsuariosComponent } from './components/admin-gestion-usuarios/admin-gestion-usuarios.component';
-import { AdminAnulacionesLetrasComponent } from './components/admin-anulaciones-letras/admin-anulaciones-letras.component';
-import { AdminAnulacionesMorasComponent } from './components/admin-anulaciones-moras/admin-anulaciones-moras.component';
-import { AdminAnulacionesInicialesComponent } from './components/admin-anulaciones-iniciales/admin-anulaciones-iniciales.component';
-import { AdminAnulacionesInscripcionesComponent } from './components/admin-anulaciones-inscripciones/admin-anulaciones-inscripciones.component';
-import { AdminSesionesComponent } from './components/admin-sesiones/admin-sesiones.component';
-
-// Clientes
-import { ClientesComponent } from './components/cliente-listar/cliente-listar.component';
-import { ClienteInsertarComponent } from './components/cliente-insertar/cliente-insertar.component';
-import { ClienteEditarComponent } from './components/cliente-editar/cliente-editar.component';
-import { ClienteVer } from './components/cliente-ver/cliente-ver';
-
-// Contratos
-import { ContratoListarComponent } from './components/contrato-listar/contrato-listar.component';
-import { ContratoInsertarComponent } from './components/contrato-insertar/contrato-insertar.component';
-import { ContratoEditarComponent } from './components/contrato-editar/contrato-editar.component';
-
-// Pago Letras
-import { PagoletraListarComponent } from './components/pagoletra-listar/pagoletra-listar.component';
-import { PagoletraInsertarComponent } from './components/pagoletra-insertar/pagoletra-insertar.component';
-
-// Lista de Contratos
-import { ListaContratosComponent } from './components/lista-contratos/lista-contratos.component';
-
-// Separaciones
-import { SeparacionComponent } from './components/separacion-crud/separacion-crud.component';
-import { SeparacionInsertEdit } from './components/separacion-insert-edit/separacion-insert-edit';
-
-// Servicios Básicos
-import { LecturaPlanillaComponent } from './components/lectura-plantilla/lectura-plantilla.component';
-import { RecibosListarComponent } from './components/recibos-listar/recibos-listar.component';
-import { InscripcionListarComponent } from './components/inscripcion-listar/inscripcion-lista-component';
-import { PagoInscripcionListarComponent } from './components/pago-inscripcion-listar/pago-inscripcion-listar.components';
-
-// Otros componentes
-import { ParceleroListarComponent } from './components/parcelero-listar/parcelero-listar.component';
-import { VendedorListarComponent } from './components/vendedor-listar/vendedor-listar.component';
-import { LotesVendidosComponent } from './components/lotes-vendidos/lotes-vendidos';
-import { ProgramaListarComponent } from './components/programa-listar/programa-listar.componente';
-import { LoteLitarComponent } from './components/lote-listar/lote-listar.component';
-import { ReporteLotesComponent } from './components/reporte-lote/reporte-lote';
-
-// Dashboard y Letras
-import { LetracambioListarComponent } from './components/letracambio-listar/letracambios-listar.component';
-
-// Gestion de Empresa (Soporte)
-import { GestionEmpresaComponent } from './components/gestion-empresa/gestion-empresa.component';
-import { LetracambioInsertarComponent } from './components/letracambio-insertar/letracambio-insertar.component';
-
-// Reporte Mora
-import { ReporteMoraComponent } from './components/reporte-mora/reporte-mora.component';
-
-// Letras Vencidas
-import { LetrasVencidasComponent } from './components/letras-vencidas/letras-vencidas.component';
-
-// Cuentas por Cobrar
-import { CuentasPorCobrarComponent } from './components/cuentas-por-cobrar/cuentas-por-cobrar.component';
-
-// Comisiones de Vendedores
-import { ComisionesComponent } from './components/comisiones/comisiones.component';
-import { ReporteComisionesComponent } from './components/reporte-comisiones/reporte-comisiones.component';
-import { ReportePagosVendedoresComponent } from './components/reporte-pagos-vendedores/reporte-pagos-vendedores.component';
-
-// Reporte Ingresos
-import { ReporteIngresosComponent } from './components/reporteingresos/reporteingresos.component';
-import { IngresoDetalladoComponent } from './components/ingreso-detallado/ingreso-detallado.component';
-
-// Reporte Egresos
-import { ReporteEgresosComponent } from './components/reporteegresos/reporteegresos.component';
-
-// Reporte Historial de Moras (por contrato)
-import { HistorialMorasPickerComponent } from './components/historial-moras/historial-moras-picker.component';
-import { ReporteCajaComponent } from './components/reporte-caja/reporte-caja.component';
-
-// Agenda
-import { AgendaCalendarioComponent } from './components/agenda-calendario/agenda-calendario.component';
-
-// Seleccion de menu para soporte
-import { SeleccionMenuComponent } from './components/seleccion-menu/seleccion-menu.component';
+import { LoginLayoutComponent } from './auth/login/login-layout.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
+import { VendedorLayoutComponent } from './layouts/vendedor-layout/vendedor-layout.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'login', component: LoginLayoutComponent },
-
-  // ── Portal del Cliente (solo lectura, ROLE_CLIENTE) ────────────────────────
-  { path: 'portal/login', component: PortalLoginComponent },
   {
-    path: 'portal',
-    component: PortalMenuComponent,
-    canActivate: [portalGuard],
+    path: 'login',
+    component: LoginLayoutComponent,
     children: [
-      { path: '', component: PortalResumenComponent },
-      { path: 'letras', component: PortalLetrasComponent },
-      { path: 'datos', component: PortalDatosComponent }
+      {
+        path: '',
+        loadComponent: () =>
+          import('./auth/login/login.component').then((m) => m.LoginComponent)
+      }
+    ]
+  },
+  {
+    path: 'registro',
+    component: LoginLayoutComponent,
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./pages/registro/registro.component').then((m) => m.RegistroComponent)
+      }
     ]
   },
 
-  // ── Seleccion de Menu (Soporte) ──────────────────────────────────────────
+  // ── Panel del administrador ───────────────────────────────────────
   {
-    path: 'seleccion-menu',
-    component: SeleccionMenuComponent,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_SOPORTE'] }
-  },
-
-  // ── Secretaria ────────────────────────────────────────────────────────────
-  {
-    path: 'secretaria-menu',
-    component: SecretariaMenuComponent,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_SECRETARIA', 'ROLE_SOPORTE'] },
-    children: [
-      { path: '', component: SecretariaDashboard },
-
-      // Clientes
-      { path: 'clientes', component: ClientesComponent },
-      { path: 'clientes/insertar', component: ClienteInsertarComponent },
-      { path: 'clientes/editar/:id', component: ClienteEditarComponent },
-      { path: 'clientes/ver/:id', component: ClienteVer },
-
-      // Letras de Cambio
-      { path: 'letras/listar/:idContrato', component: LetracambioListarComponent },
-      { path: 'letras/insertar/:idContrato', component: LetracambioInsertarComponent },
-
-      // Separaciones
-      { path: 'separaciones', component: SeparacionComponent },
-      { path: 'separaciones/registrar', component: SeparacionInsertEdit },
-      { path: 'separaciones/editar/:id', component: SeparacionInsertEdit },
-
-      // Contratos
-      { path: 'contratos', component: ContratoListarComponent },
-      { path: 'contratos/registrar', component: ContratoInsertarComponent },
-      { path: 'contratos/editar/:id', component: ContratoEditarComponent },
-      { path: 'contratos/reporte-mora', component: ReporteMoraComponent },
-      { path: 'letras-vencidas', component: LetrasVencidasComponent },
-      { path: 'cuentas-por-cobrar', component: CuentasPorCobrarComponent },
-      { path: 'reporte-ingresos', component: ReporteIngresosComponent },
-      { path: 'ingreso-detallado', component: IngresoDetalladoComponent },
-      { path: 'reporte-egresos', component: ReporteEgresosComponent },
-      { path: 'reporte-caja', component: ReporteCajaComponent },
-      { path: 'historial-moras', component: HistorialMorasPickerComponent },
-
-      // Pago Letras
-      { path: 'pagoletras', component: PagoletraListarComponent },
-      { path: 'pagoletras/insertar', component: PagoletraInsertarComponent },
-
-      // Lista de Contratos
-      { path: 'contratos/lista-contratos', component: ListaContratosComponent },
-
-      // Otros
-      { path: 'programas', component: ProgramaListarComponent },
-      { path: 'vendedores', component: VendedorListarComponent },
-      { path: 'vendedores/ventas-por-vendedor', component: LotesVendidosComponent, data: { modo: 'secretaria' } },
-      { path: 'vendedores/comisiones', component: ComisionesComponent },
-      { path: 'vendedores/reporte-comisiones', component: ReporteComisionesComponent },
-      { path: 'vendedores/reporte-pagos', component: ReportePagosVendedoresComponent },
-      { path: 'lotes', component: LoteLitarComponent },
-      { path: 'lotes/reporte', component: ReporteLotesComponent },
-      { path: 'parceleros', component: ParceleroListarComponent },
-
-      // Servicios Básicos
-      { path: 'servicios-basicos/inscripciones',       component: InscripcionListarComponent },
-      { path: 'servicios-basicos/inscripciones/pagos', component: PagoInscripcionListarComponent },
-      { path: 'servicios-basicos',                     component: LecturaPlanillaComponent },
-      { path: 'servicios-basicos/listar',              component: RecibosListarComponent },
-
-      // Mensajería
-      { path: 'mensajeria', component: MensajeriaComponent },
-
-      // Agenda
-      { path: 'agenda', component: AgendaCalendarioComponent }
-    ]
-  },
-
-  // ── Soporte ───────────────────────────────────────────────────────────────
-  {
-    path: 'soporte-menu',
-    component: SoporteMenuComponent,
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_SOPORTE'] },
-    children: [
-      { path: '', component: GestionEmpresaComponent }
-    ]
-  },
-
-  // ── Administrador ─────────────────────────────────────────────────────────
-  {
-    path: 'admin-menu',
-    component: AdminMenuComponent,
+    path: 'admin',
+    component: AdminLayoutComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ROLE_ADMINISTRADOR'] },
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard',          component: AdminDashboardComponent },
-      { path: 'gestion-usuarios',   component: AdminGestionUsuariosComponent },
-      { path: 'sesiones',           component: AdminSesionesComponent },
-      { path: 'anulaciones/letras',         component: AdminAnulacionesLetrasComponent },
-      { path: 'anulaciones/moras',          component: AdminAnulacionesMorasComponent },
-      { path: 'anulaciones/iniciales',      component: AdminAnulacionesInicialesComponent },
-      { path: 'anulaciones/inscripciones',  component: AdminAnulacionesInscripcionesComponent },
-      { path: 'mensajeria', component: MensajeriaComponent }
+      { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+      {
+        path: 'inicio',
+        loadComponent: () =>
+          import('./pages/admin-inicio/admin-inicio.component').then((m) => m.AdminInicioComponent)
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./pages/admin-usuarios/admin-usuarios.component').then(
+            (m) => m.AdminUsuariosComponent
+          )
+      },
+      {
+        path: 'sesiones',
+        loadComponent: () =>
+          import('./pages/admin-sesiones/admin-sesiones.component').then(
+            (m) => m.AdminSesionesComponent
+          )
+      },
+      {
+        path: 'auditoria',
+        loadComponent: () =>
+          import('./pages/admin-auditoria/admin-auditoria.component').then(
+            (m) => m.AdminAuditoriaComponent
+          )
+      }
     ]
   },
 
-  // ── Vendedor ──────────────────────────────────────────────────────────────
+  // ── Panel del vendedor ────────────────────────────────────────────
   {
-    path: 'vendedor-menu',
-    component: VendedorMenuComponent,
+    path: 'vendedor',
+    component: VendedorLayoutComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ROLE_VENDEDOR'] },
     children: [
-      { path: '', component: VendedorPanelLotesComponent },
-      { path: 'mensajeria', component: MensajeriaComponent },
-      { path: 'separaciones', component: SeparacionComponent, data: { modo: 'mias' } },
-      { path: 'separaciones/registrar', component: SeparacionInsertEdit },
-      { path: 'separaciones/editar/:id', component: SeparacionInsertEdit },
-      { path: 'mis-ventas', component: LotesVendidosComponent, data: { modo: 'vendedor' } }
+      { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+      {
+        path: 'inicio',
+        loadComponent: () =>
+          import('./pages/vendedor-inicio/vendedor-inicio.component').then(
+            (m) => m.VendedorInicioComponent
+          )
+      },
+      {
+        path: 'empresas',
+        loadComponent: () =>
+          import('./pages/empresas/empresas.component').then((m) => m.EmpresasComponent)
+      },
+      {
+        path: 'clientes',
+        loadComponent: () =>
+          import('./pages/clientes/clientes.component').then((m) => m.ClientesComponent)
+      },
+      {
+        path: 'proyectos',
+        loadComponent: () =>
+          import('./pages/proyectos/proyectos.component').then((m) => m.ProyectosComponent)
+      },
+      {
+        path: 'lotes',
+        loadComponent: () =>
+          import('./pages/lotes/lotes.component').then((m) => m.LotesComponent)
+      },
+      {
+        path: 'proformas',
+        loadComponent: () =>
+          import('./pages/proformas/proformas.component').then((m) => m.ProformasComponent)
+      },
+      {
+        path: 'parametros-comision',
+        loadComponent: () =>
+          import('./pages/parametros-comision/parametros-comision.component').then(
+            (m) => m.ParametrosComisionComponent
+          )
+      },
+      {
+        path: 'ventas',
+        loadComponent: () =>
+          import('./pages/ventas/ventas.component').then((m) => m.VentasComponent)
+      },
+      {
+        path: 'separaciones',
+        loadComponent: () =>
+          import('./pages/separaciones/separaciones.component').then(
+            (m) => m.SeparacionesComponent
+          )
+      },
+      {
+        path: 'comisiones',
+        loadComponent: () =>
+          import('./pages/comisiones/comisiones.component').then((m) => m.ComisionesComponent)
+      },
+      {
+        path: 'comprobantes',
+        loadComponent: () =>
+          import('./pages/comprobantes/comprobantes.component').then(
+            (m) => m.ComprobantesComponent
+          )
+      }
     ]
-  }
+  },
+
+  // ── Redirección inicial según rol ─────────────────────────────────
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: '**', redirectTo: 'login' }
 ];

@@ -1,0 +1,262 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Comisiones</h1>
+      <p>Seguimiento, cobro y reversión de comisiones por venta</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por lote, cliente o empresa..." [(ngModel)]="terminoBusqueda">
+    </div>
+
+    <select [(ngModel)]="filtroEstado" class="filter-select">
+      <option value="">Todos los estados</option>
+      <option value="PENDIENTE">Pendiente</option>
+      <option value="PAGADA_PARCIAL">Pagada parcial</option>
+      <option value="PAGADA">Pagada</option>
+    </select>
+
+    <span class="contador">{{ comisionesFiltradas.length }} comisión(es)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Venta</th>
+          <th>Lote</th>
+          <th>Cliente</th>
+          <th>Empresa</th>
+          <th>Total</th>
+          <th>Pagado</th>
+          <th>Saldo</th>
+          <th>Estado</th>
+          <th>Cuotas</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="10" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (comisionesFiltradas.length === 0) {
+          <tr><td colspan="10" class="empty-cell">No se encontraron comisiones</td></tr>
+        } @else {
+          @for (c of comisionesFiltradas; track c.id) {
+            <tr>
+              <td data-label="Venta"><strong class="cell-venta">#{{ c.idVenta }}</strong></td>
+              <td data-label="Lote">{{ c.loteEtiqueta }}</td>
+              <td data-label="Cliente">{{ c.clienteNombre }}</td>
+              <td data-label="Empresa">{{ c.empresaNombre }}</td>
+              <td data-label="Total">{{ c.montoTotal | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Pagado">{{ c.montoPagado | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Saldo">
+                <strong class="saldo"
+                        [class.saldo-pendiente]="c.montoSaldo > 0 && c.estado !== 'PAGADA'">
+                  {{ c.montoSaldo | currency:'USD':'symbol-narrow':'1.0-2' }}
+                </strong>
+              </td>
+              <td data-label="Estado">
+                <span class="badge" [ngClass]="claseEstado(c.estado)">{{ etiquetaEstado(c.estado) }}</span>
+              </td>
+              <td data-label="Cuotas">
+                <div class="cell-value">
+                  {{ c.pagosPendientes }} / {{ c.cantidadCuotas ?? '—' }}
+                  <small class="texto-suave">pendientes</small>
+                </div>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirDetalle(c)" title="Ver detalle">
+                  <i class="fas fa-eye"></i>
+                </button>
+                @if (c.pagosPendientes > 0) {
+                  <button class="btn btn-primary btn-sm" (click)="abrirDetalle(c)" title="Cobrar">
+                    <i class="fas fa-cash-register"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal detalle / cobro -->
+@if (detalleAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-xl">
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-hand-holding-usd"></i>
+          Comisión de venta @if (detalle) { — #{{ detalle.idVenta }} }
+        </h3>
+        <button class="modal-close" (click)="cerrarDetalle()">&times;</button>
+      </div>
+      <div class="modal-body">
+        @if (cargandoDetalle) {
+          <div class="cargando-detalle">
+            <i class="fas fa-spinner fa-spin"></i> Cargando comisión...
+          </div>
+        } @else if (detalle) {
+          <div class="resumen-grid">
+            <div class="dato">
+              <span>Total</span>
+              <strong>{{ detalle.montoTotal | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="dato">
+              <span>Pagado</span>
+              <strong>{{ detalle.montoPagado | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="dato">
+              <span>Saldo</span>
+              <strong [class.saldo-pendiente]="detalle.montoSaldo > 0">
+                {{ detalle.montoSaldo | currency:'USD':'symbol-narrow':'1.0-2' }}
+              </strong>
+            </div>
+            <div class="dato">
+              <span>Anticipo</span>
+              <strong>{{ detalle.montoAnticipo | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+            </div>
+            <div class="dato">
+              <span>Cuotas</span>
+              <strong>{{ detalle.pagosPendientes }} / {{ detalle.cantidadCuotas ?? '—' }}</strong>
+            </div>
+            <div class="dato">
+              <span>Estado</span>
+              <strong>
+                <span class="badge" [ngClass]="claseEstado(detalle.estado)">{{ etiquetaEstado(detalle.estado) }}</span>
+              </strong>
+            </div>
+          </div>
+
+          <h4 class="seccion-titulo"><i class="fas fa-list"></i> Pagos de la comisión</h4>
+          <div class="table-wrap">
+            <table class="data-table tabla-pagos tabla-cards">
+              <thead>
+                <tr>
+                  <th class="col-check"></th>
+                  <th>Tipo</th>
+                  <th>Monto</th>
+                  <th>F. programada</th>
+                  <th>F. pago</th>
+                  <th>Estado</th>
+                  <th>Forma / Referencia</th>
+                  <th style="text-align: right;">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (pagosDetalle.length === 0) {
+                  <tr><td colspan="8" class="empty-cell">Sin pagos registrados</td></tr>
+                } @else {
+                  @for (p of pagosDetalle; track p.id) {
+                    <tr>
+                      <td class="col-check"
+                          [class.celda-vacia]="p.estado !== 'PENDIENTE'"
+                          [attr.data-label]="p.estado === 'PENDIENTE' ? 'Cobrar' : null">
+                        @if (p.estado === 'PENDIENTE') {
+                          <input type="checkbox" class="check-pago"
+                                 [ngModel]="pagosSeleccionados.includes(p.id)"
+                                 (ngModelChange)="togglePago(p.id, $event)">
+                        }
+                      </td>
+                      <td data-label="Tipo"><strong>{{ etiquetaTipoPago(p) }}</strong></td>
+                      <td data-label="Monto">{{ p.monto | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+                      <td class="cell-fecha" data-label="F. programada">
+                        @if (p.fechaProgramada) {
+                          {{ p.fechaProgramada | date:'dd/MM/yyyy' }}
+                        } @else { — }
+                      </td>
+                      <td class="cell-fecha" data-label="F. pago">
+                        @if (p.fechaPago) {
+                          {{ p.fechaPago | date:'dd/MM/yyyy' }}
+                        } @else { — }
+                      </td>
+                      <td data-label="Estado">
+                        <span class="badge"
+                              [class.badge-activo]="p.estado === 'PAGADO'"
+                              [class.badge-warning]="p.estado !== 'PAGADO'">
+                          {{ p.estado === 'PAGADO' ? 'Pagado' : 'Pendiente' }}
+                        </span>
+                      </td>
+                      <td data-label="Forma / Referencia">
+                        @if (p.formaPago || p.referencia) {
+                          <span class="forma-ref">
+                            {{ p.formaPago || '—' }}
+                            @if (p.referencia) { · {{ p.referencia }} }
+                          </span>
+                        } @else {
+                          <span class="texto-suave">—</span>
+                        }
+                      </td>
+                      <td class="actions-cell cell-actions"
+                          [class.celda-vacia]="p.estado !== 'PAGADO'"
+                          [attr.data-label]="p.estado === 'PAGADO' ? 'Acción' : null">
+                        @if (p.estado === 'PAGADO') {
+                          <button class="btn btn-outline btn-sm" (click)="revertir(p)"
+                                  [disabled]="procesandoId === p.id" title="Revertir pago">
+                            <i class="fas fa-undo"></i>
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (mostrarZonaCobro) {
+            <div class="zona-cobro">
+              <h4 class="seccion-titulo"><i class="fas fa-cash-register"></i> Registrar cobro</h4>
+
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Fecha de pago *</label>
+                  <input type="date" [(ngModel)]="fechaPago" [max]="hoy()">
+                </div>
+                <div class="form-field">
+                  <label>Forma de pago</label>
+                  <select [(ngModel)]="formaPago">
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="DEPOSITO">Depósito</option>
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="YAPE">Yape</option>
+                    <option value="PLIN">Plin</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label>Referencia</label>
+                <input type="text" [(ngModel)]="referencia" placeholder="N° de operación / voucher (opcional)">
+              </div>
+
+              <div class="form-field">
+                <label>Notas</label>
+                <textarea rows="2" [(ngModel)]="notas" placeholder="Observaciones (opcional)"></textarea>
+              </div>
+
+              <button class="btn btn-primary btn-block" (click)="cobrar()"
+                      [disabled]="cobrando || pagosSeleccionados.length === 0">
+                @if (cobrando) {
+                  <i class="fas fa-spinner fa-spin"></i> Registrando...
+                } @else {
+                  <i class="fas fa-cash-register"></i>
+                  Registrar cobro ({{ pagosSeleccionados.length }} pagos · {{ montoSeleccionado | currency:'USD':'symbol-narrow':'1.0-2' }})
+                }
+              </button>
+            </div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarDetalle()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

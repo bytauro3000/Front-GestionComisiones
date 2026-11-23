@@ -1,32 +1,29 @@
-<div class="login-split" [class.login-merruic]="isMerruic">
+<div class="login-split">
   <!-- Panel izquierdo: Branding -->
   <aside class="branding-panel">
-    <!-- Logo en la esquina superior izquierda, a la misma altura que el botón "Volver al inicio" -->
     <div class="brand">
-      <img [src]="logoBranding" [alt]="empresaData?.nombreComercial || 'Inmobiliaria Ivan'" class="brand-logo" />
+      <div class="brand-mark">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <span class="brand-name">{{ nombreSistema }}</span>
     </div>
-
-    <!-- Botón "Volver al inicio" en la esquina superior derecha del panel -->
-    <a routerLink="/" class="back-home">
-      <i class="fas fa-arrow-left"></i> Volver al inicio
-    </a>
 
     <div class="branding-content">
       <div class="branding-hero">
-        <h1>Bienvenido de vuelta</h1>
+        <h1>Tus comisiones, bajo control</h1>
         <p>
-          Accede al sistema para gestionar clientes, contratos, lotes y
-          reportes de tu inmobiliaria.
+          Registra tus ventas en cada empresa y lleva un control claro de
+          cuánto te pagan y cuánto te deben por cada lote vendido.
         </p>
 
         <ul class="branding-features">
           <li>
             <i class="fas fa-check-circle"></i>
-            <span>Gestión integral de ventas y cobranzas</span>
+            <span>Registro de ventas por empresa, manzana y lote</span>
           </li>
           <li>
             <i class="fas fa-check-circle"></i>
-            <span>Reportes en tiempo real</span>
+            <span>Seguimiento de comisiones pagadas y pendientes</span>
           </li>
           <li>
             <i class="fas fa-check-circle"></i>
@@ -34,22 +31,18 @@
           </li>
           <li>
             <i class="fas fa-check-circle"></i>
-            <span>Plataforma multi-rol (Administrador, Secretaria, Soporte)</span>
+            <span>Multi-rol: Administrador y Vendedor</span>
           </li>
         </ul>
       </div>
 
       <div class="branding-footer">
-        <a [href]="whatsappUrl" target="_blank" rel="noopener" class="support-link">
-          <i class="fab fa-whatsapp"></i>
-          ¿Necesitas ayuda? Contáctanos
-        </a>
-        <p>© {{ anioActual }} {{ empresaData?.nombreComercial || 'Inmobiliaria Ivan' }} · RUC {{ empresaData?.ruc || '20537853108' }}</p>
+        <p>© {{ anioActual }} {{ nombreSistema }} · Control de comisiones de vendedores</p>
       </div>
     </div>
 
     <div class="branding-bg">
-      <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80&auto=format&fit=crop"
+      <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format&fit=crop"
            alt="" aria-hidden="true" />
       <div class="branding-overlay"></div>
       <div class="branding-glow"></div>
@@ -60,19 +53,18 @@
   <main class="form-panel">
     <div class="form-wrapper">
       <div class="form-mobile-brand">
-        <img [src]="logoMobile" [alt]="empresaData?.nombreComercial || 'Inmobiliaria Ivan'" class="form-mobile-logo" />
+        <div class="brand-mark">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <span class="brand-name dark">{{ nombreSistema }}</span>
       </div>
-
-      <a routerLink="/" class="form-mobile-back">
-        <i class="fas fa-arrow-left"></i> Inicio
-      </a>
 
       <div class="form-header">
-        <h2>Iniciar sesión</h2>
-        <p>Ingresa tus credenciales para acceder al sistema</p>
+        <h2>{{ titulo }}</h2>
+        <p>{{ subtitulo }}</p>
       </div>
 
-      <app-login></app-login>
+      <router-outlet></router-outlet>
 
       <div class="form-footer">
         <p>

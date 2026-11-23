@@ -1,0 +1,70 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Sesiones activas</h1>
+      <p>Usuarios conectados al sistema en este momento</p>
+    </div>
+    <button class="btn btn-outline" (click)="cargar()" [disabled]="cargando">
+      <i class="fas fa-sync"></i> Actualizar
+    </button>
+  </div>
+
+  <div class="mini-stats">
+    <div class="mini-stat">
+      <span class="mini-value">{{ resumen?.totalActivas ?? '—' }}</span>
+      <span class="mini-label">Conectados ahora</span>
+    </div>
+    <div class="mini-stat">
+      <span class="mini-value">{{ resumen?.visitasHoy ?? '—' }}</span>
+      <span class="mini-label">Inicios de sesión hoy</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>IP</th>
+          <th>Inicio de sesión</th>
+          <th>Última actividad</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="5" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (!resumen || resumen.sesiones.length === 0) {
+          <tr><td colspan="5" class="empty-cell">No hay sesiones activas</td></tr>
+        } @else {
+          @for (s of resumen.sesiones; track s.idSesion) {
+            <tr>
+              <td data-label="Usuario">
+                <div class="user-cell">
+                  <div class="avatar">{{ s.nombreCompleto.charAt(0) }}</div>
+                  <div>
+                    <strong>{{ s.nombreCompleto }}</strong>
+                    <small>{{ s.correo }}</small>
+                  </div>
+                </div>
+              </td>
+              <td data-label="IP"><code>{{ s.ip || '—' }}</code></td>
+              <td data-label="Inicio de sesión">{{ s.fechaLogueo | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="Última actividad">
+                <span class="badge badge-activo">
+                  <i class="fas fa-circle" style="font-size: 6px; margin-right: 5px;"></i>
+                  {{ s.ultimoRefresh | date:'HH:mm' }}
+                </span>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-danger btn-sm" (click)="cerrar(s.idSesion)">
+                  <i class="fas fa-power-off"></i> Cerrar
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

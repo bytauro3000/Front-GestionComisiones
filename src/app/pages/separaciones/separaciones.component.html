@@ -1,0 +1,93 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Separaciones</h1>
+      <p>Lotes separados con plazo: tuyos (puedes venderlos) y de otros vendedores (bloqueados)</p>
+    </div>
+    <button class="btn btn-outline" (click)="cargar()">
+      <i class="fas fa-rotate"></i> Actualizar
+    </button>
+  </div>
+
+  @if (alertas.length > 0) {
+    <div class="alerta-banner">
+      <i class="fas fa-bell"></i>
+      <div>
+        <strong>{{ alertas.length }} separación(es) propia(s) por vencer</strong>
+        <span>
+          @for (a of alertas; track a.id; let i = $index) {
+            Mz.{{ a.manzana }} Lt.{{ a.numero }} ({{ diasRestantes(a) === 0 ? 'vence hoy' : diasRestantes(a) + ' día(s)' }})@if (i < alertas.length - 1) {, }
+          }
+          — contacta a tus clientes para cerrar la venta.
+        </span>
+      </div>
+    </div>
+  }
+
+  <div class="toolbar">
+    <div class="filtro-lotes">
+      <select class="filtro-select" [(ngModel)]="filtroTipo">
+        <option value="">Todas</option>
+        <option value="PROPIA">Mías (puedo vender)</option>
+        <option value="AJENA">De otro vendedor (bloqueadas)</option>
+      </select>
+    </div>
+    <span class="contador">{{ xFiltradas.length }} separación(es)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>MZ/LT</th>
+          <th>Proyecto</th>
+          <th>Tipo</th>
+          <th>Vence</th>
+          <th>Días</th>
+          <th>Monto</th>
+          <th>Precio lote</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="8" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (xFiltradas.length === 0) {
+          <tr><td colspan="8" class="empty-cell">No hay separaciones registradas</td></tr>
+        } @else {
+          @for (l of xFiltradas; track l.id) {
+            <tr [class.fila-alerta]="porVencer(l)">
+              <td data-label="MZ/LT" class="celda-mzlt">Mz.{{ l.manzana }} Lt.{{ l.numero }}</td>
+              <td data-label="Proyecto">{{ l.proyecto }}</td>
+              <td data-label="Tipo">
+                @if (l.separacionAjena) {
+                  <span class="badge badge-inactivo">DE OTRO VENDEDOR</span>
+                } @else {
+                  <span class="badge badge-activo">MÍA</span>
+                }
+              </td>
+              <td data-label="Vence">{{ formatearFecha(l.fechaVinceSeparacion) }}</td>
+              <td data-label="Días">
+                @if (vencida(l)) {
+                  <span class="badge badge-inactivo">VENCIDA</span>
+                } @else if (porVencer(l)) {
+                  <span class="badge badge-warning">{{ diasRestantes(l) === 0 ? 'HOY' : diasRestantes(l) + ' d' }}</span>
+                } @else {
+                  <span class="dias-ok">{{ diasRestantes(l) }} d</span>
+                }
+              </td>
+              <td data-label="Monto">{{ l.montoSeparacion != null ? formatearMoneda(l.montoSeparacion) : '—' }}</td>
+              <td data-label="Precio lote">{{ l.precio | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="liberar(l)"
+                        [disabled]="procesandoId === l.id" title="Liberar separación">
+                  <i class="fas fa-lock-open"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

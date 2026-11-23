@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { TokenService } from './token.service';
 import { Router } from '@angular/router';
+import { TokenService } from './token.service';
 import { LoginService } from './login.service';
-import { IdleTimeoutService } from './idle-timeout.service';
-import { WebSocketService } from '../services/websocket.service';
+import { TokenRefreshService } from './token-refresh.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,21 +12,18 @@ export class LogoutService {
     private tokenService: TokenService,
     private router: Router,
     private loginService: LoginService,
-    private idleTimeoutService: IdleTimeoutService,
-    private wsService: WebSocketService
+    private tokenRefreshService: TokenRefreshService
   ) { }
 
   logout(): void {
-    // Detener el control de inactividad
-    this.idleTimeoutService.stopWatching();
+    // Detener el refresh programado
+    this.tokenRefreshService.stop();
 
-    // Cerrar la conexión STOMP compartida (chat + actualizaciones)
-    this.wsService.desconectar();
-
-    // El backend invalida la cookie HttpOnly del refresh token
+    // El backend revoca el refresh token (cookie HttpOnly) y cierra la sesión
     this.loginService.logout().subscribe({
       error: () => {}
     });
+
     this.tokenService.removeToken();
     this.router.navigate(['/login']);
   }

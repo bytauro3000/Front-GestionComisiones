@@ -1,0 +1,240 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de usuarios</h1>
+      <p>Administra los vendedores y administradores del sistema</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nuevo usuario
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por nombre o correo..." [(ngModel)]="terminoBusqueda">
+    </div>
+    <div class="filtro-estados">
+      <button class="chip" [class.chip-activo]="filtroEstado === ''" (click)="filtroEstado = ''">
+        Todos <span class="chip-count">{{ usuarios.length }}</span>
+      </button>
+      <button class="chip chip-pendiente" [class.chip-activo]="filtroEstado === 'pendiente'" (click)="filtroEstado = 'pendiente'">
+        <i class="fas fa-user-clock"></i> Pendientes <span class="chip-count">{{ contarPorEstado('pendiente') }}</span>
+      </button>
+      <button class="chip" [class.chip-activo]="filtroEstado === 'activo'" (click)="filtroEstado = 'activo'">
+        Activos <span class="chip-count">{{ contarPorEstado('activo') }}</span>
+      </button>
+      <button class="chip" [class.chip-activo]="filtroEstado === 'inactivo'" (click)="filtroEstado = 'inactivo'">
+        Inactivos <span class="chip-count">{{ contarPorEstado('inactivo') }}</span>
+      </button>
+    </div>
+    <span class="contador">{{ usuariosFiltrados.length }} usuario(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Registro</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="6" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (usuariosFiltrados.length === 0) {
+          <tr><td colspan="6" class="empty-cell">No se encontraron usuarios</td></tr>
+        } @else {
+          @for (u of usuariosFiltrados; track u.id) {
+            <tr>
+              <td data-label="Usuario">
+                <div class="user-cell">
+                  <div class="avatar">{{ u.nombres.charAt(0) }}</div>
+                  <div>
+                    <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+                    @if (esPropio(u)) {
+                      <span class="badge badge-info">Tú</span>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td data-label="Correo">{{ u.correo }}</td>
+              <td data-label="Rol">
+                <span class="badge" [class.badge-info]="u.rol === 'ADMINISTRADOR'" [class.badge-warning]="u.rol === 'VENDEDOR'">
+                  {{ u.rol }}
+                </span>
+              </td>
+              <td data-label="Estado">
+                <span class="badge"
+                      [class.badge-activo]="u.estado === 'activo'"
+                      [class.badge-inactivo]="u.estado === 'inactivo'"
+                      [class.badge-warning]="u.estado === 'pendiente'">
+                  @switch (u.estado) {
+                    @case ('activo') { Activo }
+                    @case ('pendiente') { <i class="fas fa-user-clock"></i> Pendiente }
+                    @default { Inactivo }
+                  }
+                </span>
+              </td>
+              <td data-label="Registro">{{ u.fechaRegistro ? (u.fechaRegistro | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                @if (u.estado === 'pendiente') {
+                  <button class="btn btn-sm btn-primary" (click)="aprobar(u)"
+                          [disabled]="procesandoId === u.id" title="Aprobar cuenta">
+                    <i class="fas fa-check"></i> Aprobar
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="rechazar(u)"
+                          [disabled]="procesandoId === u.id" title="Rechazar cuenta">
+                    <i class="fas fa-times"></i> Rechazar
+                  </button>
+                } @else {
+                  <button class="btn btn-outline btn-sm" (click)="abrirEditar(u)" title="Editar">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm" (click)="abrirReset(u)" title="Restablecer contraseña">
+                    <i class="fas fa-key"></i>
+                  </button>
+                  @if (!esPropio(u)) {
+                    <button class="btn btn-sm" [class.btn-danger]="u.estado === 'activo'" [class.btn-outline]="u.estado === 'inactivo'"
+                            (click)="cambiarEstado(u)" [title]="u.estado === 'activo' ? 'Desactivar' : 'Activar'">
+                      <i class="fas" [class.fa-ban]="u.estado === 'activo'" [class.fa-check-circle]="u.estado === 'inactivo'"></i>
+                    </button>
+                  }
+                }
+                @if (!esPropio(u)) {
+                  <button class="btn btn-sm btn-danger" (click)="eliminar(u)"
+                          [disabled]="procesandoId === u.id" title="Eliminar usuario y todos sus datos">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar usuario' : 'Nuevo usuario' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nombres *</label>
+            <input type="text" [(ngModel)]="form.nombres" placeholder="Nombres">
+          </div>
+          <div class="form-field">
+            <label>Apellidos *</label>
+            <input type="text" [(ngModel)]="form.apellidos" placeholder="Apellidos">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Correo electrónico *</label>
+          <input type="email" [(ngModel)]="form.correo" placeholder="correo@ejemplo.com">
+        </div>
+
+        <div class="form-field">
+          <label>{{ modoEdicion ? 'Nueva contraseña (vacío = no cambiar)' : 'Contraseña *' }}</label>
+          <input type="password" [(ngModel)]="form.contrasena" placeholder="Mínimo 8 caracteres">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Rol *</label>
+            <select [(ngModel)]="form.rol">
+              <option value="VENDEDOR">VENDEDOR</option>
+              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Estado</label>
+            <select [(ngModel)]="form.estado">
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Celulares</label>
+            <div class="tel-lista">
+              @for (tel of telefonos; track $index) {
+                <div class="tel-fila">
+                  <div class="tel-campo" [class.con-agregar]="$last">
+                    <input type="tel" [(ngModel)]="telefonos[$index]" placeholder="Celular {{ $index + 1 }}"
+                           maxlength="15" autocomplete="off">
+                    @if ($last) {
+                      <button type="button" class="btn-agregar-tel" (click)="agregarTelefono()"
+                              title="Agregar celular">+</button>
+                    }
+                  </div>
+                  @if (telefonos.length > 1) {
+                    <button type="button" class="btn-quitar-tel" (click)="quitarTelefono($index)"
+                            title="Quitar celular">&times;</button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="form-field">
+            <label>DNI</label>
+            <input type="text" [(ngModel)]="form.dni" placeholder="8 dígitos" maxlength="8">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear usuario' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal reset password -->
+@if (resetAbierto && resetUsuario) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3><i class="fas fa-key"></i> Restablecer contraseña</h3>
+        <button class="modal-close" (click)="cerrarReset()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="reset-info">
+          Se cambiará la contraseña de <strong>{{ resetUsuario.correo }}</strong>
+          y se cerrarán todas sus sesiones activas.
+        </p>
+        <div class="form-field">
+          <label>Nueva contraseña *</label>
+          <input type="password" [(ngModel)]="nuevaContrasena" placeholder="Mínimo 8 caracteres"
+                 (keyup.enter)="confirmarReset()">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarReset()">Cancelar</button>
+        <button class="btn btn-primary" (click)="confirmarReset()" [disabled]="confirmandoReset">
+          @if (confirmandoReset) { <i class="fas fa-spinner fa-spin"></i> Aplicando... }
+          @else { Restablecer }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -3,11 +3,15 @@
 /* ============================================== */
 /* Design Tokens                                  */
 /* ============================================== */
+@use '../../../styles/tokens' as t;
+
+$bp-lg: t.$bp-lg;
+$bp-sm: t.$bp-sm;
+
 $primary:       #4f46e5;
 $primary-2:     #6366f1;
 $primary-light: #818cf8;
 $primary-bg:    rgba(99, 102, 241, 0.1);
-$whatsapp:      #25d366;
 
 $dark:          #0f172a;
 $gray-50:       #f8fafc;
@@ -17,7 +21,6 @@ $gray-500:      #64748b;
 $gray-700:      #334155;
 
 $radius:        12px;
-$radius-lg:     16px;
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
 /* ============================================== */
@@ -81,49 +84,37 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   gap: 40px;
 }
 
-.back-home {
-  position: absolute;
-  top: 32px;
-  right: 40px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.92);
-  text-decoration: none;
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 9px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.25s $ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.22);
-    color: white;
-    transform: translateX(-3px);
-    border-color: rgba(255, 255, 255, 0.35);
-  }
-}
-
 .brand {
   display: flex;
   align-items: center;
+  gap: 12px;
   position: absolute;
-  top: 16px;
-  left: 24px;
+  top: 28px;
+  left: 40px;
   z-index: 2;
 }
 
-.brand-logo {
-  height: 96px;
-  width: auto;
-  max-width: 280px;
-  object-fit: contain;
-  display: block;
-  filter: brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.15rem;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: white;
+
+  &.dark { color: $dark; }
 }
 
 .branding-hero {
@@ -180,30 +171,6 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   flex-direction: column;
   gap: 12px;
 
-  .support-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 11px 18px;
-    background: $whatsapp;
-    border-radius: 10px;
-    width: fit-content;
-    transition: all 0.25s $ease;
-    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
-
-    i { font-size: 1.1rem; }
-    &:hover {
-      background: color.adjust($whatsapp, $lightness: -5%);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(37, 211, 102, 0.45);
-    }
-  }
-
   p {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.78rem;
@@ -230,8 +197,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   flex-direction: column;
 }
 
-.form-mobile-brand,
-.form-mobile-back {
+.form-mobile-brand {
   display: none;
 }
 
@@ -274,7 +240,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 /* ============================================== */
 /* RESPONSIVE                                     */
 /* ============================================== */
-@media (max-width: 992px) {
+@media (max-width: $bp-lg) {
   .login-split { grid-template-columns: 1fr; }
 
   .branding-panel {
@@ -291,64 +257,15 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   .form-mobile-brand {
     display: flex;
     align-items: center;
+    gap: 12px;
     margin-bottom: 24px;
-  }
-
-  .form-mobile-logo {
-    height: 56px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  .form-mobile-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: $primary-2;
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 600;
-    margin-bottom: 24px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: background 0.2s;
-
-    &:hover { background: $primary-bg; }
   }
 
   .form-header h2 { font-size: 1.5rem; }
 }
 
-@media (max-width: 480px) {
+@media (max-width: $bp-sm) {
   .form-panel { padding: 20px 16px; }
-}
-
-/* ============================================== */
-/* MERRUIC OVERRIDES                              */
-/* ============================================== */
-.login-merruic {
-  .branding-bg .branding-overlay {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 118, 110, 0.7) 100%);
-  }
-  .branding-bg .branding-glow {
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.3) 0%, transparent 70%);
-  }
-  .branding-features li i { color: #14B8A6; }
-  .form-footer p i { color: #14B8A6; }
-  .form-mobile-back { color: #14B8A6; }
-  .brand-logo { filter: none; }
-
-  ::ng-deep {
-    .input-icon-modern { color: #14B8A6 !important; }
-    .form-control-modern:focus { border-color: #14B8A6 !important; box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2) !important; }
-    .form-check-input:checked { background-color: #14B8A6 !important; border-color: #14B8A6 !important; }
-    .form-check-input:focus { box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2) !important; border-color: #14B8A6 !important; }
-    .forgot-password-link { color: #14B8A6 !important; }
-    .forgot-password-link:hover { color: #0F766E !important; }
-    .btn-login { background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%) !important; box-shadow: 0 6px 18px rgba(20, 184, 166, 0.3) !important; }
-    .btn-login:hover:not(:disabled) { box-shadow: 0 10px 24px rgba(20, 184, 166, 0.45) !important; }
-    .eye-icon:hover { color: #14B8A6 !important; }
-  }
 }
 
 /* ============================================== */

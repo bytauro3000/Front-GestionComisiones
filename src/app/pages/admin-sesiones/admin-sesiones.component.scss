@@ -1,0 +1,143 @@
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$radius:        12px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: $dark;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-500;
+    font-size: 0.95rem;
+  }
+}
+
+.mini-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .mini-stat {
+    background: white;
+    border-radius: $radius;
+    padding: 18px 26px;
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+
+    .mini-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: $primary;
+    }
+
+    .mini-label {
+      font-size: 0.82rem;
+      color: $gray-500;
+      margin-top: 2px;
+    }
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.14);
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  strong {
+    display: block;
+    color: $dark;
+    font-size: 0.9rem;
+  }
+
+  small {
+    color: $gray-500;
+    font-size: 0.78rem;
+  }
+}
+
+code {
+  background: $gray-100;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: $gray-500;
+}
+
+.empty-cell {
+  text-align: center;
+  color: $gray-500;
+  padding: 36px 16px !important;
+
+  i { margin-right: 6px; }
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: $bp-sm) {
+  .page-header {
+    h1 {
+      font-size: 1.3rem;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 44px;
+    }
+  }
+
+  .mini-stats {
+    .mini-stat {
+      padding: 14px 18px;
+
+      .mini-value {
+        font-size: 1.4rem;
+      }
+    }
+  }
+}

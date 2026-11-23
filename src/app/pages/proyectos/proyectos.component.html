@@ -1,0 +1,251 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de proyectos</h1>
+      <p>Registra cada proyecto una vez y selecciónalo al crear los lotes</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nuevo proyecto
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por nombre o ubicación..." [(ngModel)]="terminoBusqueda">
+    </div>
+
+    <select class="filtro-select" [(ngModel)]="filtroEmpresa">
+      <option [ngValue]="''">Todas las empresas</option>
+      @for (e of empresas; track e.id) {
+        <option [ngValue]="e.id">{{ e.razonSocial }}</option>
+      }
+    </select>
+
+    <span class="contador">{{ xFiltrados.length }} proyecto(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Plano</th>
+          <th>Proyecto</th>
+          <th>Empresa</th>
+          <th>Ubicación</th>
+          <th>Estado</th>
+          <th>Registro</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="7" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (xFiltrados.length === 0) {
+          <tr><td colspan="7" class="empty-cell">No se encontraron proyectos</td></tr>
+        } @else {
+          @for (p of xFiltrados; track p.id) {
+            <tr>
+              <td data-label="Plano" class="cell-plano">
+                @if (p.tienePlano && planoEsImagen(p.id) && planoUrls[p.id!]) {
+                  <img [src]="planoUrls[p.id!]" class="mini-plano" alt="Plano"
+                       (click)="verPlano(p)" title="Ver plano">
+                } @else if (p.tienePlano && !planoCargado(p)) {
+                  <span class="mini-cargando"><i class="fas fa-spinner fa-spin"></i></span>
+                } @else if (p.tienePlano) {
+                  <!-- PDF o imagen no cargada: chapa representativa de plano/ubicación -->
+                  <span class="mini-plano-ico" (click)="verPlano(p)" title="Ver plano">
+                    <i class="fas fa-map-marked-alt"></i>
+                  </span>
+                } @else {
+                  <span class="sin-plano">Sin plano</span>
+                }
+              </td>
+              <td data-label="Proyecto"><strong>{{ p.nombre }}</strong></td>
+              <td data-label="Empresa">{{ nombreEmpresa(p.idEmpresa) }}</td>
+              <td data-label="Ubicación">{{ p.ubicacion || '—' }}</td>
+              <td data-label="Estado">
+                <span class="badge"
+                      [class.badge-activo]="p.estado !== 'INACTIVO'"
+                      [class.badge-inactivo]="p.estado === 'INACTIVO'">
+                  {{ p.estado || 'ACTIVO' }}
+                </span>
+              </td>
+              <td data-label="Registro">{{ p.fechaRegistro ? (p.fechaRegistro | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirEditar(p)" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="eliminar(p)"
+                        [disabled]="procesandoId === p.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card modal-proyectos">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar proyecto' : 'Nuevo proyecto' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Empresa *</label>
+          <select [(ngModel)]="form.idEmpresa">
+            <option [ngValue]="0" disabled>Seleccione una empresa</option>
+            @for (e of empresas; track e.id) {
+              <option [ngValue]="e.id">{{ e.razonSocial }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-row" [class.con-estado]="modoEdicion">
+          <div class="form-field">
+            <label>Nombre del proyecto *</label>
+            <input type="text" [(ngModel)]="form.nombre" placeholder="Ej. La Florida" maxlength="120">
+          </div>
+          @if (modoEdicion) {
+            <div class="form-field form-estado">
+              <label>Estado</label>
+              <select [(ngModel)]="form.estado">
+                <option value="ACTIVO">ACTIVO</option>
+                <option value="INACTIVO">INACTIVO</option>
+              </select>
+            </div>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Ubicación</label>
+          <div class="input-accion">
+            <input type="text" [(ngModel)]="form.ubicacion"
+                   placeholder="Buscar dirección..." maxlength="200"
+                   (keyup.enter)="buscarDireccion()"
+                   (change)="onUbicacionEditada()">
+            <button class="btn-buscar" (click)="buscarDireccion()"
+                    [disabled]="buscando" title="Buscar en el mapa">
+              @if (buscando) {
+                <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fas fa-search"></i>
+              }
+            </button>
+          </div>
+          <div class="mapa" #mapaEl></div>
+          <small class="field-hint field-hint-block">
+            Haz click en el mapa para fijar el punto (se completa la dirección),
+            o escribe la dirección y pulsa Buscar. El pin se puede arrastrar.
+          </small>
+          @if (form.latitud != null && form.longitud != null) {
+            <a class="link-mapa" target="_blank" rel="noopener"
+               [href]="'https://www.google.com/maps?q=' + form.latitud + ',' + form.longitud">
+              <i class="fas fa-external-link-alt"></i> Ver en Google Maps
+            </a>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Plano</label>
+
+          @if (previewUrl) {
+            <div class="plano-preview">
+              @if (previewEsImagen) {
+                <img [src]="previewUrl" alt="Preview del plano" (click)="abrirPlanoCompleto()"
+                     title="Ver completo">
+              } @else {
+                <iframe class="plano-pdf" [src]="previewUrlSafe" title="Vista previa del plano"></iframe>
+              }
+              <div class="plano-acciones">
+                <button type="button" class="btn btn-outline btn-sm" (click)="abrirPlanoCompleto()">
+                  <i class="fas fa-external-link-alt"></i> Ver
+                </button>
+                @if (previewEsImagen) {
+                  <button type="button" class="btn btn-outline btn-sm" (click)="abrirEditorRecorte()">
+                    <i class="fas fa-crop"></i> Recortar
+                  </button>
+                }
+                <button type="button" class="btn btn-danger btn-sm" (click)="quitarPlanoSeleccionado()">
+                  <i class="fas fa-times"></i> Quitar
+                </button>
+              </div>
+            </div>
+          } @else {
+            <label class="btn btn-outline btn-subir-plano">
+              <i class="fas fa-upload"></i> Seleccionar plano
+              <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf"
+                     (change)="onArchivoSeleccionado($event)" hidden>
+            </label>
+          }
+
+          @if (quitarPlano) {
+            <small class="field-hint field-hint-block">El plano se quitará al guardar.</small>
+          } @else if (!previewUrl) {
+            <small class="field-hint field-hint-block">JPG, PNG, WebP o PDF — máx 10 MB. Las imágenes se pueden recortar antes de guardar.</small>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear proyecto' }}
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Editor de recorte (patrón voucher-preview del otro sistema) -->
+    @if (editandoRecorte) {
+      <div class="editor-overlay" #editorOverlayEl
+           (pointermove)="onEditorMove($event)"
+           (pointerup)="onEditorEnd($event)"
+           (pointercancel)="onEditorEnd($event)">
+        <div class="editor-card">
+          <div class="editor-header">
+            <h4><i class="fas fa-crop"></i> Recortar plano</h4>
+            <small>Arrastra las esquinas o el interior para elegir el área.</small>
+          </div>
+          <div class="editor-wrap">
+            <canvas #editorCanvasEl></canvas>
+            <div class="marco-recorte"
+                 [style.left.px]="recorte.x"
+                 [style.top.px]="recorte.y"
+                 [style.width.px]="recorte.w"
+                 [style.height.px]="recorte.h"
+                 (pointerdown)="onEditorDown($event, 'mover')">
+              <span class="esquina nw" (pointerdown)="onEditorDown($event, 'nw')"></span>
+              <span class="esquina ne" (pointerdown)="onEditorDown($event, 'ne')"></span>
+              <span class="esquina sw" (pointerdown)="onEditorDown($event, 'sw')"></span>
+              <span class="esquina se" (pointerdown)="onEditorDown($event, 'se')"></span>
+            </div>
+          </div>
+          <div class="editor-footer">
+            <button type="button" class="btn btn-outline btn-sm" (click)="girarEditor()"
+                    title="Girar 90 grados">
+              <i class="fas fa-redo"></i> Girar
+            </button>
+            <div class="editor-botones">
+              <button type="button" class="btn btn-outline btn-sm" (click)="cancelarEditor()">
+                Cancelar
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" (click)="aplicarRecorte()">
+                <i class="fas fa-check"></i> Aplicar recorte
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

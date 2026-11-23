@@ -1,9 +1,0 @@
-export enum MedioPago {
-  EFECTIVO = 'EFECTIVO',
-  DEPOSITO = 'DEPOSITO',
-  TRANSFERENCIA = 'TRANSFERENCIA',
-  YAPE = 'YAPE',
-  PLIN = 'PLIN',
-  TARJETA = 'TARJETA',
-  OTROS = 'OTROS'
-}

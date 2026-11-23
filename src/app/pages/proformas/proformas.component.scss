@@ -1,0 +1,558 @@
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$gray-700:      #334155;
+$green:         #10b981;
+$red:           #ef4444;
+$radius:        12px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: $dark;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-500;
+    font-size: 0.95rem;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 360px;
+
+    i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-500;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid $gray-200;
+      border-radius: 10px;
+      padding: 0 14px 0 40px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: white;
+      transition: all 0.2s $ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-light;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+    }
+  }
+
+  .contador {
+    font-size: 0.85rem;
+    color: $gray-500;
+    font-weight: 600;
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+}
+
+.num-proforma {
+  color: $primary;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.empty-cell {
+  text-align: center;
+  color: $gray-500;
+  padding: 36px 16px !important;
+
+  i { margin-right: 6px; }
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+
+  .btn + .btn { margin-left: 6px; }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+// ── Filas de detalle (lotes) ────────────────────────────────────────────────
+
+.detalles-block {
+  margin-bottom: 18px;
+}
+
+.detalles-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $gray-700;
+  }
+}
+
+.fila-lote {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px 34px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .campo-lote select {
+    width: 100%;
+    height: 40px;
+    border: 1.5px solid $gray-200;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: white;
+    color: $gray-700;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+  }
+
+  .campo-precio {
+    position: relative;
+
+    .prefijo {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: $gray-500;
+      pointer-events: none;
+    }
+
+    input {
+      width: 100%;
+      height: 40px;
+      border: 1.5px solid $gray-200;
+      border-radius: 10px;
+      padding: 0 12px 0 38px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      text-align: right;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-light;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+    }
+  }
+
+  .btn-quitar-fila {
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid $gray-200;
+    border-radius: 50%;
+    background: white;
+    color: $gray-500;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.15s $ease;
+
+    &:hover:not(:disabled) {
+      border-color: $red;
+      color: $red;
+      background: rgba(239, 68, 68, 0.06);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.total-linea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(99, 102, 241, 0.07);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: $gray-700;
+
+  strong {
+    font-size: 1.1rem;
+    color: $primary;
+    font-weight: 800;
+  }
+}
+
+// ── Documento de proforma (vista previa / impresión) ────────────────────────
+
+.proforma-doc {
+  .doc {
+    font-size: 0.95rem;
+    color: $gray-700;
+    line-height: 1.55;
+  }
+
+  .doc-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid $gray-200;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+
+    h2 {
+      margin: 0 0 4px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: $dark;
+      letter-spacing: -0.3px;
+    }
+
+    .doc-ruc {
+      font-weight: 700;
+      color: $gray-700;
+      margin-bottom: 6px;
+    }
+
+    .doc-etiqueta-vendedor {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      color: $gray-500;
+      border: 1.5px solid $gray-200;
+      border-radius: 6px;
+      padding: 3px 8px;
+      margin-bottom: 6px;
+    }
+
+    .doc-datos {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 0.85rem;
+      color: $gray-500;
+
+      i {
+        width: 14px;
+        margin-right: 5px;
+        color: $primary-light;
+      }
+    }
+  }
+
+  .doc-titulo {
+    text-align: right;
+
+    .doc-etiqueta {
+      display: inline-block;
+      background: $primary;
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .doc-numero {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: $dark;
+      margin-bottom: 4px;
+    }
+
+    .doc-fecha {
+      font-size: 0.85rem;
+      color: $gray-500;
+      margin-bottom: 6px;
+    }
+  }
+
+  .doc-cliente {
+    background: $gray-100;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: $gray-500;
+    }
+
+    .doc-cliente-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px 16px;
+      font-size: 0.9rem;
+
+      .doc-dir {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .etiqueta {
+      color: $gray-500;
+      font-size: 0.8rem;
+      margin-right: 4px;
+    }
+  }
+
+  .doc-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid $gray-200;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      background: $dark;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: none;
+
+      &:first-child { border-radius: 8px 0 0 0; }
+      &:last-child { border-radius: 0 8px 0 0; }
+    }
+
+    tfoot th {
+      background: rgba(99, 102, 241, 0.07);
+      color: $dark;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border-bottom: none;
+
+      &:first-child { border-radius: 0 0 0 8px; }
+      &:last-child { border-radius: 0 0 8px 0; }
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 1px solid $gray-200;
+    }
+  }
+
+  .doc-pago {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #047857;
+    }
+
+    .doc-pago-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px 16px;
+      font-size: 0.9rem;
+
+      strong {
+        color: $dark;
+        font-weight: 800;
+        margin-left: 2px;
+      }
+    }
+
+    .etiqueta {
+      color: $gray-500;
+      font-size: 0.8rem;
+    }
+
+    .doc-pago-nota {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: $gray-500;
+      font-style: italic;
+    }
+  }
+
+  .doc-obs {
+    margin-bottom: 14px;
+
+    h4 {
+      margin: 0 0 6px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: $gray-500;
+    }
+
+    p {
+      margin: 0;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+    }
+  }
+
+  .doc-pie {
+    display: flex;
+    justify-content: space-around;
+    gap: 24px;
+    margin-top: 28px;
+    padding-top: 8px;
+
+    .doc-firma {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      min-width: 200px;
+
+      .linea-firma {
+        width: 100%;
+        border-top: 1.5px solid $gray-700;
+      }
+
+      .etiqueta {
+        font-size: 0.8rem;
+        color: $gray-500;
+      }
+    }
+  }
+
+  .doc-nota {
+    margin: 16px 0 0;
+    font-size: 0.75rem;
+    color: $gray-500;
+    text-align: center;
+    border-top: 1px dashed $gray-200;
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .page-header {
+    h1 { font-size: 1.3rem; }
+
+    .btn {
+      width: 100%;
+      min-height: 44px;
+    }
+  }
+
+  .toolbar {
+    .search-box {
+      max-width: none;
+
+      input { font-size: 1rem; }
+    }
+
+    .contador { width: 100%; }
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .fila-lote {
+    grid-template-columns: minmax(0, 1fr) 110px 34px;
+    gap: 6px;
+  }
+
+  .proforma-doc {
+    .doc-head {
+      flex-direction: column;
+
+      .doc-titulo { text-align: left; }
+    }
+
+    .doc-cliente .doc-cliente-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .doc-pago .doc-pago-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .doc-pie {
+      flex-direction: column;
+      align-items: center;
+
+      .doc-firma { min-width: 0; width: 100%; max-width: 260px; }
+    }
+  }
+}

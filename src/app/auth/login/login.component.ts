@@ -1,21 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LoginService, LoginRequest } from '../login.service';
 import { jwtDecode } from 'jwt-decode';
 import { TokenService } from '../token.service';
-import { IdleTimeoutService } from '../idle-timeout.service';
 import { TokenRefreshService } from '../token-refresh.service';
 import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
-import { EmpresaService } from '../../services/empresa.service';
-import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
@@ -26,23 +23,19 @@ export class LoginComponent implements OnInit {
   };
   recordar: boolean = false;
   verContrasena: boolean = false;
+  cargando: boolean = false;
 
   constructor(
     private loginService: LoginService,
     private router: Router,
     private tokenService: TokenService,
-    private idleTimeoutService: IdleTimeoutService,
     private toastr: ToastrService,
     private titleService: Title,
-    private tokenRefreshService: TokenRefreshService,
-    private empresaService: EmpresaService,
-    private wsService: WebSocketService
+    private tokenRefreshService: TokenRefreshService
   ) {}
 
   ngOnInit(): void {
-    this.empresaService.obtenerEmpresa().subscribe(e => {
-      this.titleService.setTitle('Iniciar Sesión | ' + (e?.nombreComercial || 'Inmobiliaria Ivan'));
-    });
+    this.titleService.setTitle('Iniciar Sesión | Vende Lote');
     const correoGuardado = localStorage.getItem('remembered_email');
     if (correoGuardado) {
       this.loginRequest.correo = correoGuardado;
@@ -55,6 +48,8 @@ export class LoginComponent implements OnInit {
   }
 
   onLogin(): void {
+    if (this.cargando) return;
+    this.cargando = true;
     this.tokenService.removeToken();
 
     this.loginService.login(this.loginRequest).subscribe({
@@ -67,43 +62,30 @@ export class LoginComponent implements OnInit {
 
         const token = response.token;
         this.tokenService.setToken(token);
-        // El refresh token se guarda en cookie HttpOnly por el backend
 
         // Iniciar refresh proactivo del JWT antes de que expire
         this.tokenRefreshService.scheduleNext();
 
-        // Iniciar control de inactividad (1 hora)
-        this.idleTimeoutService.startWatching();
-
         const decodedToken: any = jwtDecode(token);
-
-        // Conectar (o reconectar si cambió de usuario) el WebSocket compartido
-        this.wsService.conectar(decodedToken.sub);
-
         const userRole = decodedToken.rol;
 
-        this.toastr.success('¡Bienvenido al SGI!', 'Acceso Exitoso');
+        this.toastr.success('¡Bienvenido al sistema!', 'Acceso Exitoso');
 
-        switch (userRole) {
-          case 'ROLE_SECRETARIA':
-            this.router.navigate(['/secretaria-menu']);
-            break;
-          case 'ROLE_SOPORTE':
-            this.router.navigate(['/seleccion-menu']);
-            break;
-          case 'ROLE_ADMINISTRADOR':
-            this.router.navigate(['/admin-menu']);
-            break;
-          case 'ROLE_VENDEDOR':
-            this.router.navigate(['/vendedor-menu']);
-            break;
-          default:
-            this.router.navigate(['/']);
+        // Cada rol entra a su propio menú
+        if (userRole === 'ROLE_ADMINISTRADOR') {
+          this.router.navigate(['/admin/inicio']);
+        } else if (userRole === 'ROLE_VENDEDOR') {
+          this.router.navigate(['/vendedor/inicio']);
+        } else {
+          this.router.navigate(['/']);
         }
+        this.cargando = false;
       },
       error: (err) => {
         console.error('Login fallido:', err);
-        this.toastr.error('Correo o contraseña incorrectos', 'Error de Acceso', {
+        this.cargando = false;
+        const mensaje = err?.error?.mensaje || 'Correo o contraseña incorrectos';
+        this.toastr.error(mensaje, 'Error de Acceso', {
           timeOut: 3000,
           progressBar: true,
           positionClass: 'toast-top-right'

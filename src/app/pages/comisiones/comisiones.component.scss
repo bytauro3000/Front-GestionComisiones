@@ -1,0 +1,321 @@
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
+
+$primary:       #4f46e5;
+$primary-light: #818cf8;
+$dark:          #0f172a;
+$gray-100:      #f1f5f9;
+$gray-200:      #e2e8f0;
+$gray-500:      #64748b;
+$gray-700:      #334155;
+$red:           #ef4444;
+$radius:        12px;
+$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: $dark;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-500;
+    font-size: 0.95rem;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 360px;
+
+    i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-500;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid $gray-200;
+      border-radius: 10px;
+      padding: 0 14px 0 40px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: white;
+      transition: all 0.2s $ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-light;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      }
+    }
+  }
+
+  .filter-select {
+    height: 42px;
+    border: 1.5px solid $gray-200;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: white;
+    color: $dark;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+    }
+  }
+
+  .contador {
+    font-size: 0.85rem;
+    color: $gray-500;
+    font-weight: 600;
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+}
+
+.cell-venta {
+  color: $dark;
+}
+
+.cell-fecha {
+  white-space: nowrap;
+  font-size: 0.83rem;
+  color: $gray-500;
+}
+
+.cell-cuotas {
+  white-space: nowrap;
+  font-weight: 700;
+  color: $dark;
+
+  small {
+    display: block;
+    font-weight: 500;
+    font-size: 0.72rem;
+  }
+}
+
+.texto-suave {
+  color: $gray-500;
+  font-weight: 400;
+}
+
+.saldo {
+  color: $dark;
+}
+
+.saldo-pendiente {
+  color: $red !important;
+}
+
+.empty-cell {
+  text-align: center;
+  color: $gray-500;
+  padding: 36px 16px !important;
+
+  i { margin-right: 6px; }
+}
+
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+
+  .btn + .btn { margin-left: 6px; }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-field textarea {
+  border: 1.5px solid $gray-200;
+  border-radius: $radius;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: $dark;
+  background: $gray-100;
+  resize: vertical;
+  transition: all 0.2s $ease;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  }
+}
+
+.cargando-detalle {
+  text-align: center;
+  color: $gray-500;
+  padding: 30px 12px;
+
+  i { margin-right: 6px; }
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  .dato {
+    background: $gray-100;
+    border: 1px solid $gray-200;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+
+    span {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: $gray-500;
+    }
+
+    strong {
+      font-size: 0.95rem;
+      color: $dark;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+.seccion-titulo {
+  margin: 22px 0 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $dark;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i { color: $primary; }
+}
+
+.tabla-pagos {
+  .col-check {
+    width: 40px;
+    text-align: center;
+  }
+
+  .check-pago {
+    width: 16px;
+    height: 16px;
+    accent-color: $primary;
+    cursor: pointer;
+  }
+}
+
+.forma-ref {
+  font-size: 0.84rem;
+  color: $gray-700;
+}
+
+.zona-cobro {
+  margin-top: 20px;
+  border-top: 1.5px dashed $gray-200;
+  padding-top: 6px;
+
+  .seccion-titulo { margin-top: 14px; }
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.modal-xl {
+  max-width: 900px;
+}
+
+@media (max-width: $bp-sm) {
+  .page-header {
+    h1 {
+      font-size: 1.3rem;
+    }
+  }
+
+  .toolbar {
+    .search-box {
+      max-width: none;
+      flex: 1 1 100%;
+
+      input {
+        font-size: 1rem;
+      }
+    }
+
+    .filter-select {
+      flex: 1 1 100%;
+      font-size: 1rem;
+      min-height: 44px;
+    }
+
+    .contador {
+      width: 100%;
+    }
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .resumen-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Checkbox de cobro: target táctil cómodo */
+  .check-pago {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+  }
+
+  .tabla-pagos {
+    td.col-check {
+      padding-right: 8px;
+    }
+  }
+}

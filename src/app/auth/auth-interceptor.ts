@@ -1,7 +1,7 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { catchError, of, switchMap, throwError } from 'rxjs';
 import { TokenService } from './token.service';
 import { TokenRefreshService } from './token-refresh.service';
 
@@ -16,32 +16,47 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
     return next(reqWithCredentials);
   }
 
-  const token = tokenService.getToken();
-  const clonedRequest = token
-    ? reqWithCredentials.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : reqWithCredentials;
+  /** Envía la petición con el token dado y, si responde 401, refresca y reintenta. */
+  const enviar = (token: string | null) => {
+    const request = token
+      ? reqWithCredentials.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : reqWithCredentials;
 
-  return next(clonedRequest).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if (error.status !== 401) {
-        return throwError(() => error);
-      }
-
-      return refreshService.refreshToken().pipe(
-        switchMap((newToken) => {
-          const retryRequest = reqWithCredentials.clone({
-            setHeaders: { Authorization: `Bearer ${newToken}` }
-          });
-          return next(retryRequest);
-        }),
-        catchError(() => {
-          // El portal del cliente no tiene refresh: al fallar, vuelve a su login
-          const esCliente = tokenService.getRole() === 'ROLE_CLIENTE' || req.url.includes('/api/portal');
-          tokenService.removeToken();
-          router.navigate(esCliente ? ['/portal/login'] : ['/login']);
+    return next(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status !== 401) {
           return throwError(() => error);
-        })
-      );
-    })
-  );
+        }
+
+        return refreshService.refreshToken().pipe(
+          switchMap((newToken) => {
+            const retryRequest = reqWithCredentials.clone({
+              setHeaders: { Authorization: `Bearer ${newToken}` }
+            });
+            return next(retryRequest);
+          }),
+          catchError(() => {
+            // Refresh fallido (sesión expirada o revocada) → volver al login
+            tokenService.removeToken();
+            router.navigate(['/login']);
+            return throwError(() => error);
+          })
+        );
+      })
+    );
+  };
+
+  const token = tokenService.getToken();
+
+  // Token ya vencido: se refresca ANTES de enviar, para no generar un 401
+  // visible en la consola (el token de acceso dura 30 minutos).
+  if (token && tokenService.isTokenExpired()) {
+    return refreshService.refreshToken().pipe(
+      // Si el refresh falla, se envía igual y el 401 de arriba cierra la sesión.
+      catchError(() => of(token)),
+      switchMap((newToken) => enviar(newToken))
+    );
+  }
+
+  return enviar(token);
 };

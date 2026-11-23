@@ -1,0 +1,225 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de empresas</h1>
+      <p>Administra los clientes emisores de facturas</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nueva empresa
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por RUC o razón social..." [(ngModel)]="terminoBusqueda">
+    </div>
+    <span class="contador">{{ xFiltrados.length }} empresa(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>RUC</th>
+          <th>Razón social</th>
+          <th>Dirección</th>
+          <th>Contacto</th>
+          <th>Registro</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="6" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (xFiltrados.length === 0) {
+          <tr><td colspan="6" class="empty-cell">No se encontraron empresas</td></tr>
+        } @else {
+          @for (e of xFiltrados; track e.id) {
+            <tr>
+              <td data-label="RUC"><strong>{{ e.ruc }}</strong></td>
+              <td data-label="Razón social">
+                <div class="cell-value">
+                  <strong>{{ e.razonSocial }}</strong>
+                  @if (e.nombreComercial) {
+                    <div class="sub-texto">{{ e.nombreComercial }}</div>
+                  }
+                </div>
+              </td>
+              <td data-label="Dirección">
+                <div class="cell-value">
+                  {{ e.direccion || '—' }}
+                  @if (e.distrito) {
+                    <div class="sub-texto">{{ e.distrito }}</div>
+                  }
+                </div>
+              </td>
+              <td data-label="Contacto">
+                <div class="cell-value">
+                  {{ e.correo || '—' }}
+                  @for (tel of listaTelefonos(e.telefono); track $index) {
+                    <div class="sub-texto">{{ tel }}</div>
+                  }
+                  @for (cuenta of e.cuentas || []; track $index) {
+                    <div class="sub-texto">
+                      {{ cuenta.banco }}{{ cuenta.tipoCuenta ? ' · ' + etiquetaTipo(cuenta.tipoCuenta) : '' }}
+                      · {{ cuenta.numeroCuenta }}{{ cuenta.cci ? ' · CCI ' + cuenta.cci : '' }}
+                    </div>
+                  }
+                </div>
+              </td>
+              <td data-label="Registro">{{ e.fechaRegistro ? (e.fechaRegistro | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirEditar(e)" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="eliminar(e)"
+                        [disabled]="procesandoId === e.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar empresa' : 'Nueva empresa' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>RUC *</label>
+          <div class="input-accion">
+            <input type="text" [(ngModel)]="form.ruc" placeholder="11 dígitos" maxlength="11">
+            <button class="btn btn-outline btn-sm" (click)="buscarSunat()"
+                    [disabled]="buscandoRuc" title="Buscar en SUNAT">
+              @if (buscandoRuc) {
+                <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fas fa-search"></i>
+              }
+              Buscar SUNAT
+            </button>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Razón social *</label>
+          <input type="text" [(ngModel)]="form.razonSocial" placeholder="Razón social">
+        </div>
+
+        <div class="form-field">
+          <label>Nombre comercial</label>
+          <input type="text" [(ngModel)]="form.nombreComercial" placeholder="Opcional">
+        </div>
+
+        <div class="form-field">
+          <label>Dirección</label>
+          <input type="text" [(ngModel)]="form.direccion" placeholder="Dirección">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Distrito</label>
+            <input type="text" [(ngModel)]="form.distrito" placeholder="Distrito">
+          </div>
+          <div class="form-field">
+            <label>Provincia</label>
+            <input type="text" [(ngModel)]="form.provincia" placeholder="Provincia">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Departamento</label>
+          <input type="text" [(ngModel)]="form.departamento" placeholder="Departamento">
+        </div>
+
+        <div class="form-row">
+        <div class="form-field">
+          <label>Celulares</label>
+          <div class="tel-lista">
+            @for (tel of telefonos; track $index) {
+              <div class="tel-fila">
+                <div class="tel-campo" [class.con-agregar]="$last">
+                  <input type="tel" [(ngModel)]="telefonos[$index]" placeholder="Celular {{ $index + 1 }}"
+                         maxlength="15" autocomplete="off">
+                  @if ($last) {
+                    <button type="button" class="btn-agregar-tel" (click)="agregarTelefono()"
+                            title="Agregar celular">+</button>
+                  }
+                </div>
+                @if (telefonos.length > 1) {
+                  <button type="button" class="btn-quitar-tel" (click)="quitarTelefono($index)"
+                          title="Quitar celular">&times;</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+          <div class="form-field">
+            <label>Correo</label>
+            <input type="email" [(ngModel)]="form.correo" placeholder="correo@ejemplo.com">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Cuentas bancarias</label>
+          <div class="cuentas-lista">
+            @for (cuenta of cuentas; track $index) {
+              <div class="cuenta-fila" [class.con-quitar]="cuentas.length > 1">
+                <select [(ngModel)]="cuentas[$index].banco">
+                  <option value="" disabled>Banco</option>
+                  @for (banco of bancos; track banco) {
+                    <option [value]="banco">{{ banco }}</option>
+                  }
+                </select>
+                <div class="cuenta-cta-campo" [class.con-agregar]="$last">
+                  <input type="text" [(ngModel)]="cuentas[$index].numeroCuenta"
+                         placeholder="N.º de cuenta" maxlength="25"
+                         inputmode="numeric" autocomplete="off">
+                  @if ($last) {
+                    <button type="button" class="btn-agregar-cuenta" (click)="agregarCuenta()"
+                            title="Agregar cuenta">+</button>
+                  }
+                </div>
+                <div class="cci-campo">
+                  <input type="text" [(ngModel)]="cuentas[$index].cci"
+                         placeholder="CCI (20 dígitos, opcional)" maxlength="20"
+                         inputmode="numeric" autocomplete="off">
+                  <select [(ngModel)]="cuentas[$index].tipoCuenta">
+                    <option value="" disabled>Tipo de cuenta</option>
+                    @for (tipo of tiposCuenta; track tipo.valor) {
+                      <option [value]="tipo.valor">{{ tipo.etiqueta }}</option>
+                    }
+                  </select>
+                </div>
+                @if (cuentas.length > 1) {
+                  <button type="button" class="btn-quitar-cuenta" (click)="quitarCuenta($index)"
+                          title="Quitar cuenta">&times;</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear empresa' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

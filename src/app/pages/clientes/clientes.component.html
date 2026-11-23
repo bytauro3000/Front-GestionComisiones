@@ -1,0 +1,166 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Gestión de clientes</h1>
+      <p>Administra los clientes registrados</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nuevo cliente
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Buscar por documento, nombre o correo..." [(ngModel)]="terminoBusqueda">
+    </div>
+    <span class="contador">{{ xFiltrados.length }} cliente(s)</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Documento</th>
+          <th>Cliente</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Registro</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="6" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (xFiltrados.length === 0) {
+          <tr><td colspan="6" class="empty-cell">No se encontraron clientes</td></tr>
+        } @else {
+          @for (c of xFiltrados; track c.id) {
+            <tr>
+              <td data-label="Documento">
+                <div class="cell-value">
+                  <span class="badge badge-info">{{ c.tipoDocumento || 'DNI' }}</span>
+                  <strong class="doc-num">{{ c.numDocumento }}</strong>
+                </div>
+              </td>
+              <td data-label="Cliente">
+                <strong>{{ c.nombres }} {{ c.apellidos }}</strong>
+              </td>
+              <td data-label="Teléfono">
+                @for (tel of listaTelefonos(c.telefono); track $index) {
+                  <div>{{ tel }}</div>
+                } @empty {
+                  —
+                }
+              </td>
+              <td data-label="Correo">{{ c.correo || '—' }}</td>
+              <td data-label="Registro">{{ c.fechaRegistro ? (c.fechaRegistro | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-outline btn-sm" (click)="abrirEditar(c)" title="Editar">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="eliminar(c)"
+                        [disabled]="procesandoId === c.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal crear/editar -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar cliente' : 'Nuevo cliente' }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Tipo de doc. *</label>
+            <select class="doc-tipo" [(ngModel)]="form.tipoDocumento">
+              <option value="DNI">DNI</option>
+              <option value="CE">CE</option>
+              <option value="RUC">RUC</option>
+              <option value="OTRO">OTRO</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>N° Doc. *</label>
+            <div class="input-accion">
+              <input type="text" [(ngModel)]="form.numDocumento" placeholder="Número">
+              <button class="btn btn-outline btn-sm" (click)="buscarDocumento()"
+                      [disabled]="buscando" title="Buscar en RENIEC/SUNAT">
+                @if (buscando) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-search"></i>
+                }
+                Buscar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Nombres *</label>
+          <input type="text" [(ngModel)]="form.nombres" placeholder="Nombres">
+        </div>
+
+        <div class="form-field">
+          <label>Apellidos</label>
+          <input type="text" [(ngModel)]="form.apellidos" placeholder="Apellidos">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Celulares</label>
+            <div class="tel-lista">
+              @for (tel of telefonos; track $index) {
+                <div class="tel-fila">
+                  <div class="tel-campo" [class.con-agregar]="$last">
+                    <input type="tel" [(ngModel)]="telefonos[$index]" placeholder="Celular {{ $index + 1 }}"
+                           maxlength="15" autocomplete="off">
+                    @if ($last) {
+                      <button type="button" class="btn-agregar-tel" (click)="agregarTelefono()"
+                              title="Agregar celular">+</button>
+                    }
+                  </div>
+                  @if (telefonos.length > 1) {
+                    <button type="button" class="btn-quitar-tel" (click)="quitarTelefono($index)"
+                            title="Quitar celular">&times;</button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Correo</label>
+            <input type="email" [(ngModel)]="form.correo" placeholder="correo@ejemplo.com">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Dirección</label>
+          <input type="text" [(ngModel)]="form.direccion" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear cliente' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

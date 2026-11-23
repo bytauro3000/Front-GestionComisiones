@@ -1,69 +1,100 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UsuarioRegistroDTO} from '../dto/UsuarioRegistroDTO';
-import { UsuarioListadoDTO } from '../dto/UsuarioListadoDTO';
-import { RolUsuario } from '../models/rolusuario.model';
-import { Distrito } from '../models/distrito.model';
-import { ConsultaDniDTO } from '../dto/consultadni.dto';
 import { environment } from '../../environments/environment';
+
+export interface UsuarioListado {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  correo: string;
+  telefono?: string;
+  dni?: string;
+  rol: string;
+  estado: string;
+  fechaRegistro?: string;
+}
+
+export interface UsuarioRegistro {
+  nombres: string;
+  apellidos: string;
+  correo: string;
+  contrasena?: string;
+  telefono?: string;
+  dni?: string;
+  rol: string;
+  estado?: string;
+}
+
+export interface Perfil {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  correo: string;
+  telefono?: string;
+  dni?: string;
+  rol: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsuarioService {
 
-  // Apunta a tu Gateway (puerto 8080)
-  private apiUrl = `${environment.apiUrl}/api/usuarios`; 
+  private readonly URL = `${environment.apiUrl}/api/usuarios`;
 
   constructor(private http: HttpClient) { }
 
-  registrarUsuario(usuario: UsuarioRegistroDTO): Observable<any> {
-    return this.http.post(`${this.apiUrl}/registrar`, usuario);
+  listar(): Observable<UsuarioListado[]> {
+    return this.http.get<UsuarioListado[]>(this.URL);
   }
 
-  listarUsuarios(): Observable<UsuarioListadoDTO[]> {
-    return this.http.get<UsuarioListadoDTO[]>(`${this.apiUrl}/listar`);
+  /** Listado filtrado por estado: pendiente | activo | inactivo. */
+  listarPorEstado(estado: string): Observable<UsuarioListado[]> {
+    return this.http.get<UsuarioListado[]>(this.URL, {
+      params: estado ? { estado } : {}
+    });
   }
 
-  // 3. Editar usuario (PUT) - NUEVO
-  editarUsuario(id: number, usuario: UsuarioRegistroDTO): Observable<any> {
-    return this.http.put(`${this.apiUrl}/editar/${id}`, usuario);
+  /** Aprueba un auto-registro (pendiente → activo). */
+  aprobar(id: number): Observable<UsuarioListado> {
+    return this.http.patch<UsuarioListado>(`${this.URL}/${id}/aprobar`, {});
   }
 
-  // 4. Cambiar estado (PATCH) - NUEVO
-  // Enviamos un cuerpo vacío {} porque el ID ya va en la URL
-  cambiarEstado(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/cambiar-estado/${id}`, {});
+  /** Rechaza un auto-registro (pendiente → inactivo). */
+  rechazar(id: number): Observable<UsuarioListado> {
+    return this.http.patch<UsuarioListado>(`${this.URL}/${id}/rechazar`, {});
   }
 
-  listarRoles(): Observable<RolUsuario[]> {
-    return this.http.get<RolUsuario[]>(`${this.apiUrl}/roles`);
+  listarRoles(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.URL}/roles`);
   }
 
-  enviarPinVerificacion(correo: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/enviar-pin`, { correo });
+  crear(dto: UsuarioRegistro): Observable<UsuarioListado> {
+    return this.http.post<UsuarioListado>(this.URL, dto);
   }
 
-  verificarPin(correo: string, pin: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/verificar-pin`, { correo, pin });
+  editar(id: number, dto: UsuarioRegistro): Observable<UsuarioListado> {
+    return this.http.put<UsuarioListado>(`${this.URL}/${id}`, dto);
   }
 
-  consultarDni(dni: string): Observable<ConsultaDniDTO> {
-    return this.http.get<ConsultaDniDTO>(`${this.apiUrl}/consultar-dni/${dni}`);
+  cambiarEstado(id: number): Observable<UsuarioListado> {
+    return this.http.patch<UsuarioListado>(`${this.URL}/${id}/estado`, {});
   }
 
-  listarDepartamentos(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/departamentos`);
+  resetPassword(id: number, nuevaContrasena: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${this.URL}/${id}/reset-password`, {
+      nuevaContrasena
+    });
   }
 
-  listarProvincias(departamento: string): Observable<string[]> {
-    const params = new HttpParams().set('departamento', departamento);
-    return this.http.get<string[]>(`${this.apiUrl}/provincias`, { params });
+  /** Elimina el usuario y en cascada todo su árbol de datos. */
+  eliminar(id: number): Observable<{ mensaje: string }> {
+    return this.http.delete<{ mensaje: string }>(`${this.URL}/${id}`);
   }
 
-  listarDistritos(departamento: string, provincia: string): Observable<Distrito[]> {
-    const params = new HttpParams().set('departamento', departamento).set('provincia', provincia);
-    return this.http.get<Distrito[]>(`${this.apiUrl}/distritos`, { params });
+  /** Perfil del usuario autenticado (sus propios datos). */
+  perfil(): Observable<Perfil> {
+    return this.http.get<Perfil>(`${environment.apiUrl}/api/perfil`);
   }
 }
