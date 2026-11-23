@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { jwtDecode } from 'jwt-decode';
 import { UsuarioService, UsuarioListado, UsuarioRegistro } from '../../services/usuario.service';
@@ -42,7 +41,6 @@ export class AdminUsuariosComponent implements OnInit {
   constructor(
     private usuarioService: UsuarioService,
     private alert: AlertService,
-    private toastr: ToastrService,
     tokenService: TokenService
   ) {
     this.rolActual = tokenService.getRole();
@@ -61,7 +59,7 @@ export class AdminUsuariosComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los usuarios', 'Error');
+        this.alert.toastError('Error al cargar los usuarios', 'Error');
       }
     });
   }
@@ -106,7 +104,7 @@ export class AdminUsuariosComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo aprobar la cuenta', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo aprobar la cuenta', 'Error');
         }
       });
     });
@@ -132,7 +130,7 @@ export class AdminUsuariosComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo rechazar la cuenta', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo rechazar la cuenta', 'Error');
         }
       });
     });
@@ -173,7 +171,7 @@ export class AdminUsuariosComponent implements OnInit {
 
   agregarTelefono(): void {
     if (this.telefonos.length >= 9) {
-      this.toastr.info('Puedes registrar hasta 9 celulares');
+      this.alert.toastInfo('Puedes registrar hasta 9 celulares');
       return;
     }
     this.telefonos.push('');
@@ -197,15 +195,15 @@ export class AdminUsuariosComponent implements OnInit {
     if (this.guardando) return;
 
     if (!this.form.nombres.trim() || !this.form.apellidos.trim() || !this.form.correo.trim()) {
-      this.toastr.warning('Nombres, apellidos y correo son obligatorios');
+      this.alert.toastWarning('Nombres, apellidos y correo son obligatorios');
       return;
     }
     if (!this.modoEdicion && (!this.form.contrasena || this.form.contrasena.length < 8)) {
-      this.toastr.warning('La contraseña debe tener al menos 8 caracteres');
+      this.alert.toastWarning('La contraseña debe tener al menos 8 caracteres');
       return;
     }
     if (this.modoEdicion && this.form.contrasena && this.form.contrasena.length < 8) {
-      this.toastr.warning('La contraseña debe tener al menos 8 caracteres');
+      this.alert.toastWarning('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -231,7 +229,7 @@ export class AdminUsuariosComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar el usuario', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar el usuario', 'Error');
       }
     });
   }
@@ -260,7 +258,7 @@ export class AdminUsuariosComponent implements OnInit {
           this.cargarUsuarios();
         },
         error: (err) => {
-          this.toastr.error(err?.error?.mensaje || 'No se pudo cambiar el estado', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo cambiar el estado', 'Error');
         }
       });
     });
@@ -282,7 +280,7 @@ export class AdminUsuariosComponent implements OnInit {
   confirmarReset(): void {
     if (!this.resetUsuario || this.confirmandoReset) return;
     if (this.nuevaContrasena.length < 8) {
-      this.toastr.warning('La contraseña debe tener al menos 8 caracteres');
+      this.alert.toastWarning('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -295,7 +293,7 @@ export class AdminUsuariosComponent implements OnInit {
       },
       error: (err) => {
         this.confirmandoReset = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo restablecer la contraseña', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo restablecer la contraseña', 'Error');
       }
     });
   }
@@ -304,7 +302,7 @@ export class AdminUsuariosComponent implements OnInit {
 
   eliminar(usuario: UsuarioListado): void {
     if (this.esPropio(usuario)) {
-      this.toastr.warning('No puede eliminar su propia cuenta');
+      this.alert.toastWarning('No puede eliminar su propia cuenta');
       return;
     }
 
@@ -335,7 +333,7 @@ export class AdminUsuariosComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar el usuario', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el usuario', 'Error');
         }
       });
     });

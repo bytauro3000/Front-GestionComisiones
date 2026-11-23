@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import { AuditoriaService, AuditoriaFila, PaginaAuditoria } from '../../services/auditoria.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-admin-auditoria',
@@ -25,7 +25,7 @@ export class AdminAuditoriaComponent implements OnInit {
 
   constructor(
     private auditoriaService: AuditoriaService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -46,7 +46,7 @@ export class AdminAuditoriaComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar la auditoría', 'Error');
+        this.alert.toastError('Error al cargar la auditoría', 'Error');
       }
     });
   }

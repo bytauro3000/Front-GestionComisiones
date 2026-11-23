@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { ClienteService, Cliente } from '../../services/cliente.service';
 import { DeclectaService } from '../../services/decolecta.service';
@@ -35,8 +34,7 @@ export class ClientesComponent implements OnInit {
   constructor(
     private clienteService: ClienteService,
     private decolectaService: DeclectaService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -52,7 +50,7 @@ export class ClientesComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los clientes', 'Error');
+        this.alert.toastError('Error al cargar los clientes', 'Error');
       }
     });
   }
@@ -94,11 +92,11 @@ export class ClientesComponent implements OnInit {
     if (this.guardando) return;
 
     if (!this.form.numDocumento || !this.form.numDocumento.trim()) {
-      this.toastr.warning('El número de documento es obligatorio');
+      this.alert.toastWarning('El número de documento es obligatorio');
       return;
     }
     if (!this.form.nombres || !this.form.nombres.trim()) {
-      this.toastr.warning('Los nombres son obligatorios');
+      this.alert.toastWarning('Los nombres son obligatorios');
       return;
     }
 
@@ -124,7 +122,7 @@ export class ClientesComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar el cliente', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar el cliente', 'Error');
       }
     });
   }
@@ -133,7 +131,7 @@ export class ClientesComponent implements OnInit {
 
   agregarTelefono(): void {
     if (this.telefonos.length >= 9) {
-      this.toastr.info('Puedes registrar hasta 9 celulares');
+      this.alert.toastInfo('Puedes registrar hasta 9 celulares');
       return;
     }
     this.telefonos.push('');
@@ -163,7 +161,7 @@ export class ClientesComponent implements OnInit {
 
     if (tipo === 'DNI') {
       if (!/^\d{8}$/.test(numero)) {
-        this.toastr.warning('El DNI debe tener exactamente 8 dígitos');
+        this.alert.toastWarning('El DNI debe tener exactamente 8 dígitos');
         return;
       }
       this.buscando = true;
@@ -176,11 +174,11 @@ export class ClientesComponent implements OnInit {
               ? `${data.first_last_name} ${data.second_last_name}`
               : data.first_last_name;
           }
-          this.toastr.success('Datos completados desde RENIEC');
+          this.alert.toastSuccess('Datos completados desde RENIEC');
         },
         error: () => {
           this.buscando = false;
-          this.toastr.warning('No se encontró información para ese documento');
+          this.alert.toastWarning('No se encontró información para ese documento');
         }
       });
       return;
@@ -188,7 +186,7 @@ export class ClientesComponent implements OnInit {
 
     if (tipo === 'RUC') {
       if (!/^\d{11}$/.test(numero)) {
-        this.toastr.warning('El RUC debe tener exactamente 11 dígitos');
+        this.alert.toastWarning('El RUC debe tener exactamente 11 dígitos');
         return;
       }
       this.buscando = true;
@@ -197,17 +195,17 @@ export class ClientesComponent implements OnInit {
           this.buscando = false;
           if (data.razon_social) this.form.nombres = data.razon_social;
           if (data.direccion) this.form.direccion = data.direccion;
-          this.toastr.success('Datos completados desde SUNAT');
+          this.alert.toastSuccess('Datos completados desde SUNAT');
         },
         error: () => {
           this.buscando = false;
-          this.toastr.warning('No se encontró información para ese documento');
+          this.alert.toastWarning('No se encontró información para ese documento');
         }
       });
       return;
     }
 
-    this.toastr.warning('La consulta solo está disponible para DNI o RUC');
+    this.alert.toastWarning('La consulta solo está disponible para DNI o RUC');
   }
 
   // ── Eliminar ──────────────────────────────────────────────────────────────
@@ -232,7 +230,7 @@ export class ClientesComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar el cliente', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el cliente', 'Error');
         }
       });
     });

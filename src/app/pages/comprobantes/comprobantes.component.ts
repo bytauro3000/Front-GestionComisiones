@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import {
   ComprobanteService,
@@ -54,8 +53,7 @@ export class ComprobantesComponent implements OnInit {
   constructor(
     private comprobanteService: ComprobanteService,
     private integracionService: IntegracionSunatService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -71,7 +69,7 @@ export class ComprobantesComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los comprobantes', 'Error');
+        this.alert.toastError('Error al cargar los comprobantes', 'Error');
       }
     });
   }
@@ -130,12 +128,12 @@ export class ComprobantesComponent implements OnInit {
           this.idEmpresaSeleccionada = empresas[0].idEmpresa;
         }
         if (empresas.length === 0) {
-          this.toastr.info('No hay pagos cobrados sin facturar');
+          this.alert.toastInfo('No hay pagos cobrados sin facturar');
         }
       },
       error: (err) => {
         this.consultandoPagos = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudieron cargar los pagos disponibles', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudieron cargar los pagos disponibles', 'Error');
       }
     });
   }
@@ -161,15 +159,15 @@ export class ComprobantesComponent implements OnInit {
   emitir(): void {
     if (this.emitiendo) return;
     if (this.idEmpresaSeleccionada == null) {
-      this.toastr.warning('Seleccione la empresa a la que se factura');
+      this.alert.toastWarning('Seleccione la empresa a la que se factura');
       return;
     }
     if (this.pagoIds.length === 0) {
-      this.toastr.warning('Seleccione al menos un pago cobrado');
+      this.alert.toastWarning('Seleccione al menos un pago cobrado');
       return;
     }
     if (!this.fechaEmision) {
-      this.toastr.warning('Indique la fecha de emisión');
+      this.alert.toastWarning('Indique la fecha de emisión');
       return;
     }
 
@@ -194,7 +192,7 @@ export class ComprobantesComponent implements OnInit {
       },
       error: (err) => {
         this.emitiendo = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo emitir la factura', 'Error de emisión', { timeOut: 6000 });
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo emitir la factura', 'Error de emisión', { timeOut: 6000 });
       }
     });
   }
@@ -213,7 +211,7 @@ export class ComprobantesComponent implements OnInit {
         this.alert.success(`Estado: ${this.etiquetaEstado(actualizado.estado)}`, 'Sincronizado con SUNAT');
       },
       error: (err) => {
-        this.toastr.error(err?.error?.mensaje || 'No se pudo sincronizar con SUNAT', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo sincronizar con SUNAT', 'Error');
       }
     });
   }
@@ -228,10 +226,10 @@ export class ComprobantesComponent implements OnInit {
         a.download = nombre;
         a.click();
         URL.revokeObjectURL(url);
-        this.toastr.success('PDF descargado: ' + nombre);
+        this.alert.toastSuccess('PDF descargado: ' + nombre);
       },
       error: (err) => {
-        this.toastr.error(err?.error?.mensaje || 'No se pudo descargar el PDF', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo descargar el PDF', 'Error');
       }
     });
   }
@@ -247,7 +245,7 @@ export class ComprobantesComponent implements OnInit {
         this.integOriginal = { ...config };
       },
       error: (err) => {
-        this.toastr.error(err?.error?.mensaje || 'No se pudo cargar la configuración', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo cargar la configuración', 'Error');
         this.integAbierto = false;
       }
     });
@@ -262,11 +260,11 @@ export class ComprobantesComponent implements OnInit {
   async guardarIntegracion(): Promise<void> {
     if (!this.integ || this.guardandoInteg) return;
     if (!this.integ.serieFactura || !/^F\d{3}|\d{4}$/.test(this.integ.serieFactura)) {
-      this.toastr.warning('La serie debe empezar con F (ej: F001)');
+      this.alert.toastWarning('La serie debe empezar con F (ej: F001)');
       return;
     }
     if (this.integ.aplicarDetraccion && !this.integ.ctaBanco?.trim()) {
-      this.toastr.warning('Indique la cuenta bancaria para la detracción o desactívela');
+      this.alert.toastWarning('Indique la cuenta bancaria para la detracción o desactívela');
       return;
     }
 
@@ -284,7 +282,7 @@ export class ComprobantesComponent implements OnInit {
       },
       error: (err) => {
         this.guardandoInteg = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar la configuración', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar la configuración', 'Error');
       }
     });
   }
@@ -298,12 +296,12 @@ export class ComprobantesComponent implements OnInit {
         if (res.conectado) {
           this.alert.success('Conexión exitosa con api-sunat', 'Conectado');
         } else {
-          this.toastr.error('api-sunat rechazó las credenciales o no responde', 'Sin conexión');
+          this.alert.toastError('api-sunat rechazó las credenciales o no responde', 'Sin conexión');
         }
       },
       error: (err) => {
         this.probando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo probar la conexión', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo probar la conexión', 'Error');
       }
     });
   }

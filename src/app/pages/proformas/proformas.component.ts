@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { ProformaService, Proforma } from '../../services/proforma.service';
 import { ClienteService, Cliente } from '../../services/cliente.service';
@@ -56,23 +55,22 @@ export class ProformasComponent implements OnInit {
     private loteService: LoteService,
     private usuarioService: UsuarioService,
     private tokenService: TokenService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
     this.cargarProformas();
     this.empresaService.listar().subscribe({
       next: (data) => this.empresas = data,
-      error: () => this.toastr.error('Error al cargar las empresas', 'Error')
+      error: () => this.alert.toastError('Error al cargar las empresas', 'Error')
     });
     this.clienteService.listar().subscribe({
       next: (data) => this.clientes = data,
-      error: () => this.toastr.error('Error al cargar los clientes', 'Error')
+      error: () => this.alert.toastError('Error al cargar los clientes', 'Error')
     });
     this.loteService.listar().subscribe({
       next: (data) => this.lotes = data,
-      error: () => this.toastr.error('Error al cargar los lotes', 'Error')
+      error: () => this.alert.toastError('Error al cargar los lotes', 'Error')
     });
     // Datos del vendedor para el encabezado del documento (nunca los de la empresa)
     this.usuarioService.perfil().subscribe({
@@ -93,7 +91,7 @@ export class ProformasComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar las proformas', 'Error');
+        this.alert.toastError('Error al cargar las proformas', 'Error');
       }
     });
   }
@@ -145,7 +143,7 @@ export class ProformasComponent implements OnInit {
   onEmpresaChange(): void {
     const conLote = this.filas.some(f => f.idLote != null);
     this.filas = [{ idLote: null, precioUnitario: null }];
-    if (conLote) this.toastr.info('Se limpiaron los lotes al cambiar de empresa');
+    if (conLote) this.alert.toastInfo('Se limpiaron los lotes al cambiar de empresa');
   }
 
   /** Lotes de la empresa elegida que aún no fueron agregados a otra fila (sin vendidos). */
@@ -184,16 +182,16 @@ export class ProformasComponent implements OnInit {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
-      this.toastr.warning('Seleccione una empresa');
+      this.alert.toastWarning('Seleccione una empresa');
       return;
     }
     if (!this.form.idCliente) {
-      this.toastr.warning('Seleccione un cliente');
+      this.alert.toastWarning('Seleccione un cliente');
       return;
     }
     const validas = this.filas.filter(f => f.idLote != null && Number(f.precioUnitario) > 0);
     if (validas.length !== this.filas.length) {
-      this.toastr.warning('Cada fila debe tener un lote y un precio mayor a 0');
+      this.alert.toastWarning('Cada fila debe tener un lote y un precio mayor a 0');
       return;
     }
 
@@ -228,7 +226,7 @@ export class ProformasComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar la proforma', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar la proforma', 'Error');
       }
     });
   }
@@ -291,7 +289,7 @@ export class ProformasComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo cambiar el estado', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo cambiar el estado', 'Error');
         }
       });
     });
@@ -318,7 +316,7 @@ export class ProformasComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar la proforma', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar la proforma', 'Error');
         }
       });
     });

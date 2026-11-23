@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { AdminSesionesService, SesionResumen } from '../../services/admin-sesiones.service';
 import { AlertService } from '../../services/alert.service';
@@ -19,8 +18,7 @@ export class AdminSesionesComponent implements OnInit {
 
   constructor(
     private sesionesService: AdminSesionesService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +34,7 @@ export class AdminSesionesComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar las sesiones', 'Error');
+        this.alert.toastError('Error al cargar las sesiones', 'Error');
       }
     });
   }
@@ -58,7 +56,7 @@ export class AdminSesionesComponent implements OnInit {
           this.cargar();
         },
         error: (err) => {
-          this.toastr.error(err?.error?.mensaje || 'No se pudo cerrar la sesión', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo cerrar la sesión', 'Error');
         }
       });
     });

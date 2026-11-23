@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { SocioService, Socio } from '../../services/socio.service';
 import { AlertService } from '../../services/alert.service';
@@ -28,8 +27,7 @@ export class SociosComponent implements OnInit {
 
   constructor(
     private socioService: SocioService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -45,7 +43,7 @@ export class SociosComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los socios', 'Error');
+        this.alert.toastError('Error al cargar los socios', 'Error');
       }
     });
   }
@@ -85,7 +83,7 @@ export class SociosComponent implements OnInit {
   async guardar(): Promise<void> {
     if (this.guardando) return;
     if (!this.form.nombres || !this.form.nombres.trim()) {
-      this.toastr.warning('Los nombres del socio son obligatorios');
+      this.alert.toastWarning('Los nombres del socio son obligatorios');
       return;
     }
     if (this.modoEdicion) {
@@ -107,7 +105,7 @@ export class SociosComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar el socio', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar el socio', 'Error');
       }
     });
   }
@@ -132,7 +130,7 @@ export class SociosComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar el socio', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el socio', 'Error');
         }
       });
     });

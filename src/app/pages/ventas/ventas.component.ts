@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -116,8 +115,7 @@ export class VentasComponent implements OnInit {
     private proyectoService: ProyectoService,
     private socioService: SocioService,
     private parametroService: ParametroComisionService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   @HostListener('document:click', ['$event'])
@@ -150,7 +148,7 @@ export class VentasComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar las ventas', 'Error');
+        this.alert.toastError('Error al cargar las ventas', 'Error');
       }
     });
   }
@@ -191,7 +189,7 @@ export class VentasComponent implements OnInit {
       // así el modal NO se abre con los desplegables ya visibles.
     } catch (err: any) {
       this.modalAbierto = false;
-      this.toastr.error(err?.error?.mensaje || 'No se pudieron cargar empresas, programas y clientes', 'Error');
+      this.alert.toastError(err?.error?.mensaje || 'No se pudieron cargar empresas, programas y clientes', 'Error');
     } finally {
       this.cargandoCatalogos = false;
     }
@@ -289,7 +287,7 @@ export class VentasComponent implements OnInit {
         this.lotes = lotes.filter(l => l.estado !== 'VENDIDO' && !l.ventaActiva);
         this.filtrarLotes();
       },
-      error: () => this.toastr.error('No se pudieron cargar los lotes del programa', 'Error')
+      error: () => this.alert.toastError('No se pudieron cargar los lotes del programa', 'Error')
     });
   }
 
@@ -452,7 +450,7 @@ export class VentasComponent implements OnInit {
 
   agregarReparto(): void {
     if (this.repartos.length >= 2) {
-      this.toastr.info('Máximo 2 socios (tú + 2 = 3 partes)');
+      this.alert.toastInfo('Máximo 2 socios (tú + 2 = 3 partes)');
       return;
     }
     this.repartos.push({
@@ -605,29 +603,29 @@ export class VentasComponent implements OnInit {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
-      this.toastr.warning('Seleccione una empresa');
+      this.alert.toastWarning('Seleccione una empresa');
       return;
     }
     if (!this.form.idProyecto) {
-      this.toastr.warning('Seleccione un programa');
+      this.alert.toastWarning('Seleccione un programa');
       return;
     }
     if (this.lotesSeleccionados.length === 0) {
-      this.toastr.warning('Agregue al menos un lote');
+      this.alert.toastWarning('Agregue al menos un lote');
       return;
     }
     if (this.clientesSeleccionados.length === 0) {
-      this.toastr.warning('Agregue al menos un cliente');
+      this.alert.toastWarning('Agregue al menos un cliente');
       return;
     }
     const fechaVenta = this.form.fechaVenta;
     if (!fechaVenta) {
-      this.toastr.warning('Indique la fecha de la venta');
+      this.alert.toastWarning('Indique la fecha de la venta');
       return;
     }
     const precio = this.num(this.form.precioVenta);
     if (precio == null || precio <= 0) {
-      this.toastr.warning('El precio de venta debe ser mayor a 0');
+      this.alert.toastWarning('El precio de venta debe ser mayor a 0');
       return;
     }
 
@@ -643,16 +641,16 @@ export class VentasComponent implements OnInit {
     if (modalidad === 'FINANCIADO') {
       const inicial = this.num(this.form.montoInicial);
       if (inicial == null || inicial <= 0) {
-        this.toastr.warning('Indique el monto inicial (mayor a 0)');
+        this.alert.toastWarning('Indique el monto inicial (mayor a 0)');
         return;
       }
       if (inicial >= precio) {
-        this.toastr.warning('La inicial debe ser menor al precio de venta');
+        this.alert.toastWarning('La inicial debe ser menor al precio de venta');
         return;
       }
       if (this.form.numCuotas != null &&
           (this.form.numCuotas < 0 || this.form.numCuotas > 160)) {
-        this.toastr.warning('El número de cuotas debe estar entre 0 y 160');
+        this.alert.toastWarning('El número de cuotas debe estar entre 0 y 160');
         return;
       }
       dto.montoInicial = inicial;
@@ -660,7 +658,7 @@ export class VentasComponent implements OnInit {
 
     const comision = this.num(this.form.comisionManual);
     if (this.form.comisionManual != null && comision == null) {
-      this.toastr.warning('La comisión manual debe ser un número válido');
+      this.alert.toastWarning('La comisión manual debe ser un número válido');
       return;
     }
     if (comision != null) {
@@ -670,21 +668,21 @@ export class VentasComponent implements OnInit {
     // ── Reparto con socios (opcional, máx. 2) ─────────────────────────────
     const repartosActivos = this.repartos.filter(r => r.idSocio != null);
     if (this.repartos.length > 0 && repartosActivos.length !== this.repartos.length) {
-      this.toastr.warning('Seleccione el socio en cada reparto o quítelo');
+      this.alert.toastWarning('Seleccione el socio en cada reparto o quítelo');
       return;
     }
     const idsSocios = repartosActivos.map(r => r.idSocio!);
     if (new Set(idsSocios).size !== idsSocios.length) {
-      this.toastr.warning('No puede repetir el mismo socio');
+      this.alert.toastWarning('No puede repetir el mismo socio');
       return;
     }
     if (this.sumaInicialSocios() > this.inicialTotalCalc + 0.01) {
-      this.toastr.warning('El reparto del pago inicial supera el anticipo');
+      this.alert.toastWarning('El reparto del pago inicial supera el anticipo');
       return;
     }
     if (modalidad === 'FINANCIADO' && this.saldoComisionCalc > 0
         && this.sumaCuotaSocios() > this.cuotaBaseCalc + 0.01) {
-      this.toastr.warning('El reparto por letra supera el monto de la cuota');
+      this.alert.toastWarning('El reparto por letra supera el monto de la cuota');
       return;
     }
     if (repartosActivos.length > 0) {
@@ -720,7 +718,7 @@ export class VentasComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo registrar la venta', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo registrar la venta', 'Error');
       }
     });
   }
@@ -743,7 +741,7 @@ export class VentasComponent implements OnInit {
       error: (err) => {
         this.cargandoDetalle = false;
         this.detalleAbierto = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo cargar el detalle de la venta', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo cargar el detalle de la venta', 'Error');
       }
     });
   }
@@ -773,7 +771,7 @@ export class VentasComponent implements OnInit {
           this.cargar();
         },
         error: (err) => {
-          this.toastr.error(err?.error?.mensaje || 'No se pudo anular la venta', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo anular la venta', 'Error');
         }
       });
     });

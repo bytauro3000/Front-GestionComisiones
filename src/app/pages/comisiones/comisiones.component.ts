@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import {
   ComisionService,
@@ -42,8 +41,7 @@ export class ComisionesComponent implements OnInit {
 
   constructor(
     private comisionService: ComisionService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -60,7 +58,7 @@ export class ComisionesComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar las comisiones', 'Error');
+        this.alert.toastError('Error al cargar las comisiones', 'Error');
       }
     });
   }
@@ -113,7 +111,7 @@ export class ComisionesComponent implements OnInit {
       error: (err) => {
         this.cargandoDetalle = false;
         this.detalleAbierto = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo cargar el detalle de la comisión', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo cargar el detalle de la comisión', 'Error');
       }
     });
   }
@@ -158,11 +156,11 @@ export class ComisionesComponent implements OnInit {
     if (this.cobrando || !det) return;
 
     if (this.pagosSeleccionados.length === 0) {
-      this.toastr.warning('Seleccione al menos un pago pendiente');
+      this.alert.toastWarning('Seleccione al menos un pago pendiente');
       return;
     }
     if (!this.fechaPago) {
-      this.toastr.warning('Indique la fecha de pago');
+      this.alert.toastWarning('Indique la fecha de pago');
       return;
     }
 
@@ -190,7 +188,7 @@ export class ComisionesComponent implements OnInit {
       },
       error: (err) => {
         this.cobrando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo registrar el cobro', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo registrar el cobro', 'Error');
       }
     });
   }
@@ -222,7 +220,7 @@ export class ComisionesComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo revertir el pago', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo revertir el pago', 'Error');
         }
       });
     });

@@ -9,6 +9,43 @@ import Swal from 'sweetalert2';
 @Injectable({ providedIn: 'root' })
 export class AlertService {
 
+  private readonly toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (el) => {
+      el.addEventListener('mouseenter', Swal.stopTimer);
+      el.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
+
+  private fireToast(icon: 'success' | 'error' | 'warning' | 'info',
+                    mensaje: string, titulo?: string): void {
+    void this.toast.fire({
+      icon,
+      title: titulo || mensaje,
+      text: titulo ? mensaje : undefined
+    });
+  }
+
+  toastSuccess(mensaje: string, titulo?: string, _opts?: unknown): void {
+    this.fireToast('success', mensaje, titulo);
+  }
+
+  toastError(mensaje: string, titulo?: string, _opts?: unknown): void {
+    this.fireToast('error', mensaje, titulo);
+  }
+
+  toastWarning(mensaje: string, titulo?: string, _opts?: unknown): void {
+    this.fireToast('warning', mensaje, titulo);
+  }
+
+  toastInfo(mensaje: string, titulo?: string, _opts?: unknown): void {
+    this.fireToast('info', mensaje, titulo);
+  }
+
   success(mensaje: string, titulo = '¡Listo!'): void {
     void Swal.fire({
       icon: 'success',

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import {
   LiquidacionSocioService,
@@ -36,8 +35,7 @@ export class LiquidacionesComponent implements OnInit {
 
   constructor(
     private liquidacionService: LiquidacionSocioService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -53,7 +51,7 @@ export class LiquidacionesComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los saldos de socios', 'Error');
+        this.alert.toastError('Error al cargar los saldos de socios', 'Error');
       }
     });
     this.cargarHistorial();
@@ -105,7 +103,7 @@ export class LiquidacionesComponent implements OnInit {
       },
       error: () => {
         this.cargandoSugerencia = false;
-        this.toastr.warning('No se pudo calcular la sugerencia; puede ingresar los montos a mano');
+        this.alert.toastWarning('No se pudo calcular la sugerencia; puede ingresar los montos a mano');
       }
     });
   }
@@ -117,15 +115,15 @@ export class LiquidacionesComponent implements OnInit {
   guardar(): void {
     if (this.guardando) return;
     if (!this.form.idSocio) {
-      this.toastr.warning('Seleccione un socio');
+      this.alert.toastWarning('Seleccione un socio');
       return;
     }
     if ((this.form.montoBruto || 0) < 0) {
-      this.toastr.warning('El monto bruto no puede ser negativo');
+      this.alert.toastWarning('El monto bruto no puede ser negativo');
       return;
     }
     if (this.neto < 0) {
-      this.toastr.warning('Los descuentos superan el monto bruto');
+      this.alert.toastWarning('Los descuentos superan el monto bruto');
       return;
     }
 
@@ -149,7 +147,7 @@ export class LiquidacionesComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo registrar la liquidación', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo registrar la liquidación', 'Error');
       }
     });
   }
@@ -174,7 +172,7 @@ export class LiquidacionesComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar', 'Error');
         }
       });
     });

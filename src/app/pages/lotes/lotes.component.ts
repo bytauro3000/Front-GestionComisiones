@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { LoteService, Lote, LoteSeparacion } from '../../services/lote.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
@@ -49,8 +48,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     private loteService: LoteService,
     private empresaService: EmpresaService,
     private proyectoService: ProyectoService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -73,7 +71,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los lotes', 'Error');
+        this.alert.toastError('Error al cargar los lotes', 'Error');
       }
     });
   }
@@ -84,7 +82,7 @@ export class LotesComponent implements OnInit, OnDestroy {
         this.empresas = data;
       },
       error: () => {
-        this.toastr.error('Error al cargar las empresas', 'Error');
+        this.alert.toastError('Error al cargar las empresas', 'Error');
       }
     });
   }
@@ -95,7 +93,7 @@ export class LotesComponent implements OnInit, OnDestroy {
         this.proyectos = data;
       },
       error: () => {
-        this.toastr.error('Error al cargar los proyectos', 'Error');
+        this.alert.toastError('Error al cargar los proyectos', 'Error');
       }
     });
   }
@@ -118,7 +116,7 @@ export class LotesComponent implements OnInit, OnDestroy {
 
   abrirProyectoRapido(): void {
     if (!this.form.idEmpresa) {
-      this.toastr.warning('Primero seleccione una empresa');
+      this.alert.toastWarning('Primero seleccione una empresa');
       return;
     }
     this.nombreProyectoRapido = '';
@@ -133,7 +131,7 @@ export class LotesComponent implements OnInit, OnDestroy {
   crearProyectoRapido(): void {
     const nombre = this.nombreProyectoRapido.trim();
     if (!nombre) {
-      this.toastr.warning('Escriba el nombre del proyecto');
+      this.alert.toastWarning('Escriba el nombre del proyecto');
       return;
     }
     if (this.creandoProyectoRapido) return;
@@ -154,7 +152,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.creandoProyectoRapido = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo crear el proyecto', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo crear el proyecto', 'Error');
       }
     });
   }
@@ -355,32 +353,32 @@ export class LotesComponent implements OnInit, OnDestroy {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
-      this.toastr.warning('Seleccione una empresa');
+      this.alert.toastWarning('Seleccione una empresa');
       return;
     }
     if (!this.form.idProyecto) {
-      this.toastr.warning('Seleccione un proyecto');
+      this.alert.toastWarning('Seleccione un proyecto');
       return;
     }
     if (!this.form.manzana || !this.form.manzana.trim()) {
-      this.toastr.warning('La manzana es obligatoria');
+      this.alert.toastWarning('La manzana es obligatoria');
       return;
     }
     if (!this.form.numero || !this.form.numero.trim()) {
-      this.toastr.warning('El número de lote es obligatorio');
+      this.alert.toastWarning('El número de lote es obligatorio');
       return;
     }
     if (!this.form.precio || this.form.precio <= 0) {
-      this.toastr.warning('El precio debe ser mayor a 0');
+      this.alert.toastWarning('El precio debe ser mayor a 0');
       return;
     }
     if (this.form.inicial != null && this.form.inicial > this.form.precio) {
-      this.toastr.warning('La inicial no puede superar el precio del lote');
+      this.alert.toastWarning('La inicial no puede superar el precio del lote');
       return;
     }
     if (this.form.numCuotas != null &&
         (this.form.numCuotas < 0 || this.form.numCuotas > 160)) {
-      this.toastr.warning('El número de cuotas debe estar entre 0 y 160');
+      this.alert.toastWarning('El número de cuotas debe estar entre 0 y 160');
       return;
     }
 
@@ -418,7 +416,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar el lote', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar el lote', 'Error');
       }
     });
   }
@@ -445,7 +443,7 @@ export class LotesComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar el lote', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el lote', 'Error');
         }
       });
     });
@@ -511,7 +509,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.procesandoId = null;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo cambiar el estado', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo cambiar el estado', 'Error');
         this.cargarLotes(); // resincroniza el switch con el estado real
       }
     });
@@ -534,7 +532,7 @@ export class LotesComponent implements OnInit, OnDestroy {
   /** Abre el diálogo de separación para un lote disponible. */
   abrirSeparar(lote: Lote): void {
     if (lote.estado === 'VENDIDO' || lote.ventaActiva) {
-      this.toastr.warning('Ese lote ya está vendido o tiene una venta activa');
+      this.alert.toastWarning('Ese lote ya está vendido o tiene una venta activa');
       return;
     }
     this.loteSeparando = lote;
@@ -565,7 +563,7 @@ export class LotesComponent implements OnInit, OnDestroy {
   confirmarSeparar(): void {
     if (!this.loteSeparando || this.separando) return;
     if (!this.sepFechaVence) {
-      this.toastr.warning('Indique la fecha de vencimiento');
+      this.alert.toastWarning('Indique la fecha de vencimiento');
       return;
     }
     const dto: LoteSeparacion = {
@@ -585,7 +583,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.separando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo separar el lote', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo separar el lote', 'Error');
       }
     });
   }
@@ -612,7 +610,7 @@ export class LotesComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo liberar la separación', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo liberar la separación', 'Error');
         }
       });
     });

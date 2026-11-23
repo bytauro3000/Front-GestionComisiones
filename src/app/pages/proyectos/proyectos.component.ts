@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
@@ -73,8 +72,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     private proyectoService: ProyectoService,
     private empresaService: EmpresaService,
     private sanitizer: DomSanitizer,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -98,7 +96,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los proyectos', 'Error');
+        this.alert.toastError('Error al cargar los proyectos', 'Error');
       }
     });
   }
@@ -137,7 +135,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
   cargarEmpresas(): void {
     this.empresaService.listar().subscribe({
       next: (data) => { this.empresas = data; },
-      error: () => { this.toastr.error('Error al cargar las empresas', 'Error'); }
+      error: () => { this.alert.toastError('Error al cargar las empresas', 'Error'); }
     });
   }
 
@@ -212,11 +210,11 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
-      this.toastr.warning('Seleccione una empresa');
+      this.alert.toastWarning('Seleccione una empresa');
       return;
     }
     if (!this.form.nombre || !this.form.nombre.trim()) {
-      this.toastr.warning('El nombre del proyecto es obligatorio');
+      this.alert.toastWarning('El nombre del proyecto es obligatorio');
       return;
     }
 
@@ -246,7 +244,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar el proyecto', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar el proyecto', 'Error');
       }
     });
   }
@@ -270,7 +268,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       next: () => this.finalizarGuardado(),
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar el plano', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar el plano', 'Error');
       }
     });
   }
@@ -311,12 +309,12 @@ export class ProyectosComponent implements OnInit, OnDestroy {
 
     const ext = archivo.name.split('.').pop()?.toLowerCase() || '';
     if (!['jpg', 'jpeg', 'png', 'webp', 'pdf'].includes(ext)) {
-      this.toastr.warning('Formato no válido: use JPG, PNG, WebP o PDF');
+      this.alert.toastWarning('Formato no válido: use JPG, PNG, WebP o PDF');
       input.value = '';
       return;
     }
     if (archivo.size > 10 * 1024 * 1024) {
-      this.toastr.warning('El plano no puede superar 10 MB');
+      this.alert.toastWarning('El plano no puede superar 10 MB');
       input.value = '';
       return;
     }
@@ -351,7 +349,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     }
     this.proyectoService.descargarPlano(p.id).subscribe({
       next: (blob) => window.open(URL.createObjectURL(blob), '_blank'),
-      error: () => this.toastr.warning('No se pudo abrir el plano')
+      error: () => this.alert.toastWarning('No se pudo abrir el plano')
     });
   }
 
@@ -367,7 +365,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       this.editandoRecorte = true;
       setTimeout(() => this.prepararDibujo(), 0);
     };
-    img.onerror = () => this.toastr.error('No se pudo cargar la imagen para recortar');
+    img.onerror = () => this.alert.toastError('No se pudo cargar la imagen para recortar');
     img.src = this.previewUrl;
   }
 
@@ -489,7 +487,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     const sw = Math.min(vista.width - sx, Math.round(this.recorte.w / escala));
     const sh = Math.min(vista.height - sy, Math.round(this.recorte.h / escala));
     if (sw < 1 || sh < 1) {
-      this.toastr.warning('El área de recorte es demasiado pequeña');
+      this.alert.toastWarning('El área de recorte es demasiado pequeña');
       return;
     }
 
@@ -502,14 +500,14 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     const nombre = this.previewNombre || 'plano.jpg';
     out.toBlob((blob) => {
       if (!blob) {
-        this.toastr.error('No se pudo generar el recorte', 'Error');
+        this.alert.toastError('No se pudo generar el recorte', 'Error');
         return;
       }
       this.archivoNuevo = new File([blob], nombre, { type: mime });
       this.asignarPreview(URL.createObjectURL(this.archivoNuevo), true, mime, nombre);
       this.quitarPlano = false;
       this.cancelarEditor();
-      this.toastr.success('Recorte aplicado — recuerda guardar el proyecto');
+      this.alert.toastSuccess('Recorte aplicado — recuerda guardar el proyecto');
     }, mime, 0.92);
   }
 
@@ -623,7 +621,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
   buscarDireccion(): void {
     const q = (this.form.ubicacion || '').trim();
     if (!q) {
-      this.toastr.warning('Escriba una dirección para buscar');
+      this.alert.toastWarning('Escriba una dirección para buscar');
       return;
     }
     if (this.buscando) return;
@@ -634,7 +632,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       .then((res: any[]) => {
         this.buscando = false;
         if (!res || res.length === 0) {
-          this.toastr.warning('Dirección no encontrada');
+          this.alert.toastWarning('Dirección no encontrada');
           return;
         }
         const r = res[0];
@@ -646,7 +644,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       })
       .catch(() => {
         this.buscando = false;
-        this.toastr.error('No se pudo buscar la dirección', 'Error');
+        this.alert.toastError('No se pudo buscar la dirección', 'Error');
       });
   }
 
@@ -677,7 +675,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar el proyecto', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el proyecto', 'Error');
         }
       });
     });

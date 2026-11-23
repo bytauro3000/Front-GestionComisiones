@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { LoteService, Lote } from '../../services/lote.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
@@ -55,8 +54,7 @@ export class SeparacionesComponent implements OnInit {
     private loteService: LoteService,
     private empresaService: EmpresaService,
     private proyectoService: ProyectoService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -73,7 +71,7 @@ export class SeparacionesComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar las separaciones', 'Error');
+        this.alert.toastError('Error al cargar las separaciones', 'Error');
       }
     });
   }
@@ -141,7 +139,7 @@ export class SeparacionesComponent implements OnInit {
       next: (lotes) => {
         this.lotesDisponibles = lotes.filter(l => l.estado !== 'VENDIDO' && !l.ventaActiva);
       },
-      error: () => this.toastr.error('No se pudieron cargar los lotes', 'Error')
+      error: () => this.alert.toastError('No se pudieron cargar los lotes', 'Error')
     });
   }
 
@@ -152,16 +150,16 @@ export class SeparacionesComponent implements OnInit {
   confirmar(): void {
     if (this.guardando) return;
     if (this.form.idLote == null) {
-      this.toastr.warning('Seleccione el lote a separar');
+      this.alert.toastWarning('Seleccione el lote a separar');
       return;
     }
     if (!this.form.fechaVence) {
-      this.toastr.warning('Indique la fecha de vencimiento');
+      this.alert.toastWarning('Indique la fecha de vencimiento');
       return;
     }
     const hoy = this.hoy();
     if (this.form.fechaVence < hoy) {
-      this.toastr.warning('La fecha de vencimiento no puede ser pasada');
+      this.alert.toastWarning('La fecha de vencimiento no puede ser pasada');
       return;
     }
 
@@ -181,7 +179,7 @@ export class SeparacionesComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo registrar la separación', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo registrar la separación', 'Error');
       }
     });
   }
@@ -207,7 +205,7 @@ export class SeparacionesComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo liberar la separación', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo liberar la separación', 'Error');
         }
       });
     });

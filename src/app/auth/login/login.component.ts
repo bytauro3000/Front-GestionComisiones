@@ -6,7 +6,7 @@ import { LoginService, LoginRequest } from '../login.service';
 import { jwtDecode } from 'jwt-decode';
 import { TokenService } from '../token.service';
 import { TokenRefreshService } from '../token-refresh.service';
-import { ToastrService } from 'ngx-toastr';
+import { AlertService } from '../../services/alert.service';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
     private loginService: LoginService,
     private router: Router,
     private tokenService: TokenService,
-    private toastr: ToastrService,
+    private alert: AlertService,
     private titleService: Title,
     private tokenRefreshService: TokenRefreshService
   ) {}
@@ -69,7 +69,7 @@ export class LoginComponent implements OnInit {
         const decodedToken: any = jwtDecode(token);
         const userRole = decodedToken.rol;
 
-        this.toastr.success('¡Bienvenido al sistema!', 'Acceso Exitoso');
+        this.alert.toastSuccess('¡Bienvenido al sistema!', 'Acceso Exitoso');
 
         // Cada rol entra a su propio menú
         if (userRole === 'ROLE_ADMINISTRADOR') {
@@ -85,7 +85,7 @@ export class LoginComponent implements OnInit {
         console.error('Login fallido:', err);
         this.cargando = false;
         const mensaje = err?.error?.mensaje || 'Correo o contraseña incorrectos';
-        this.toastr.error(mensaje, 'Error de Acceso', {
+        this.alert.toastError(mensaje, 'Error de Acceso', {
           timeOut: 3000,
           progressBar: true,
           positionClass: 'toast-top-right'

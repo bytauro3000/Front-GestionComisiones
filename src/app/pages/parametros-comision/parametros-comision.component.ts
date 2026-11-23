@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import {
   ParametroComisionService,
@@ -33,8 +32,7 @@ export class ParametrosComisionComponent implements OnInit {
   constructor(
     private parametroService: ParametroComisionService,
     private empresaService: EmpresaService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -51,7 +49,7 @@ export class ParametrosComisionComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar los parámetros de comisión', 'Error');
+        this.alert.toastError('Error al cargar los parámetros de comisión', 'Error');
       }
     });
   }
@@ -59,7 +57,7 @@ export class ParametrosComisionComponent implements OnInit {
   cargarEmpresas(): void {
     this.empresaService.listar().subscribe({
       next: (data) => (this.empresas = data),
-      error: () => this.toastr.error('Error al cargar las empresas', 'Error')
+      error: () => this.alert.toastError('Error al cargar las empresas', 'Error')
     });
   }
 
@@ -107,23 +105,23 @@ export class ParametrosComisionComponent implements OnInit {
     const meses = this.num(f.mesesEspera);
 
     if (pcContado == null || pcContado < 0 || pcContado > 1) {
-      this.toastr.warning('El % de comisión contado debe estar entre 0 y 1 (use 0.03 = 3%)');
+      this.alert.toastWarning('El % de comisión contado debe estar entre 0 y 1 (use 0.03 = 3%)');
       return;
     }
     if (pcFinanciado == null || pcFinanciado < 0 || pcFinanciado > 1) {
-      this.toastr.warning('El % de comisión financiado debe estar entre 0 y 1 (use 0.03 = 3%)');
+      this.alert.toastWarning('El % de comisión financiado debe estar entre 0 y 1 (use 0.03 = 3%)');
       return;
     }
     if (pcAnticipo == null || pcAnticipo < 0 || pcAnticipo > 1) {
-      this.toastr.warning('El % de anticipo debe estar entre 0 y 1 (use 0.20 = 20%)');
+      this.alert.toastWarning('El % de anticipo debe estar entre 0 y 1 (use 0.20 = 20%)');
       return;
     }
     if (cuota == null || cuota < 0) {
-      this.toastr.warning('La cuota debe ser 0 o un monto mayor');
+      this.alert.toastWarning('La cuota debe ser 0 o un monto mayor');
       return;
     }
     if (meses == null || meses < 0) {
-      this.toastr.warning('Los meses de espera deben ser 0 o más');
+      this.alert.toastWarning('Los meses de espera deben ser 0 o más');
       return;
     }
 
@@ -131,13 +129,13 @@ export class ParametrosComisionComponent implements OnInit {
     if (f.anticipoMontoFijo != null) {
       anticipoFijo = this.num(f.anticipoMontoFijo);
       if (anticipoFijo == null || anticipoFijo < 0) {
-        this.toastr.warning('El anticipo fijo debe ser 0 o un monto mayor');
+        this.alert.toastWarning('El anticipo fijo debe ser 0 o un monto mayor');
         return;
       }
     }
 
     if (f.fechaInicioVigencia && f.fechaFinVigencia && f.fechaFinVigencia < f.fechaInicioVigencia) {
-      this.toastr.warning('La fecha fin de vigencia debe ser mayor o igual a la fecha de inicio');
+      this.alert.toastWarning('La fecha fin de vigencia debe ser mayor o igual a la fecha de inicio');
       return;
     }
 
@@ -168,7 +166,7 @@ export class ParametrosComisionComponent implements OnInit {
         },
         error: (err) => {
           this.guardando = false;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo actualizar el parámetro', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo actualizar el parámetro', 'Error');
         }
       });
     } else {
@@ -182,7 +180,7 @@ export class ParametrosComisionComponent implements OnInit {
         },
         error: (err) => {
           this.guardando = false;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo crear el parámetro', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo crear el parámetro', 'Error');
         }
       });
     }
@@ -213,7 +211,7 @@ export class ParametrosComisionComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar el parámetro', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el parámetro', 'Error');
         }
       });
     });

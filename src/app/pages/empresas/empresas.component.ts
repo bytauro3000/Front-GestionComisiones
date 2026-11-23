@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { EmpresaService, Empresa, CuentaBancaria } from '../../services/empresa.service';
 import { DeclectaService } from '../../services/decolecta.service';
@@ -41,8 +40,7 @@ export class EmpresasComponent implements OnInit {
   constructor(
     private empresaService: EmpresaService,
     private decolectaService: DeclectaService,
-    private alert: AlertService,
-    private toastr: ToastrService
+    private alert: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -58,7 +56,7 @@ export class EmpresasComponent implements OnInit {
       },
       error: () => {
         this.cargando = false;
-        this.toastr.error('Error al cargar las empresas', 'Error');
+        this.alert.toastError('Error al cargar las empresas', 'Error');
       }
     });
   }
@@ -102,7 +100,7 @@ export class EmpresasComponent implements OnInit {
 
   agregarTelefono(): void {
     if (this.telefonos.length >= 9) {
-      this.toastr.info('Puedes registrar hasta 9 celulares');
+      this.alert.toastInfo('Puedes registrar hasta 9 celulares');
       return;
     }
     this.telefonos.push('');
@@ -131,7 +129,7 @@ export class EmpresasComponent implements OnInit {
 
   agregarCuenta(): void {
     if (this.cuentas.length >= 5) {
-      this.toastr.info('Puedes registrar hasta 5 cuentas');
+      this.alert.toastInfo('Puedes registrar hasta 5 cuentas');
       return;
     }
     this.cuentas.push(this.cuentaVacia());
@@ -150,11 +148,11 @@ export class EmpresasComponent implements OnInit {
     if (this.guardando) return;
 
     if (!/^\d{11}$/.test(this.form.ruc || '')) {
-      this.toastr.warning('El RUC debe tener exactamente 11 dígitos');
+      this.alert.toastWarning('El RUC debe tener exactamente 11 dígitos');
       return;
     }
     if (!this.form.razonSocial || !this.form.razonSocial.trim()) {
-      this.toastr.warning('La razón social es obligatoria');
+      this.alert.toastWarning('La razón social es obligatoria');
       return;
     }
 
@@ -171,25 +169,25 @@ export class EmpresasComponent implements OnInit {
 
     for (const c of cuentasLimpias) {
       if (!c.banco) {
-        this.toastr.warning('Cada cuenta debe indicar el banco (o quítala con ×)', 'Falta el banco');
+        this.alert.toastWarning('Cada cuenta debe indicar el banco (o quítala con ×)', 'Falta el banco');
         return;
       }
       if (!c.tipoCuenta) {
-        this.toastr.warning('Cada cuenta debe indicar si es en soles o dólares', 'Falta el tipo de cuenta');
+        this.alert.toastWarning('Cada cuenta debe indicar si es en soles o dólares', 'Falta el tipo de cuenta');
         return;
       }
       if (!c.numeroCuenta) {
-        this.toastr.warning('Cada cuenta debe tener número de cuenta (o quítala con ×)', 'Falta el número de cuenta');
+        this.alert.toastWarning('Cada cuenta debe tener número de cuenta (o quítala con ×)', 'Falta el número de cuenta');
         return;
       }
       if (!/^\d{10,25}$/.test(c.numeroCuenta)) {
-        this.toastr.warning(
+        this.alert.toastWarning(
           `Debe tener de 10 a 25 dígitos y solo números (tiene ${c.numeroCuenta.length}): ${c.numeroCuenta}`,
           'Revisa el número de cuenta');
         return;
       }
       if (c.cci && !/^\d{20}$/.test(c.cci)) {
-        this.toastr.warning(
+        this.alert.toastWarning(
           `El CCI debe tener exactamente 20 dígitos (tiene ${c.cci.length}): ${c.cci}`,
           'Revisa el CCI');
         return;
@@ -217,7 +215,7 @@ export class EmpresasComponent implements OnInit {
       },
       error: (err) => {
         this.guardando = false;
-        this.toastr.error(err?.error?.mensaje || 'No se pudo guardar la empresa', 'Error');
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar la empresa', 'Error');
       }
     });
   }
@@ -227,7 +225,7 @@ export class EmpresasComponent implements OnInit {
   buscarSunat(): void {
     if (this.buscandoRuc) return;
     if (!/^\d{11}$/.test(this.form.ruc || '')) {
-      this.toastr.warning('Ingrese un RUC de 11 dígitos para buscar en SUNAT');
+      this.alert.toastWarning('Ingrese un RUC de 11 dígitos para buscar en SUNAT');
       return;
     }
 
@@ -240,14 +238,14 @@ export class EmpresasComponent implements OnInit {
         if (data.distrito) this.form.distrito = data.distrito;
         if (data.provincia) this.form.provincia = data.provincia;
         if (data.departamento) this.form.departamento = data.departamento;
-        this.toastr.success('Datos completados desde SUNAT');
+        this.alert.toastSuccess('Datos completados desde SUNAT');
         if (data.estado || data.condicion) {
-          this.toastr.info(`SUNAT: ${data.condicion || '—'} - ${data.estado || '—'}`);
+          this.alert.toastInfo(`SUNAT: ${data.condicion || '—'} - ${data.estado || '—'}`);
         }
       },
       error: () => {
         this.buscandoRuc = false;
-        this.toastr.warning('No se encontró información para ese RUC');
+        this.alert.toastWarning('No se encontró información para ese RUC');
       }
     });
   }
@@ -274,7 +272,7 @@ export class EmpresasComponent implements OnInit {
         },
         error: (err) => {
           this.procesandoId = null;
-          this.toastr.error(err?.error?.mensaje || 'No se pudo eliminar la empresa', 'Error');
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar la empresa', 'Error');
         }
       });
     });

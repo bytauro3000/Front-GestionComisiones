@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
 import { RegistroService, RegistroPublico } from '../../auth/registro.service';
 import { AlertService } from '../../services/alert.service';
@@ -34,7 +33,6 @@ export class RegistroComponent {
     private registroService: RegistroService,
     private router: Router,
     private alert: AlertService,
-    private toastr: ToastrService,
     private titleService: Title
   ) {
     this.titleService.setTitle('Crear cuenta | Vende Lote');
@@ -42,7 +40,7 @@ export class RegistroComponent {
 
   agregarTelefono(): void {
     if (this.telefonos.length >= 9) {
-      this.toastr.info('Puedes registrar hasta 9 celulares');
+      this.alert.toastInfo('Puedes registrar hasta 9 celulares');
       return;
     }
     this.telefonos.push('');
@@ -57,19 +55,19 @@ export class RegistroComponent {
     if (this.cargando) return;
 
     if (!this.form.nombres.trim() || !this.form.apellidos.trim() || !this.form.correo.trim()) {
-      this.toastr.warning('Nombres, apellidos y correo son obligatorios');
+      this.alert.toastWarning('Nombres, apellidos y correo son obligatorios');
       return;
     }
     if (this.form.contrasena.length < 8) {
-      this.toastr.warning('La contraseña debe tener al menos 8 caracteres');
+      this.alert.toastWarning('La contraseña debe tener al menos 8 caracteres');
       return;
     }
     if (this.form.contrasena !== this.confirmarContrasena) {
-      this.toastr.warning('Las contraseñas no coinciden');
+      this.alert.toastWarning('Las contraseñas no coinciden');
       return;
     }
     if (this.form.dni && !/^\d{8}$/.test(this.form.dni)) {
-      this.toastr.warning('El DNI debe tener 8 dígitos');
+      this.alert.toastWarning('El DNI debe tener 8 dígitos');
       return;
     }
 
@@ -95,7 +93,7 @@ export class RegistroComponent {
         if (mensaje.toLowerCase().includes('correo') && mensaje.toLowerCase().includes('registrado')) {
           this.correoDuplicado = true;
         }
-        this.toastr.error(mensaje, 'Error en el registro');
+        this.alert.toastError(mensaje, 'Error en el registro');
       }
     });
   }
