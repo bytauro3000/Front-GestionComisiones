@@ -7,6 +7,10 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 import { AlertService } from '../../services/alert.service';
+import {
+  SearchableSelectComponent,
+  SelectOption
+} from '../../components/searchable-select/searchable-select.component';
 
 interface SeparacionForm {
   idEmpresa: number | null;
@@ -22,7 +26,7 @@ interface SeparacionForm {
 @Component({
   selector: 'app-separaciones',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyFormatterDirective],
+  imports: [CommonModule, FormsModule, CurrencyFormatterDirective, SearchableSelectComponent],
   templateUrl: './separaciones.component.html',
   styleUrl: './separaciones.component.scss'
 })
@@ -125,17 +129,41 @@ export class SeparacionesComponent implements OnInit {
     this.modalAbierto = false;
   }
 
-  onEmpresaChange(): void {
+  get empresaOptions(): SelectOption[] {
+    return this.empresas
+      .filter(e => e.id != null)
+      .map(e => ({ id: e.id!, label: e.razonSocial, badge: e.ruc }));
+  }
+
+  get programaOptions(): SelectOption[] {
+    return this.proyectosDisponibles
+      .filter(p => p.id != null)
+      .map(p => ({ id: p.id!, label: p.nombre }));
+  }
+
+  get loteOptions(): SelectOption[] {
+    return this.lotesDisponibles
+      .filter(l => l.id != null)
+      .map(l => ({
+        id: l.id!,
+        label: this.etiquetaLote(l),
+        badge: l.precio != null ? `USD ${l.precio}` : undefined
+      }));
+  }
+
+  onEmpresaChange(valor: number | null): void {
+    this.form.idEmpresa = valor;
     this.form.idProyecto = null;
     this.form.idLote = null;
     this.lotesDisponibles = [];
   }
 
-  onProyectoChange(): void {
+  onProyectoChange(valor: number | null): void {
+    this.form.idProyecto = valor;
     this.form.idLote = null;
     this.lotesDisponibles = [];
-    if (this.form.idProyecto == null) return;
-    this.loteService.listar({ idProyecto: this.form.idProyecto }).subscribe({
+    if (valor == null) return;
+    this.loteService.listar({ idProyecto: valor }).subscribe({
       next: (lotes) => {
         this.lotesDisponibles = lotes.filter(l => l.estado !== 'VENDIDO' && !l.ventaActiva);
       },

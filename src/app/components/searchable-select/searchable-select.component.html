@@ -1,0 +1,32 @@
+<div class="ss">
+  <input
+    type="text"
+    class="ss-input"
+    [value]="display"
+    [disabled]="disabled"
+    [placeholder]="placeholder"
+    (focus)="abrir()"
+    (click)="abrir()"
+    (input)="onInput($event)"
+    autocomplete="off">
+
+  <i class="fas fa-chevron-down ss-arrow"></i>
+
+  @if (abierto) {
+    <ul class="ss-list">
+      @for (o of filtrados; track o.id) {
+        <li (mousedown)="seleccionar(o)">
+          <span class="ss-label">{{ o.label }}</span>
+          @if (o.badge) {
+            <span class="ss-badge">{{ o.badge }}</span>
+          }
+          @if (o.sub) {
+            <small class="ss-sub">{{ o.sub }}</small>
+          }
+        </li>
+      } @empty {
+        <li class="ss-empty">{{ emptyText }}</li>
+      }
+    </ul>
+  }
+</div>

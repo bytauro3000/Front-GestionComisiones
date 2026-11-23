@@ -94,6 +94,13 @@
 
   <div class="nav-overlay" [class.open]="menuAbierto" (click)="cerrarMenu()" aria-hidden="true"></div>
 
+  <!-- Botón flotante global: solo en Inicio -->
+  @if (mostrarFab) {
+    <button type="button" class="fab-emitir" (click)="emitirProforma()" title="Emitir nueva proforma">
+      <i class="fas fa-file-invoice-dollar"></i><span>Proforma</span>
+    </button>
+  }
+
   <!-- Contenido -->
   <main class="vendedor-content">
     <router-outlet />

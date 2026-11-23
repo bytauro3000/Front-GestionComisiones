@@ -6,11 +6,15 @@ import { LoteService, Lote, LoteSeparacion } from '../../services/lote.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { AlertService } from '../../services/alert.service';
+import {
+  SearchableSelectComponent,
+  SelectOption
+} from '../../components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-lotes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './lotes.component.html',
   styleUrl: './lotes.component.scss'
 })
@@ -104,8 +108,21 @@ export class LotesComponent implements OnInit, OnDestroy {
       p.idEmpresa === this.form.idEmpresa && p.estado !== 'INACTIVO');
   }
 
+  get empresaOptions(): SelectOption[] {
+    return this.empresas
+      .filter(e => e.id != null)
+      .map(e => ({ id: e.id!, label: e.razonSocial, badge: e.ruc }));
+  }
+
+  get proyectoOptions(): SelectOption[] {
+    return this.proyectosDisponibles
+      .filter(p => p.id != null)
+      .map(p => ({ id: p.id!, label: p.nombre }));
+  }
+
   /** Al cambiar de empresa, descarta el proyecto si no pertenece a la nueva. */
-  onEmpresaCambiada(): void {
+  onEmpresaCambiada(valor: number | null): void {
+    this.form.idEmpresa = valor ?? 0;
     if (this.form.idProyecto &&
         !this.proyectosDisponibles.some(p => p.id === this.form.idProyecto)) {
       this.form.idProyecto = undefined;

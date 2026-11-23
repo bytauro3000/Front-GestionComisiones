@@ -137,14 +137,66 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
-.fila-lote {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px 34px;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
+.modal-card.modal-proforma {
+  max-width: 960px;
+  width: min(95vw, 960px);
+}
 
-  .campo-lote select {
+.fila-lote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid $gray-200;
+  border-radius: 12px;
+  background: #f8fafc;
+
+  .fila-lote-row {
+    display: grid;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .fila-lote-row-1 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .fila-lote-row-2 {
+    grid-template-columns: minmax(0, 1fr) 150px 150px 130px 34px;
+    align-items: end;
+  }
+
+  .campo-monto {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .campo-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: $gray-500;
+  }
+
+  .campo-numero input {
+    width: 100%;
+    height: 40px;
+    border: 1.5px solid $gray-200;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    text-align: right;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    }
+  }
+
+  select {
     width: 100%;
     height: 40px;
     border: 1.5px solid $gray-200;
@@ -235,6 +287,19 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     font-size: 1.1rem;
     color: $primary;
     font-weight: 800;
+  }
+}
+
+.fila-lote-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: $gray-700;
+
+  strong {
+    color: $dark;
   }
 }
 
@@ -529,8 +594,24 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .fila-lote {
-    grid-template-columns: minmax(0, 1fr) 110px 34px;
-    gap: 6px;
+    .fila-lote-row-1 {
+      grid-template-columns: 1fr;
+    }
+
+    /* En celular: Mz/Lt + Costo total arriba; Inicial + N° letras abajo */
+    .fila-lote-row-2 {
+      grid-template-columns: 1.2fr 1fr;
+    }
+
+    .fila-lote-row-2 .btn-quitar-fila {
+      grid-column: 1 / -1;
+      justify-self: end;
+    }
+  }
+
+  .modal-card.modal-proforma {
+    max-width: 100%;
+    width: 100%;
   }
 
   .proforma-doc {

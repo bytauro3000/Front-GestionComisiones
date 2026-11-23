@@ -100,12 +100,8 @@
       <div class="modal-body">
         <div class="form-field">
           <label>Empresa *</label>
-          <select [(ngModel)]="form.idEmpresa">
-            <option [ngValue]="0" disabled>Seleccione una empresa</option>
-            @for (e of empresas; track e.id) {
-              <option [ngValue]="e.id">{{ e.razonSocial }}</option>
-            }
-          </select>
+          <app-searchable-select [options]="empresaOptions" [(ngModel)]="form.idEmpresa"
+            placeholder="Buscar empresa..."></app-searchable-select>
         </div>
 
         <div class="form-row" [class.con-estado]="modoEdicion">

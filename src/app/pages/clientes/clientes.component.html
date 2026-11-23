@@ -12,8 +12,13 @@
   <div class="toolbar">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input type="text" placeholder="Buscar por documento, nombre o correo..." [(ngModel)]="terminoBusqueda">
+      <input type="text" placeholder="Buscar por documento, nombre, correo o teléfono..." [(ngModel)]="terminoBusqueda">
     </div>
+    <select class="filtro-select" [(ngModel)]="filtroTipo">
+      <option value="">Todos</option>
+      <option value="PROSPECTO">Prospectos</option>
+      <option value="CLIENTE">Clientes</option>
+    </select>
     <span class="contador">{{ xFiltrados.length }} cliente(s)</span>
   </div>
 
@@ -23,6 +28,8 @@
         <tr>
           <th>Documento</th>
           <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Seguimiento</th>
           <th>Teléfono</th>
           <th>Correo</th>
           <th>Registro</th>
@@ -31,9 +38,9 @@
       </thead>
       <tbody>
         @if (cargando) {
-          <tr><td colspan="6" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+          <tr><td colspan="8" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
         } @else if (xFiltrados.length === 0) {
-          <tr><td colspan="6" class="empty-cell">No se encontraron clientes</td></tr>
+          <tr><td colspan="8" class="empty-cell">No se encontraron clientes</td></tr>
         } @else {
           @for (c of xFiltrados; track c.id) {
             <tr>
@@ -45,6 +52,18 @@
               </td>
               <td data-label="Cliente">
                 <strong>{{ c.nombres }} {{ c.apellidos }}</strong>
+              </td>
+              <td data-label="Tipo">
+                @if (c.prospecto) {
+                  <span class="badge badge-warning">Prospecto</span>
+                } @else {
+                  <span class="badge badge-activo">Cliente</span>
+                }
+              </td>
+              <td data-label="Seguimiento">
+                <span class="badge" [ngClass]="claseSeguimiento(c.estadoSeguimiento)">
+                  {{ etiquetaSeguimiento(c.estadoSeguimiento) }}
+                </span>
               </td>
               <td data-label="Teléfono">
                 @for (tel of listaTelefonos(c.telefono); track $index) {
@@ -59,6 +78,11 @@
                 <button class="btn btn-outline btn-sm" (click)="abrirEditar(c)" title="Editar">
                   <i class="fas fa-pen"></i>
                 </button>
+                @if (c.prospecto) {
+                  <button class="btn btn-outline btn-sm" (click)="completar(c)" title="Marcar como cliente">
+                    <i class="fas fa-user-check"></i>
+                  </button>
+                }
                 <button class="btn btn-danger btn-sm" (click)="eliminar(c)"
                         [disabled]="procesandoId === c.id" title="Eliminar">
                   <i class="fas fa-trash"></i>
@@ -149,6 +173,32 @@
         <div class="form-field">
           <label>Dirección</label>
           <input type="text" [(ngModel)]="form.direccion" placeholder="Opcional">
+        </div>
+
+        <h4 class="seccion-titulo"><i class="fas fa-user-clock"></i> Seguimiento</h4>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Estado de seguimiento</label>
+            <select [(ngModel)]="form.estadoSeguimiento">
+              @for (e of estadosSeguimiento; track e) {
+                <option [value]="e">{{ etiquetaSeguimiento(e) }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Próximo contacto</label>
+            <input type="date" [(ngModel)]="form.proximoContacto">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Nota de seguimiento</label>
+          <input type="text" [(ngModel)]="form.notaSeguimiento" maxlength="300" placeholder="Opcional">
+        </div>
+        <div class="form-field">
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="form.prospecto">
+            <span>Es prospecto (datos básicos; completa la ficha al comprar)</span>
+          </label>
         </div>
       </div>
       <div class="modal-footer">

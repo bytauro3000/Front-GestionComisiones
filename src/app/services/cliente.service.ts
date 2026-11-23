@@ -13,6 +13,10 @@ export interface Cliente {
   telefono?: string;
   correo?: string;
   direccion?: string;
+  prospecto?: boolean;
+  estadoSeguimiento?: string;
+  notaSeguimiento?: string;
+  proximoContacto?: string;
   fechaRegistro?: string;
 }
 
@@ -33,6 +37,26 @@ export class ClienteService {
 
   obtener(id: number): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.URL}/${id}`);
+  }
+
+  /** Búsqueda rápida por documento (para emitir proformas). 404 si no existe. */
+  buscarPorDocumento(numDocumento: string): Observable<Cliente> {
+    return this.http.get<Cliente>(`${this.URL}/por-documento`, {
+      params: { numDocumento }
+    });
+  }
+
+  /** Actualiza el seguimiento comercial del cliente/prospecto. */
+  actualizarSeguimiento(
+    id: number,
+    dto: { estado?: string; nota?: string; proximoContacto?: string }
+  ): Observable<Cliente> {
+    return this.http.patch<Cliente>(`${this.URL}/${id}/seguimiento`, dto);
+  }
+
+  /** Convierte un prospecto en cliente (registro completo). */
+  completar(id: number): Observable<Cliente> {
+    return this.http.patch<Cliente>(`${this.URL}/${id}/completar`, {});
   }
 
   crear(dto: Cliente): Observable<Cliente> {

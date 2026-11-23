@@ -1,9 +1,11 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
 import { TokenService } from '../../auth/token.service';
 import { LogoutService } from '../../auth/logout.service';
 import { NotificacionBellComponent } from '../../components/notificacion-bell/notificacion-bell.component';
+import { ProformaUiService } from '../../services/proforma-ui.service';
 
 @Component({
   selector: 'app-vendedor-layout',
@@ -23,12 +25,33 @@ export class VendedorLayoutComponent implements OnDestroy {
   hoverAbierto = false;
 
   private timerHover: ReturnType<typeof setTimeout> | null = null;
+  private routerSub?: Subscription;
+
+  /** El botón flotante de proforma solo se muestra en Inicio. */
+  mostrarFab = false;
 
   constructor(
     private tokenService: TokenService,
-    private logoutService: LogoutService
+    private logoutService: LogoutService,
+    private proformaUi: ProformaUiService,
+    private router: Router
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Vendedor';
+    this.actualizarFab(this.router.url);
+    this.routerSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe((e) => this.actualizarFab((e as NavigationEnd).urlAfterRedirects));
+  }
+
+  private actualizarFab(url: string): void {
+    this.mostrarFab = url.startsWith('/vendedor/inicio');
+  }
+
+  /** Abre el modal de nueva proforma desde cualquier página. */
+  emitirProforma(): void {
+    this.proformaUi.solicitarNueva();
+    this.cerrarMenu();
+    this.router.navigate(['/vendedor/proformas']);
   }
 
   get menuAbierto(): boolean {
@@ -83,6 +106,7 @@ export class VendedorLayoutComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
     this.limpiarTimer();
     document.body.style.overflow = '';
   }

@@ -160,30 +160,15 @@
       <div class="modal-body">
         <div class="form-field">
           <label>Empresa *</label>
-          <select [(ngModel)]="form.idEmpresa" (change)="onEmpresaCambiada()">
-            <option [ngValue]="0" disabled>Seleccione una empresa</option>
-            @for (e of empresas; track e.id) {
-              <option [ngValue]="e.id">{{ e.razonSocial }}</option>
-            }
-          </select>
+          <app-searchable-select [options]="empresaOptions" [ngModel]="form.idEmpresa"
+            (ngModelChange)="onEmpresaCambiada($event)" placeholder="Buscar empresa..."></app-searchable-select>
         </div>
 
         <div class="form-field">
           <label>Proyecto *</label>
-          <div class="select-accion">
-            <select [(ngModel)]="form.idProyecto" [disabled]="!form.idEmpresa">
-              <option [ngValue]="undefined" disabled>
-                {{ form.idEmpresa ? 'Seleccione un proyecto' : 'Primero seleccione una empresa' }}
-              </option>
-              @for (p of proyectosDisponibles; track p.id) {
-                <option [ngValue]="p.id">{{ p.nombre }}</option>
-              }
-            </select>
-            <button type="button" class="btn-agregar-proyecto" (click)="abrirProyectoRapido()"
-                    title="Nuevo proyecto" [disabled]="!form.idEmpresa">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
+          <app-searchable-select [options]="proyectoOptions" [(ngModel)]="form.idProyecto"
+            [disabled]="!form.idEmpresa"
+            [placeholder]="form.idEmpresa ? 'Buscar programa...' : 'Primero seleccione una empresa'"></app-searchable-select>
         </div>
 
         <div class="form-row">

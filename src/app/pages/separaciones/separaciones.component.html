@@ -110,36 +110,22 @@
       <div class="modal-body">
         <div class="form-field">
           <label>Empresa *</label>
-          <select [(ngModel)]="form.idEmpresa" (change)="onEmpresaChange()">
-            <option [ngValue]="null" disabled>Seleccione una empresa</option>
-            @for (e of empresas; track e.id) {
-              <option [ngValue]="e.id">{{ e.razonSocial }}</option>
-            }
-          </select>
+          <app-searchable-select [options]="empresaOptions" [ngModel]="form.idEmpresa"
+            (ngModelChange)="onEmpresaChange($event)" placeholder="Buscar empresa..."></app-searchable-select>
         </div>
 
         <div class="form-field">
           <label>Proyecto *</label>
-          <select [(ngModel)]="form.idProyecto" [disabled]="form.idEmpresa == null" (change)="onProyectoChange()">
-            <option [ngValue]="null" disabled>
-              {{ form.idEmpresa ? 'Seleccione un proyecto' : 'Primero seleccione una empresa' }}
-            </option>
-            @for (p of proyectosDisponibles; track p.id) {
-              <option [ngValue]="p.id">{{ p.nombre }}</option>
-            }
-          </select>
+          <app-searchable-select [options]="programaOptions" [ngModel]="form.idProyecto"
+            [disabled]="form.idEmpresa == null" (ngModelChange)="onProyectoChange($event)"
+            [placeholder]="form.idEmpresa ? 'Buscar programa...' : 'Primero seleccione una empresa'"></app-searchable-select>
         </div>
 
         <div class="form-field">
           <label>Lote *</label>
-          <select [(ngModel)]="form.idLote" [disabled]="form.idProyecto == null">
-            <option [ngValue]="null" disabled>
-              {{ form.idProyecto ? 'Seleccione el lote' : 'Primero seleccione un proyecto' }}
-            </option>
-            @for (l of lotesDisponibles; track l.id) {
-              <option [ngValue]="l.id">{{ etiquetaLote(l) }} — {{ formatearMoneda(l.precio) }}</option>
-            }
-          </select>
+          <app-searchable-select [options]="loteOptions" [(ngModel)]="form.idLote"
+            [disabled]="form.idProyecto == null"
+            [placeholder]="form.idProyecto ? 'Buscar lote...' : 'Primero seleccione un programa'"></app-searchable-select>
         </div>
 
         <div class="form-field">

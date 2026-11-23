@@ -1,90 +1,128 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom, Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
-import { ProformaService, Proforma } from '../../services/proforma.service';
+import {
+  ProformaService,
+  Proforma,
+  ProformaSeguimiento
+} from '../../services/proforma.service';
 import { ClienteService, Cliente } from '../../services/cliente.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
+import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { LoteService, Lote } from '../../services/lote.service';
+import { DeclectaService } from '../../services/decolecta.service';
 import { UsuarioService, Perfil } from '../../services/usuario.service';
 import { TokenService } from '../../auth/token.service';
 import { AlertService } from '../../services/alert.service';
+import { ProformaUiService } from '../../services/proforma-ui.service';
+import {
+  SearchableSelectComponent,
+  SelectOption
+} from '../../components/searchable-select/searchable-select.component';
 
 interface FilaDetalle {
+  idEmpresa: number | null;
+  idProyecto: number | null;
   idLote: number | null;
   precioUnitario: number | null;
+  inicial: number | null;
+  numCuotas: number | null;
+}
+
+interface ProformaForm {
+  idCliente: number | null;
+  tipoDocumento: string;
+  numDocumento: string;
+  nombres: string;
+  apellidos: string;
+  telefono: string;
+  observaciones: string;
 }
 
 @Component({
   selector: 'app-proformas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './proformas.component.html',
   styleUrl: './proformas.component.scss'
 })
-export class ProformasComponent implements OnInit {
+export class ProformasComponent implements OnInit, OnDestroy {
 
   proformas: Proforma[] = [];
+  seguimiento: ProformaSeguimiento[] = [];
   empresas: Empresa[] = [];
+  proyectos: Proyecto[] = [];
   clientes: Cliente[] = [];
   lotes: Lote[] = [];
   perfil: Perfil | null = null;
+
   cargando = false;
+  cargandoSeguimiento = false;
   terminoBusqueda = '';
   procesandoId: number | null = null;
+  tab: 'PROFORMAS' | 'SEGUIMIENTO' = 'PROFORMAS';
+
+  // Filtro por fechas
+  fechaDesde = '';
+  fechaHasta = '';
 
   // Modal crear/editar
   modalAbierto = false;
   modoEdicion = false;
   proformaEditando: Proforma | null = null;
   guardando = false;
-  form: { idEmpresa: number | null; idCliente: number | null; observaciones: string } = {
-    idEmpresa: null,
-    idCliente: null,
-    observaciones: ''
-  };
-  filas: FilaDetalle[] = [{ idLote: null, precioUnitario: null }];
+  buscandoDni = false;
+  form: ProformaForm = this.formVacio();
+  filas: FilaDetalle[] = [this.filaVacia()];
 
-  // Vista previa imprimible
   vistaPrevia: Proforma | null = null;
+
+  readonly estadosSeguimiento = ['NUEVO', 'CONTACTADO', 'INTERESADO', 'NO_INTERESADO', 'GANADO'];
+
+  private nuevaSub?: Subscription;
 
   constructor(
     private proformaService: ProformaService,
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
+    private proyectoService: ProyectoService,
     private loteService: LoteService,
+    private decolectaService: DeclectaService,
     private usuarioService: UsuarioService,
     private tokenService: TokenService,
-    private alert: AlertService
+    private alert: AlertService,
+    private proformaUi: ProformaUiService
   ) { }
 
   ngOnInit(): void {
     this.cargarProformas();
-    this.empresaService.listar().subscribe({
-      next: (data) => this.empresas = data,
-      error: () => this.alert.toastError('Error al cargar las empresas', 'Error')
+    this.empresaService.listar().subscribe({ next: (d) => this.empresas = d, error: () => undefined });
+    this.proyectoService.listar().subscribe({ next: (d) => this.proyectos = d, error: () => undefined });
+    this.clienteService.listar().subscribe({ next: (d) => this.clientes = d, error: () => undefined });
+    this.loteService.listar().subscribe({ next: (d) => this.lotes = d, error: () => undefined });
+    this.usuarioService.perfil().subscribe({ next: (d) => this.perfil = d, error: () => this.perfil = null });
+
+    // Permite abrir el modal desde el botón flotante global del layout.
+    this.nuevaSub = this.proformaUi.onNueva().subscribe(() => {
+      this.proformaUi.consumirPendiente();
+      this.abrirCrear();
     });
-    this.clienteService.listar().subscribe({
-      next: (data) => this.clientes = data,
-      error: () => this.alert.toastError('Error al cargar los clientes', 'Error')
-    });
-    this.loteService.listar().subscribe({
-      next: (data) => this.lotes = data,
-      error: () => this.alert.toastError('Error al cargar los lotes', 'Error')
-    });
-    // Datos del vendedor para el encabezado del documento (nunca los de la empresa)
-    this.usuarioService.perfil().subscribe({
-      next: (data) => this.perfil = data,
-      error: () => {
-        // Si falla el perfil, se usan los datos del token como respaldo
-        this.perfil = null;
-      }
-    });
+    if (this.proformaUi.consumirPendiente()) {
+      this.abrirCrear();
+    }
   }
+
+  ngOnDestroy(): void {
+    this.nuevaSub?.unsubscribe();
+  }
+
+  // ── Carga y filtros ───────────────────────────────────────────────────────
 
   cargarProformas(): void {
     this.cargando = true;
-    this.proformaService.listar().subscribe({
+    this.proformaService.listar(this.filtro()).subscribe({
       next: (data) => {
         this.proformas = data;
         this.cargando = false;
@@ -96,9 +134,70 @@ export class ProformasComponent implements OnInit {
     });
   }
 
+  cargarSeguimiento(): void {
+    this.cargandoSeguimiento = true;
+    this.proformaService.seguimiento(this.filtro()).subscribe({
+      next: (data) => {
+        this.seguimiento = data;
+        this.cargandoSeguimiento = false;
+      },
+      error: () => {
+        this.cargandoSeguimiento = false;
+        this.alert.toastError('Error al cargar el seguimiento', 'Error');
+      }
+    });
+  }
+
+  cambiarTab(tab: 'PROFORMAS' | 'SEGUIMIENTO'): void {
+    this.tab = tab;
+    if (tab === 'SEGUIMIENTO' && this.seguimiento.length === 0) {
+      this.cargarSeguimiento();
+    }
+  }
+
+  private filtro(): { fechaDesde?: string; fechaHasta?: string } {
+    return {
+      fechaDesde: this.fechaDesde || undefined,
+      fechaHasta: this.fechaHasta || undefined
+    };
+  }
+
+  aplicarPreset(preset: 'HOY' | 'AYER' | 'SEMANA' | 'MES' | 'TODOS'): void {
+    const hoy = new Date();
+    if (preset === 'TODOS') {
+      this.fechaDesde = '';
+      this.fechaHasta = '';
+    } else if (preset === 'HOY') {
+      this.fechaDesde = this.iso(hoy);
+      this.fechaHasta = this.iso(hoy);
+    } else if (preset === 'AYER') {
+      const ayer = new Date(hoy);
+      ayer.setDate(ayer.getDate() - 1);
+      this.fechaDesde = this.iso(ayer);
+      this.fechaHasta = this.iso(ayer);
+    } else if (preset === 'SEMANA') {
+      const desde = new Date(hoy);
+      desde.setDate(desde.getDate() - 7);
+      this.fechaDesde = this.iso(desde);
+      this.fechaHasta = this.iso(hoy);
+    } else {
+      const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      this.fechaDesde = this.iso(primero);
+      this.fechaHasta = this.iso(hoy);
+    }
+    this.recargar();
+  }
+
+  recargar(): void {
+    this.cargarProformas();
+    if (this.tab === 'SEGUIMIENTO') {
+      this.cargarSeguimiento();
+    }
+  }
+
   get xFiltrados(): Proforma[] {
-    if (!this.terminoBusqueda.trim()) return this.proformas;
-    const t = this.terminoBusqueda.toLowerCase();
+    const t = this.terminoBusqueda.trim().toLowerCase();
+    if (!t) return this.proformas;
     return this.proformas.filter(p =>
       (p.numero || '').toLowerCase().includes(t) ||
       this.nombreCliente(p).toLowerCase().includes(t) ||
@@ -111,28 +210,36 @@ export class ProformasComponent implements OnInit {
   abrirCrear(): void {
     this.modoEdicion = false;
     this.proformaEditando = null;
-    this.form = {
-      idEmpresa: this.empresas.length ? this.empresas[0].id! : null,
-      idCliente: null,
-      observaciones: ''
-    };
-    this.filas = [{ idLote: null, precioUnitario: null }];
+    this.form = this.formVacio();
+    this.filas = [this.filaVacia()];
     this.modalAbierto = true;
   }
 
   abrirEditar(p: Proforma): void {
+    const c = this.clienteDe(p.idCliente);
     this.modoEdicion = true;
     this.proformaEditando = p;
     this.form = {
-      idEmpresa: p.idEmpresa,
       idCliente: p.idCliente,
+      tipoDocumento: c?.tipoDocumento || 'DNI',
+      numDocumento: c?.numDocumento || '',
+      nombres: c?.nombres || '',
+      apellidos: c?.apellidos || '',
+      telefono: c?.telefono || '',
       observaciones: p.observaciones || ''
     };
-    this.filas = (p.detalles || []).map(d => ({
-      idLote: d.idLote,
-      precioUnitario: d.precioUnitario
-    }));
-    if (!this.filas.length) this.filas = [{ idLote: null, precioUnitario: null }];
+    this.filas = (p.detalles || []).map(d => {
+      const lote = this.lotes.find(l => l.id === d.idLote);
+      return {
+        idEmpresa: lote?.idEmpresa ?? d.idEmpresa ?? null,
+        idProyecto: lote?.idProyecto ?? null,
+        idLote: d.idLote,
+        precioUnitario: d.precioUnitario,
+        inicial: d.inicial ?? lote?.inicial ?? null,
+        numCuotas: d.numCuotas ?? lote?.numCuotas ?? null
+      };
+    });
+    if (!this.filas.length) this.filas = [this.filaVacia()];
     this.modalAbierto = true;
   }
 
@@ -140,53 +247,174 @@ export class ProformasComponent implements OnInit {
     this.modalAbierto = false;
   }
 
-  onEmpresaChange(): void {
-    const conLote = this.filas.some(f => f.idLote != null);
-    this.filas = [{ idLote: null, precioUnitario: null }];
-    if (conLote) this.alert.toastInfo('Se limpiaron los lotes al cambiar de empresa');
+  onDocumentoInput(): void {
+    // Si cambia el documento, deja de estar asociado a un cliente existente.
+    this.form.idCliente = null;
   }
 
-  /** Lotes de la empresa elegida que aún no fueron agregados a otra fila (sin vendidos). */
-  lotesParaFila(indice: number): Lote[] {
-    const idsEnUso = this.filas
+  buscarDni(): void {
+    const doc = (this.form.numDocumento || '').trim();
+    if (!/^\d{8}$/.test(doc)) {
+      this.alert.toastWarning('El DNI debe tener 8 dígitos');
+      return;
+    }
+    this.buscandoDni = true;
+    this.decolectaService.dni(doc).subscribe({
+      next: (data) => {
+        this.buscandoDni = false;
+        if (data.first_name) this.form.nombres = data.first_name;
+        if (data.first_last_name) {
+          this.form.apellidos = data.second_last_name
+            ? `${data.first_last_name} ${data.second_last_name}`
+            : data.first_last_name;
+        }
+        this.buscarClienteExistente(doc);
+      },
+      error: () => {
+        this.buscandoDni = false;
+        this.buscarClienteExistente(doc);
+      }
+    });
+  }
+
+  private buscarClienteExistente(doc: string): void {
+    this.clienteService.buscarPorDocumento(doc).subscribe({
+      next: (c) => {
+        this.form.idCliente = c.id ?? null;
+        this.form.nombres = c.nombres || this.form.nombres;
+        this.form.apellidos = c.apellidos || this.form.apellidos;
+        this.form.telefono = c.telefono || this.form.telefono;
+        this.alert.toastInfo('Cliente existente encontrado');
+      },
+      error: () => {
+        // No existe: se creará como prospecto al emitir.
+      }
+    });
+  }
+
+  /** Programas/proyectos de la empresa elegida en la fila. */
+  get empresaOptions(): SelectOption[] {
+    return this.empresas
+      .filter(e => e.id != null)
+      .map(e => ({
+        id: e.id!,
+        label: e.nombreComercial?.trim() || e.razonSocial,
+        badge: e.ruc
+      }));
+  }
+
+  programaOptions(indice: number): SelectOption[] {
+    return this.programasDeFila(indice)
+      .filter(p => p.id != null)
+      .map(p => ({ id: p.id!, label: p.nombre }));
+  }
+
+  loteOptions(indice: number): SelectOption[] {
+    return this.lotesDeFila(indice)
+      .filter(l => l.id != null)
+      .map(l => ({
+        id: l.id!,
+        label: `Mz ${l.manzana} N° ${l.numero}`,
+        sub: l.areaM2 != null ? `${l.areaM2} m²` : undefined,
+        badge: l.precio != null ? `USD ${l.precio}` : undefined
+      }));
+  }
+
+  programasDeFila(indice: number): Proyecto[] {
+    const fila = this.filas[indice];
+    if (fila.idEmpresa == null) return [];
+    return this.proyectos
+      .filter(p => p.idEmpresa === fila.idEmpresa && p.estado !== 'INACTIVO')
+      .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+  }
+
+  /** Lotes disponibles del programa elegido en la fila (sin vendidos ni repetidos). */
+  lotesDeFila(indice: number): Lote[] {
+    const fila = this.filas[indice];
+    if (fila.idEmpresa == null || fila.idProyecto == null) return [];
+    const usados = this.filas
       .filter((f, i) => i !== indice && f.idLote != null)
       .map(f => f.idLote);
-    return this.lotes.filter(l =>
-      l.idEmpresa === this.form.idEmpresa &&
-      l.estado !== 'VENDIDO' &&
-      !idsEnUso.includes(l.id!)
-    );
+    return this.lotes
+      .filter(l => l.id != null
+        && l.idEmpresa === fila.idEmpresa
+        && l.idProyecto === fila.idProyecto
+        && l.estado !== 'VENDIDO'
+        && !l.ventaActiva
+        && !usados.includes(l.id))
+      .sort((a, b) => this.etiquetaLoteCorto(a).localeCompare(this.etiquetaLoteCorto(b)));
   }
 
-  onLoteSeleccionado(indice: number): void {
+  onEmpresaFila(indice: number, valor: number | null): void {
     const fila = this.filas[indice];
-    if (fila.idLote == null) return;
-    const lote = this.lotes.find(l => l.id === fila.idLote);
-    if (lote) fila.precioUnitario = lote.precio;
+    fila.idEmpresa = valor;
+    fila.idProyecto = null;
+    fila.idLote = null;
+    fila.precioUnitario = null;
+  }
+
+  onProgramaFila(indice: number, valor: number | null): void {
+    const fila = this.filas[indice];
+    fila.idProyecto = valor;
+    fila.idLote = null;
+    fila.precioUnitario = null;
+  }
+
+  onLoteSeleccionado(indice: number, valor: number | null): void {
+    const fila = this.filas[indice];
+    fila.idLote = valor;
+    if (valor == null) {
+      fila.precioUnitario = null;
+      fila.inicial = null;
+      fila.numCuotas = null;
+      return;
+    }
+    const lote = this.lotes.find(l => l.id === valor);
+    if (lote) {
+      fila.precioUnitario = lote.precio;
+      fila.inicial = lote.inicial ?? null;
+      fila.numCuotas = lote.numCuotas ?? null;
+    }
   }
 
   agregarFila(): void {
-    this.filas.push({ idLote: null, precioUnitario: null });
+    // Copia empresa/programa de la última fila: permite agregar más lotes
+    // del mismo programa rápidamente (o cambiarlos para otro programa).
+    const ultima = this.filas[this.filas.length - 1];
+    this.filas.push(this.filaVacia(ultima?.idEmpresa ?? null, ultima?.idProyecto ?? null));
   }
 
   quitarFila(indice: number): void {
     this.filas.splice(indice, 1);
-    if (!this.filas.length) this.filas.push({ idLote: null, precioUnitario: null });
+    if (!this.filas.length) this.filas.push(this.filaVacia());
   }
 
   get totalForm(): number {
     return this.filas.reduce((s, f) => s + (Number(f.precioUnitario) || 0), 0);
   }
 
+  /** Saldo a financiar de UN lote (total − inicial de ese lote). */
+  saldoFila(f: FilaDetalle): number {
+    const total = Number(f.precioUnitario) || 0;
+    const inicial = Number(f.inicial) || 0;
+    return Math.max(0, Math.round((total - inicial) * 100) / 100);
+  }
+
+  /** Cuota aprox. de UN lote (saldo / n° de letras). */
+  cuotaFila(f: FilaDetalle): number {
+    const n = Number(f.numCuotas) || 0;
+    return n > 0 ? Math.floor(this.saldoFila(f) / n) : 0;
+  }
+
   async guardar(): Promise<void> {
     if (this.guardando) return;
 
-    if (!this.form.idEmpresa) {
-      this.alert.toastWarning('Seleccione una empresa');
+    if (!/^\d{8}$/.test((this.form.numDocumento || '').trim())) {
+      this.alert.toastWarning('Ingrese un DNI de 8 dígitos');
       return;
     }
-    if (!this.form.idCliente) {
-      this.alert.toastWarning('Seleccione un cliente');
+    if (!this.form.nombres || !this.form.nombres.trim()) {
+      this.alert.toastWarning('Ingrese el nombre del cliente');
       return;
     }
     const validas = this.filas.filter(f => f.idLote != null && Number(f.precioUnitario) > 0);
@@ -195,16 +423,6 @@ export class ProformasComponent implements OnInit {
       return;
     }
 
-    const dto: Proforma = {
-      idEmpresa: this.form.idEmpresa,
-      idCliente: this.form.idCliente,
-      observaciones: this.form.observaciones.trim() ? this.form.observaciones.trim() : null,
-      detalles: validas.map(f => ({
-        idLote: f.idLote!,
-        precioUnitario: Number(f.precioUnitario)
-      }))
-    };
-
     if (this.modoEdicion && this.proformaEditando) {
       const ok = await this.alert.confirmarEdicion(
         `¿Guardar los cambios de la proforma <strong>${this.proformaEditando.numero}</strong>?`);
@@ -212,26 +430,66 @@ export class ProformasComponent implements OnInit {
     }
 
     this.guardando = true;
-    const peticion = this.modoEdicion && this.proformaEditando
-      ? this.proformaService.editar(this.proformaEditando.id!, dto)
-      : this.proformaService.crear(dto);
+    try {
+      const idCliente = await this.resolverCliente();
+      const dto: Proforma = {
+        idCliente,
+        observaciones: this.form.observaciones.trim() ? this.form.observaciones.trim() : null,
+        detalles: validas.map(f => ({
+          idLote: f.idLote!,
+          precioUnitario: Number(f.precioUnitario),
+          inicial: f.inicial != null ? Number(f.inicial) : undefined,
+          numCuotas: f.numCuotas != null ? Number(f.numCuotas) : undefined
+        }))
+      };
 
-    peticion.subscribe({
-      next: (guardada) => {
-        this.guardando = false;
-        this.modalAbierto = false;
-        this.alert.success(this.modoEdicion ? 'Proforma actualizada' : 'Proforma emitida: ' + guardada.numero);
-        this.cargarProformas();
-        this.ver(guardada);
-      },
-      error: (err) => {
-        this.guardando = false;
-        this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar la proforma', 'Error');
-      }
-    });
+      const guardada = this.modoEdicion && this.proformaEditando
+        ? await firstValueFrom(this.proformaService.editar(this.proformaEditando.id!, dto))
+        : await firstValueFrom(this.proformaService.crear(dto));
+
+      this.guardando = false;
+      this.modalAbierto = false;
+      this.alert.success(this.modoEdicion
+        ? 'Proforma actualizada'
+        : 'Proforma emitida: ' + guardada.numero);
+      this.cargarProformas();
+      this.ver(guardada);
+    } catch (err: any) {
+      this.guardando = false;
+      this.alert.toastError(err?.error?.mensaje || 'No se pudo guardar la proforma', 'Error');
+    }
   }
 
-  // ── Vista previa e impresión ──────────────────────────────────────────────
+  /** Usa el cliente existente o crea un prospecto mínimo (DNI, nombre, celular). */
+  private async resolverCliente(): Promise<number> {
+    if (this.form.idCliente) {
+      return this.form.idCliente;
+    }
+    const doc = this.form.numDocumento.trim();
+    try {
+      const existente = await firstValueFrom(this.clienteService.buscarPorDocumento(doc));
+      if (existente.id) {
+        this.form.idCliente = existente.id;
+        return existente.id;
+      }
+    } catch {
+      // 404: no existe → se crea como prospecto
+    }
+    const creado = await firstValueFrom(this.clienteService.crear({
+      tipoDocumento: this.form.tipoDocumento || 'DNI',
+      numDocumento: doc,
+      nombres: this.form.nombres.trim(),
+      apellidos: this.form.apellidos?.trim() || undefined,
+      telefono: this.form.telefono?.trim() || undefined,
+      prospecto: true,
+      estadoSeguimiento: 'NUEVO'
+    }));
+    this.clientes = [...this.clientes, creado];
+    this.form.idCliente = creado.id!;
+    return creado.id!;
+  }
+
+  // ── PDF / WhatsApp ────────────────────────────────────────────────────────
 
   ver(p: Proforma): void {
     this.vistaPrevia = p;
@@ -245,7 +503,100 @@ export class ProformasComponent implements OnInit {
     window.print();
   }
 
-  // ── Estado ────────────────────────────────────────────────────────────────
+  descargarPdf(p: Proforma): void {
+    if (!p.id) return;
+    this.proformaService.descargarPdf(p.id).subscribe({
+      next: (blob) => this.guardarBlob(blob, `Proforma-${p.numero || p.id}.pdf`),
+      error: () => this.alert.toastError('No se pudo generar el PDF', 'Error')
+    });
+  }
+
+  compartirWhatsApp(p: Proforma): void {
+    if (!p.id) return;
+    const telefono = this.clienteDe(p.idCliente)?.telefono || '';
+    this.compartirPdf(p.id, p.numero, telefono);
+  }
+
+  whatsappSeguimiento(s: ProformaSeguimiento): void {
+    if (!s.ultimaProformaId) {
+      this.alert.toastWarning('No hay proforma para compartir');
+      return;
+    }
+    this.compartirPdf(s.ultimaProformaId, s.ultimaProformaNumero, s.clienteTelefono);
+  }
+
+  private compartirPdf(id: number, numero: string | null | undefined, telefono: string): void {
+    this.proformaService.descargarPdf(id).subscribe({
+      next: async (blob) => {
+        const nombre = `Proforma-${numero || id}.pdf`;
+        const tel = (telefono || '').replace(/\D/g, '');
+        const nav: any = navigator;
+        const file = new File([blob], nombre, { type: 'application/pdf' });
+        if (nav.canShare && nav.canShare({ files: [file] })) {
+          try {
+            await nav.share({
+              files: [file],
+              title: `Proforma ${numero || ''}`,
+              text: 'Te comparto la proforma.'
+            });
+          } catch {
+            // El usuario canceló el compartir.
+          }
+          return;
+        }
+        this.guardarBlob(blob, nombre);
+        if (tel) {
+          const texto = encodeURIComponent(`Te comparto la proforma ${numero || ''}.`);
+          window.open(`https://wa.me/${tel}?text=${texto}`, '_blank');
+        }
+        this.alert.toastInfo('PDF descargado. Adjúntalo en el chat de WhatsApp.');
+      },
+      error: () => this.alert.toastError('No se pudo generar el PDF', 'Error')
+    });
+  }
+
+  private guardarBlob(blob: Blob, nombre: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ── Seguimiento ───────────────────────────────────────────────────────────
+
+  cambiarEstadoSeguimiento(s: ProformaSeguimiento): void {
+    this.clienteService.actualizarSeguimiento(s.idCliente, { estado: s.estadoSeguimiento })
+      .subscribe({
+        next: (c) => {
+          s.estadoSeguimiento = c.estadoSeguimiento || s.estadoSeguimiento;
+          this.alert.toastSuccess('Seguimiento actualizado');
+        },
+        error: () => this.alert.toastError('No se pudo actualizar el seguimiento', 'Error')
+      });
+  }
+
+  completarCliente(s: ProformaSeguimiento): void {
+    this.clienteService.completar(s.idCliente).subscribe({
+      next: () => {
+        s.prospecto = false;
+        this.clientes = this.clientes.map(c => c.id === s.idCliente ? { ...c, prospecto: false } : c);
+        this.alert.success('Prospecto marcado como cliente');
+      },
+      error: () => this.alert.toastError('No se pudo actualizar el cliente', 'Error')
+    });
+  }
+
+  verUltima(s: ProformaSeguimiento): void {
+    if (!s.ultimaProformaId) return;
+    this.proformaService.obtener(s.ultimaProformaId).subscribe({
+      next: (p) => this.ver(p),
+      error: () => this.alert.toastError('No se pudo cargar la proforma', 'Error')
+    });
+  }
+
+  // ── Estado / helpers ──────────────────────────────────────────────────────
 
   esEditable(p: Proforma): boolean {
     return (p.estado || 'EMITIDA') === 'EMITIDA';
@@ -265,6 +616,20 @@ export class ProformasComponent implements OnInit {
       case 'ANULADA': return 'Anulada';
       default: return 'Emitida';
     }
+  }
+
+  claseSeguimiento(estado: string): string {
+    switch (estado) {
+      case 'GANADO': return 'badge-ok';
+      case 'INTERESADO': return 'badge-info';
+      case 'CONTACTADO': return 'badge-warning';
+      case 'NO_INTERESADO': return 'badge-error';
+      default: return 'badge-info';
+    }
+  }
+
+  etiquetaSeguimiento(estado: string): string {
+    return (estado || 'NUEVO').replace('_', ' ');
   }
 
   cambiarEstado(p: Proforma, estado: string): void {
@@ -296,16 +661,11 @@ export class ProformasComponent implements OnInit {
   }
 
   eliminar(p: Proforma): void {
-    Swal.fire({
-      title: 'Eliminar proforma',
-      html: `¿Eliminar la proforma <strong>${p.numero}</strong>? Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#ef4444'
-    }).then((result) => {
-      if (!result.isConfirmed) return;
+    this.alert.confirmarEliminacion(
+      `¿Eliminar la proforma <strong>${p.numero}</strong>? Esta acción no se puede deshacer.`,
+      'Eliminar proforma'
+    ).then((ok) => {
+      if (!ok) return;
       this.procesandoId = p.id ?? null;
       this.proformaService.eliminar(p.id!).subscribe({
         next: () => {
@@ -322,9 +682,7 @@ export class ProformasComponent implements OnInit {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  // ── Datos del vendedor (encabezado del documento) ─────────────────────────
+  // ── Datos del vendedor ────────────────────────────────────────────────────
 
   get vendedorNombre(): string {
     if (this.perfil) {
@@ -347,44 +705,37 @@ export class ProformasComponent implements OnInit {
 
   // ── Plan de pago del documento ────────────────────────────────────────────
 
-  /** Lotes incluidos en la proforma (para tomar su inicial y n° de cuotas). */
-  private lotesDeProforma(p: Proforma): Lote[] {
-    return (p.detalles || [])
-      .map(d => this.lotes.find(l => l.id === d.idLote))
-      .filter((l): l is Lote => !!l);
-  }
-
-  /** Inicial total pactada (suma de la inicial de cada lote). */
   get inicialDoc(): number {
     if (!this.vistaPrevia) return 0;
-    return this.lotesDeProforma(this.vistaPrevia)
-      .reduce((s, l) => s + (Number(l.inicial) || 0), 0);
+    return (this.vistaPrevia.detalles || []).reduce((s, d) => {
+      if (d.inicial != null) return s + Number(d.inicial);
+      const lote = this.lotes.find(l => l.id === d.idLote);
+      return s + (Number(lote?.inicial) || 0);
+    }, 0);
   }
 
-  /** Número de cuotas (letras) del plan de pago. */
   get numCuotasDoc(): number {
     if (!this.vistaPrevia) return 0;
-    const cuotas = this.lotesDeProforma(this.vistaPrevia)
-      .map(l => Number(l.numCuotas) || 0)
+    const cuotas = (this.vistaPrevia.detalles || [])
+      .map(d => d.numCuotas != null
+        ? Number(d.numCuotas)
+        : (this.lotes.find(l => l.id === d.idLote)?.numCuotas ?? 0))
       .filter(n => n > 0);
     return cuotas.length ? Math.max(...cuotas) : 0;
   }
 
-  /** Saldo a financiar = total de la proforma − inicial. */
   get saldoDoc(): number {
     if (!this.vistaPrevia) return 0;
     const total = Number(this.vistaPrevia.total) || 0;
     return Math.max(0, total - this.inicialDoc);
   }
 
-  /** Importe de cada cuota (letra): piso(saldo / n° de cuotas). */
   get cuotaDoc(): number {
     const n = this.numCuotasDoc;
     if (n <= 0 || this.saldoDoc <= 0) return 0;
     return Math.floor(this.saldoDoc / n);
   }
 
-  /** La última cuota absorbe el residuo (saldo − cuota × (n−1)). */
   get ultimaCuotaDoc(): number {
     const n = this.numCuotasDoc;
     if (n <= 0) return 0;
@@ -395,6 +746,8 @@ export class ProformasComponent implements OnInit {
     return this.ultimaCuotaDoc !== this.cuotaDoc;
   }
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
   clienteDe(id?: number): Cliente | undefined {
     return this.clientes.find(c => c.id === id);
   }
@@ -402,5 +755,52 @@ export class ProformasComponent implements OnInit {
   nombreCliente(p: Proforma): string {
     const c = this.clienteDe(p.idCliente);
     return c ? `${c.nombres} ${c.apellidos || ''}`.trim() : 'Cliente';
+  }
+
+  empresaNombre(l: Lote): string {
+    const e = this.empresas.find(x => x.id === l.idEmpresa);
+    return e?.nombreComercial?.trim() || e?.razonSocial || 'Empresa';
+  }
+
+  etiquetaLote(l: Lote): string {
+    return `${this.empresaNombre(l)} · ${l.proyecto} · Mz ${l.manzana} N° ${l.numero}`;
+  }
+
+  etiquetaLoteCorto(l: Lote): string {
+    const area = l.areaM2 != null ? ` (${l.areaM2} m²)` : '';
+    return `Mz ${l.manzana} N° ${l.numero}${area}`;
+  }
+
+  etiquetaPrograma(p: Proyecto): string {
+    return p.nombre;
+  }
+
+  private filaVacia(idEmpresa: number | null = null, idProyecto: number | null = null): FilaDetalle {
+    return {
+      idEmpresa,
+      idProyecto,
+      idLote: null,
+      precioUnitario: null,
+      inicial: null,
+      numCuotas: null
+    };
+  }
+
+  private iso(d: Date): string {
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mes}-${dia}`;
+  }
+
+  private formVacio(): ProformaForm {
+    return {
+      idCliente: null,
+      tipoDocumento: 'DNI',
+      numDocumento: '',
+      nombres: '',
+      apellidos: '',
+      telefono: '',
+      observaciones: ''
+    };
   }
 }

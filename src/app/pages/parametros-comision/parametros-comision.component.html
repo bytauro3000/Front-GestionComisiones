@@ -88,12 +88,8 @@
       <div class="modal-body">
         <div class="form-field">
           <label>Alcance *</label>
-          <select [(ngModel)]="form.idEmpresa">
-            <option [ngValue]="null">GENERAL (toda la empresa)</option>
-            @for (e of empresas; track e.id) {
-              <option [ngValue]="e.id">{{ e.nombreComercial?.trim() || e.razonSocial }}</option>
-            }
-          </select>
+          <app-searchable-select [options]="empresaOptions" [(ngModel)]="form.idEmpresa"
+            placeholder="Buscar empresa..."></app-searchable-select>
           <small class="field-hint">GENERAL aplica a todas las empresas sin parámetro propio.</small>
         </div>
 

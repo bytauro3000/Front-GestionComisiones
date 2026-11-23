@@ -7,12 +7,16 @@ import Swal from 'sweetalert2';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { AlertService } from '../../services/alert.service';
+import {
+  SearchableSelectComponent,
+  SelectOption
+} from '../../components/searchable-select/searchable-select.component';
 import * as L from 'leaflet';
 
 @Component({
   selector: 'app-proyectos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './proyectos.component.html',
   styleUrl: './proyectos.component.scss'
 })
@@ -204,6 +208,12 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     this.asignarPreview(null, false);
     this.archivoNuevo = null;
     this.quitarPlano = false;
+  }
+
+  get empresaOptions(): SelectOption[] {
+    return this.empresas
+      .filter(e => e.id != null)
+      .map(e => ({ id: e.id!, label: e.razonSocial, badge: e.ruc }));
   }
 
   async guardar(): Promise<void> {

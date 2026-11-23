@@ -7,13 +7,21 @@ export interface DetalleProforma {
   id?: number;
   idLote: number;
   precioUnitario: number;
+  /** Inicial pactada para este lote (puede ser menor a la del lote). */
+  inicial?: number | null;
+  numCuotas?: number | null;
   descripcion?: string;
   areaM2?: number;
+  /** Snapshot de la empresa del lote (puede haber varias en una proforma). */
+  idEmpresa?: number;
+  empresaNombre?: string;
+  proyecto?: string;
 }
 
 export interface Proforma {
   id?: number;
-  idEmpresa: number;
+  /** Empresa referencial (opcional). */
+  idEmpresa?: number | null;
   idCliente: number;
   observaciones?: string | null;
   estado?: string;
@@ -23,6 +31,27 @@ export interface Proforma {
   detalles: DetalleProforma[];
 }
 
+export interface ProformaSeguimiento {
+  idCliente: number;
+  clienteNombre: string;
+  clienteDocumento: string;
+  clienteTelefono: string;
+  prospecto: boolean;
+  estadoSeguimiento: string;
+  notaSeguimiento?: string | null;
+  proximoContacto?: string | null;
+  cantidadProformas: number;
+  ultimaFecha?: string | null;
+  ultimaProformaNumero?: string | null;
+  ultimaProformaId?: number | null;
+  totalOfertado: number;
+}
+
+export interface FiltroFechas {
+  fechaDesde?: string;
+  fechaHasta?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProformaService {
 
@@ -30,8 +59,14 @@ export class ProformaService {
 
   constructor(private http: HttpClient) { }
 
-  listar(): Observable<Proforma[]> {
-    return this.http.get<Proforma[]>(this.URL);
+  listar(filtro?: FiltroFechas): Observable<Proforma[]> {
+    return this.http.get<Proforma[]>(this.URL, { params: this.params(filtro) });
+  }
+
+  seguimiento(filtro?: FiltroFechas): Observable<ProformaSeguimiento[]> {
+    return this.http.get<ProformaSeguimiento[]>(`${this.URL}/seguimiento`, {
+      params: this.params(filtro)
+    });
   }
 
   obtener(id: number): Observable<Proforma> {
@@ -51,7 +86,23 @@ export class ProformaService {
   }
 
   cambiarEstado(id: number, estado: string): Observable<Proforma> {
-    let params = new HttpParams().set('estado', estado);
+    const params = new HttpParams().set('estado', estado);
     return this.http.patch<Proforma>(`${this.URL}/${id}/estado`, null, { params });
+  }
+
+  /** PDF generado por el backend (para descargar o compartir por WhatsApp). */
+  descargarPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.URL}/${id}/pdf`, { responseType: 'blob' });
+  }
+
+  private params(filtro?: FiltroFechas): HttpParams {
+    let params = new HttpParams();
+    if (filtro?.fechaDesde) {
+      params = params.set('fechaDesde', filtro.fechaDesde);
+    }
+    if (filtro?.fechaHasta) {
+      params = params.set('fechaHasta', filtro.fechaHasta);
+    }
+    return params;
   }
 }

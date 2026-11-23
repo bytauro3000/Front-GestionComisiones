@@ -8,11 +8,15 @@ import {
 } from '../../services/parametro-comision.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { AlertService } from '../../services/alert.service';
+import {
+  SearchableSelectComponent,
+  SelectOption
+} from '../../components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-parametros-comision',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent],
   templateUrl: './parametros-comision.component.html',
   styleUrl: './parametros-comision.component.scss'
 })
@@ -81,7 +85,7 @@ export class ParametrosComisionComponent implements OnInit {
     this.editando = p;
     this.form = {
       ...p,
-      idEmpresa: p.idEmpresa ?? null,
+      idEmpresa: p.idEmpresa ?? 0,
       anticipoMontoFijo: p.anticipoMontoFijo ?? null,
       fechaInicioVigencia: p.fechaInicioVigencia ? p.fechaInicioVigencia.substring(0, 10) : null,
       fechaFinVigencia: p.fechaFinVigencia ? p.fechaFinVigencia.substring(0, 10) : null
@@ -140,7 +144,7 @@ export class ParametrosComisionComponent implements OnInit {
     }
 
     const dto: ParametroComision = {
-      idEmpresa: f.idEmpresa ?? null,
+      idEmpresa: f.idEmpresa === 0 ? null : (f.idEmpresa ?? null),
       porcentajeComision: pcFinanciado,
       porcentajeComisionContado: pcContado,
       anticipoPorcentaje: pcAnticipo,
@@ -223,9 +227,22 @@ export class ParametrosComisionComponent implements OnInit {
     return typeof valor === 'number' && Number.isFinite(valor) ? valor : null;
   }
 
+  get empresaOptions(): SelectOption[] {
+    return [
+      { id: 0, label: 'GENERAL (toda la empresa)' },
+      ...this.empresas
+        .filter(e => e.id != null)
+        .map(e => ({
+          id: e.id!,
+          label: e.nombreComercial?.trim() || e.razonSocial,
+          badge: e.ruc
+        }))
+    ];
+  }
+
   private formVacio(): ParametroComision {
     return {
-      idEmpresa: null,
+      idEmpresa: 0,
       porcentajeComision: 0,
       porcentajeComisionContado: 0,
       anticipoPorcentaje: 0,

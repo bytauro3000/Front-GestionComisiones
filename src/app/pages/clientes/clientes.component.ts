@@ -18,7 +18,10 @@ export class ClientesComponent implements OnInit {
   clientes: Cliente[] = [];
   cargando = false;
   terminoBusqueda = '';
+  filtroTipo: '' | 'PROSPECTO' | 'CLIENTE' = '';
   procesandoId: number | null = null;
+
+  readonly estadosSeguimiento = ['NUEVO', 'CONTACTADO', 'INTERESADO', 'NO_INTERESADO', 'GANADO'];
 
   // Modal crear/editar
   modalAbierto = false;
@@ -56,13 +59,21 @@ export class ClientesComponent implements OnInit {
   }
 
   get xFiltrados(): Cliente[] {
-    if (!this.terminoBusqueda.trim()) return this.clientes;
-    const t = this.terminoBusqueda.toLowerCase();
-    return this.clientes.filter(c =>
+    let lista = this.clientes;
+    if (this.filtroTipo === 'PROSPECTO') {
+      lista = lista.filter(c => c.prospecto === true);
+    } else if (this.filtroTipo === 'CLIENTE') {
+      lista = lista.filter(c => c.prospecto !== true);
+    }
+
+    const t = this.terminoBusqueda.trim().toLowerCase();
+    if (!t) return lista;
+    return lista.filter(c =>
       (c.numDocumento || '').toLowerCase().includes(t) ||
       (c.nombres || '').toLowerCase().includes(t) ||
       (c.apellidos || '').toLowerCase().includes(t) ||
-      (c.correo || '').toLowerCase().includes(t)
+      (c.correo || '').toLowerCase().includes(t) ||
+      (c.telefono || '').toLowerCase().includes(t)
     );
   }
 
@@ -79,7 +90,12 @@ export class ClientesComponent implements OnInit {
   abrirEditar(cliente: Cliente): void {
     this.modoEdicion = true;
     this.clienteEditando = cliente;
-    this.form = { ...cliente, tipoDocumento: cliente.tipoDocumento || 'DNI' };
+    this.form = {
+      ...cliente,
+      tipoDocumento: cliente.tipoDocumento || 'DNI',
+      prospecto: cliente.prospecto === true,
+      estadoSeguimiento: cliente.estadoSeguimiento || 'NUEVO'
+    };
     this.telefonos = this.parseTelefonos(cliente.telefono);
     this.modalAbierto = true;
   }
@@ -246,7 +262,36 @@ export class ClientesComponent implements OnInit {
       apellidos: '',
       telefono: '',
       correo: '',
-      direccion: ''
+      direccion: '',
+      prospecto: false,
+      estadoSeguimiento: 'NUEVO'
     };
+  }
+
+  /** Convierte un prospecto en cliente (registro completo). */
+  completar(cliente: Cliente): void {
+    if (cliente.id == null) return;
+    this.clienteService.completar(cliente.id).subscribe({
+      next: () => {
+        this.alert.success('Prospecto marcado como cliente');
+        this.cargarClientes();
+      },
+      error: (err) => this.alert.toastError(
+        err?.error?.mensaje || 'No se pudo completar el cliente', 'Error')
+    });
+  }
+
+  claseSeguimiento(estado?: string): string {
+    switch (estado) {
+      case 'GANADO': return 'badge-activo';
+      case 'INTERESADO': return 'badge-info';
+      case 'CONTACTADO': return 'badge-warning';
+      case 'NO_INTERESADO': return 'badge-inactivo';
+      default: return 'badge-info';
+    }
+  }
+
+  etiquetaSeguimiento(estado?: string): string {
+    return (estado || 'NUEVO').replace('_', ' ');
   }
 }

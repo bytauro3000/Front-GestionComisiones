@@ -2,115 +2,226 @@
   <div class="page-header">
     <div>
       <h1>Proformas</h1>
-      <p>Ofertas de lotes para tus clientes</p>
+      <p>Ofertas de lotes para tus clientes y seguimiento comercial</p>
     </div>
     <button class="btn btn-primary" (click)="abrirCrear()">
       <i class="fas fa-plus"></i> Nueva proforma
     </button>
   </div>
 
-  <div class="toolbar">
-    <div class="search-box">
-      <i class="fas fa-search"></i>
-      <input type="text" placeholder="Buscar por número, cliente o estado..." [(ngModel)]="terminoBusqueda">
-    </div>
-    <span class="contador">{{ xFiltrados.length }} proforma(s)</span>
+  <div class="tabs">
+    <button class="tab" [class.activa]="tab === 'PROFORMAS'" (click)="cambiarTab('PROFORMAS')">
+      <i class="fas fa-file-invoice"></i> Proformas
+    </button>
+    <button class="tab" [class.activa]="tab === 'SEGUIMIENTO'" (click)="cambiarTab('SEGUIMIENTO')">
+      <i class="fas fa-user-clock"></i> Seguimiento
+    </button>
   </div>
 
-  <div class="table-wrap">
-    <table class="data-table tabla-cards">
-      <thead>
-        <tr>
-          <th>Número</th>
-          <th>Fecha</th>
-          <th>Cliente</th>
-          <th style="text-align: center;">Ítems</th>
-          <th style="text-align: right;">Total USD</th>
-          <th>Estado</th>
-          <th style="text-align: right;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (cargando) {
-          <tr><td colspan="7" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
-        } @else if (xFiltrados.length === 0) {
-          <tr><td colspan="7" class="empty-cell">No se encontraron proformas</td></tr>
-        } @else {
-          @for (p of xFiltrados; track p.id) {
-            <tr>
-              <td data-label="Número">
-                <strong class="num-proforma">{{ p.numero }}</strong>
-              </td>
-              <td data-label="Fecha">{{ p.fecha ? (p.fecha | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
-              <td data-label="Cliente">{{ nombreCliente(p) }}</td>
-              <td data-label="Ítems" style="text-align: center;">{{ p.detalles.length || 0 }}</td>
-              <td data-label="Total" style="text-align: right;">
-                <strong>{{ p.total | number:'1.2-2' }}</strong>
-              </td>
-              <td data-label="Estado">
-                <span class="badge" [ngClass]="claseEstado(p)">{{ etiquetaEstado(p) }}</span>
-              </td>
-              <td class="actions-cell cell-actions" data-label="Acciones">
-                <button class="btn btn-outline btn-sm" (click)="ver(p)" title="Ver e imprimir">
-                  <i class="fas fa-eye"></i>
-                </button>
-                @if (esEditable(p)) {
-                  <button class="btn btn-outline btn-sm" (click)="abrirEditar(p)" title="Editar">
-                    <i class="fas fa-pen"></i>
-                  </button>
-                  <button class="btn btn-outline btn-sm" (click)="cambiarEstado(p, 'ACEPTADA')"
-                          [disabled]="procesandoId === p.id" title="Marcar aceptada">
-                    <i class="fas fa-check"></i>
-                  </button>
-                }
-                @if (p.estado !== 'ANULADA') {
-                  <button class="btn btn-outline btn-sm" (click)="cambiarEstado(p, 'ANULADA')"
-                          [disabled]="procesandoId === p.id" title="Anular">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                }
-                <button class="btn btn-danger btn-sm" (click)="eliminar(p)"
-                        [disabled]="procesandoId === p.id" title="Eliminar">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
+  <div class="toolbar filtros-fecha">
+    <div class="presets">
+      <button class="preset-chip" (click)="aplicarPreset('HOY')">Hoy</button>
+      <button class="preset-chip" (click)="aplicarPreset('AYER')">Ayer</button>
+      <button class="preset-chip" (click)="aplicarPreset('SEMANA')">7 días</button>
+      <button class="preset-chip" (click)="aplicarPreset('MES')">Este mes</button>
+      <button class="preset-chip" (click)="aplicarPreset('TODOS')">Todos</button>
+    </div>
+    <div class="rango-fechas">
+      <input type="date" [(ngModel)]="fechaDesde" title="Desde">
+      <span>—</span>
+      <input type="date" [(ngModel)]="fechaHasta" title="Hasta">
+      <button class="btn btn-outline btn-sm" (click)="recargar()">
+        <i class="fas fa-rotate"></i> Actualizar
+      </button>
+    </div>
   </div>
+
+  @if (tab === 'PROFORMAS') {
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Buscar por número, cliente o estado..." [(ngModel)]="terminoBusqueda">
+      </div>
+      <span class="contador">{{ xFiltrados.length }} proforma(s)</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table tabla-cards">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th style="text-align: center;">Ítems</th>
+            <th style="text-align: right;">Total USD</th>
+            <th>Estado</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargando) {
+            <tr><td colspan="7" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+          } @else if (xFiltrados.length === 0) {
+            <tr><td colspan="7" class="empty-cell">No se encontraron proformas</td></tr>
+          } @else {
+            @for (p of xFiltrados; track p.id) {
+              <tr>
+                <td data-label="Número"><strong class="num-proforma">{{ p.numero }}</strong></td>
+                <td data-label="Fecha">{{ p.fecha ? (p.fecha | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                <td data-label="Cliente">{{ nombreCliente(p) }}</td>
+                <td data-label="Ítems" style="text-align: center;">{{ p.detalles.length || 0 }}</td>
+                <td data-label="Total" style="text-align: right;">
+                  <strong>{{ p.total | number:'1.2-2' }}</strong>
+                </td>
+                <td data-label="Estado">
+                  <span class="badge" [ngClass]="claseEstado(p)">{{ etiquetaEstado(p) }}</span>
+                </td>
+                <td class="actions-cell cell-actions" data-label="Acciones">
+                  <button class="btn btn-outline btn-sm" (click)="ver(p)" title="Ver">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm" (click)="compartirWhatsApp(p)" title="Enviar por WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                  </button>
+                  <button class="btn btn-outline btn-sm" (click)="descargarPdf(p)" title="Descargar PDF">
+                    <i class="fas fa-file-pdf"></i>
+                  </button>
+                  @if (esEditable(p)) {
+                    <button class="btn btn-outline btn-sm" (click)="abrirEditar(p)" title="Editar">
+                      <i class="fas fa-pen"></i>
+                    </button>
+                  }
+                  <button class="btn btn-danger btn-sm" (click)="eliminar(p)"
+                          [disabled]="procesandoId === p.id" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="data-table tabla-cards">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Documento</th>
+            <th>Teléfono</th>
+            <th>Tipo</th>
+            <th style="text-align: center;"># Proformas</th>
+            <th>Última</th>
+            <th style="text-align: right;">Total ofertado</th>
+            <th>Estado</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargandoSeguimiento) {
+            <tr><td colspan="9" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+          } @else if (seguimiento.length === 0) {
+            <tr><td colspan="9" class="empty-cell">No hay proformas en el rango seleccionado</td></tr>
+          } @else {
+            @for (s of seguimiento; track s.idCliente) {
+              <tr>
+                <td data-label="Cliente"><strong>{{ s.clienteNombre }}</strong></td>
+                <td data-label="Documento">{{ s.clienteDocumento }}</td>
+                <td data-label="Teléfono">{{ s.clienteTelefono || '—' }}</td>
+                <td data-label="Tipo">
+                  @if (s.prospecto) {
+                    <span class="badge badge-warning">Prospecto</span>
+                  } @else {
+                    <span class="badge badge-activo">Cliente</span>
+                  }
+                </td>
+                <td data-label="# Proformas" style="text-align: center;">{{ s.cantidadProformas }}</td>
+                <td data-label="Última">
+                  @if (s.ultimaFecha) {
+                    {{ s.ultimaFecha | date:'dd/MM/yyyy' }}
+                    <small class="texto-suave">· {{ s.ultimaProformaNumero }}</small>
+                  } @else { — }
+                </td>
+                <td data-label="Total ofertado" style="text-align: right;">{{ s.totalOfertado | number:'1.2-2' }}</td>
+                <td data-label="Estado">
+                  <select class="select-seguimiento" [(ngModel)]="s.estadoSeguimiento"
+                          (change)="cambiarEstadoSeguimiento(s)">
+                    @for (e of estadosSeguimiento; track e) {
+                      <option [value]="e">{{ etiquetaSeguimiento(e) }}</option>
+                    }
+                  </select>
+                </td>
+                <td class="actions-cell cell-actions" data-label="Acciones">
+                  <button class="btn btn-outline btn-sm" (click)="whatsappSeguimiento(s)" title="Enviar por WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                  </button>
+                  @if (s.ultimaProformaId) {
+                    <button class="btn btn-outline btn-sm" (click)="verUltima(s)" title="Ver última proforma">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  }
+                  @if (s.prospecto) {
+                    <button class="btn btn-outline btn-sm" (click)="completarCliente(s)" title="Marcar como cliente">
+                      <i class="fas fa-user-check"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>
 
 <!-- Modal crear/editar -->
 @if (modalAbierto) {
   <div class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card modal-proforma">
       <div class="modal-header">
         <h3>{{ modoEdicion ? 'Editar proforma ' + (proformaEditando?.numero || '') : 'Nueva proforma' }}</h3>
         <button class="modal-close" (click)="cerrarModal()">&times;</button>
       </div>
       <div class="modal-body">
+        <h4 class="seccion-titulo"><i class="fas fa-user"></i> Cliente (o prospecto)</h4>
         <div class="form-row">
           <div class="form-field">
-            <label>Empresa *</label>
-            <select [(ngModel)]="form.idEmpresa" (ngModelChange)="onEmpresaChange()">
-              <option [ngValue]="null" disabled>Seleccione una empresa...</option>
-              @for (emp of empresas; track emp.id) {
-                <option [ngValue]="emp.id">{{ emp.razonSocial }}</option>
-              }
-            </select>
+            <label>DNI *</label>
+            <div class="input-accion">
+              <input type="text" [(ngModel)]="form.numDocumento" (input)="onDocumentoInput()"
+                     maxlength="8" placeholder="8 dígitos" autocomplete="off">
+              <button class="btn btn-outline btn-sm" (click)="buscarDni()" [disabled]="buscandoDni"
+                      title="Buscar en RENIEC">
+                @if (buscandoDni) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-search"></i>
+                }
+                Buscar
+              </button>
+            </div>
           </div>
           <div class="form-field">
-            <label>Cliente *</label>
-            <select [(ngModel)]="form.idCliente">
-              <option [ngValue]="null" disabled>Seleccione un cliente...</option>
-              @for (cli of clientes; track cli.id) {
-                <option [ngValue]="cli.id">{{ cli.nombres }} {{ cli.apellidos || '' }} — {{ cli.numDocumento }}</option>
-              }
-            </select>
+            <label>Celular (WhatsApp)</label>
+            <input type="tel" [(ngModel)]="form.telefono" maxlength="20" placeholder="Ej. 987654321">
           </div>
         </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nombres *</label>
+            <input type="text" [(ngModel)]="form.nombres" placeholder="Nombres">
+          </div>
+          <div class="form-field">
+            <label>Apellidos</label>
+            <input type="text" [(ngModel)]="form.apellidos" placeholder="Apellidos">
+          </div>
+        </div>
+        @if (form.idCliente) {
+          <p class="nota-info"><i class="fas fa-check-circle"></i> Cliente ya registrado: se reutilizará su ficha.</p>
+        }
 
         <div class="detalles-block">
           <div class="detalles-head">
@@ -122,20 +233,58 @@
 
           @for (fila of filas; track $index; let i = $index) {
             <div class="fila-lote">
-              <div class="campo-lote">
-                <select [(ngModel)]="fila.idLote" (ngModelChange)="onLoteSeleccionado(i)">
-                  <option [ngValue]="null">Seleccione un lote...</option>
-                  @for (l of lotesParaFila(i); track l.id) {
-                    <option [ngValue]="l.id">{{ l.proyecto ? l.proyecto + ' · ' : '' }}Mz {{ l.manzana }} N° {{ l.numero }} ({{ l.areaM2 || 0 }} m²)</option>
-                  }
-                </select>
+              <div class="fila-lote-row fila-lote-row-1">
+                <div class="campo-empresa">
+                  <app-searchable-select [options]="empresaOptions" [ngModel]="fila.idEmpresa"
+                    (ngModelChange)="onEmpresaFila(i, $event)" placeholder="Buscar empresa..."></app-searchable-select>
+                </div>
+                <div class="campo-programa">
+                  <app-searchable-select [options]="programaOptions(i)" [ngModel]="fila.idProyecto"
+                    [disabled]="fila.idEmpresa == null" (ngModelChange)="onProgramaFila(i, $event)"
+                    [placeholder]="fila.idEmpresa ? 'Buscar programa...' : 'Empresa primero'"></app-searchable-select>
+                </div>
               </div>
-              <div class="campo-precio">
-                <span class="prefijo">USD</span>
-                <input type="number" [(ngModel)]="fila.precioUnitario" min="0" step="0.01" placeholder="0.00">
+
+              <div class="fila-lote-row fila-lote-row-2">
+                <div class="campo-monto">
+                  <span class="campo-label">Lote (Mz / Lt)</span>
+                  <app-searchable-select [options]="loteOptions(i)" [ngModel]="fila.idLote"
+                    [disabled]="fila.idProyecto == null" (ngModelChange)="onLoteSeleccionado(i, $event)"
+                    [placeholder]="fila.idProyecto ? 'Buscar Mz / Lt...' : 'Programa primero'"></app-searchable-select>
+                </div>
+                <div class="campo-monto">
+                  <span class="campo-label">Costo total</span>
+                  <div class="campo-precio">
+                    <span class="prefijo">USD</span>
+                    <input type="number" [(ngModel)]="fila.precioUnitario" min="0" step="0.01" placeholder="0.00">
+                  </div>
+                </div>
+                <div class="campo-monto">
+                  <span class="campo-label">Inicial</span>
+                  <div class="campo-precio">
+                    <span class="prefijo">USD</span>
+                    <input type="number" [(ngModel)]="fila.inicial" min="0" step="0.01" placeholder="0.00">
+                  </div>
+                </div>
+                <div class="campo-monto">
+                  <span class="campo-label">Cantidad de letras</span>
+                  <div class="campo-numero">
+                    <input type="number" [(ngModel)]="fila.numCuotas" min="0" max="160" step="1" placeholder="150">
+                  </div>
+                </div>
+                <button type="button" class="btn-quitar-fila" (click)="quitarFila(i)"
+                        [disabled]="filas.length === 1" title="Quitar fila">&times;</button>
               </div>
-              <button type="button" class="btn-quitar-fila" (click)="quitarFila(i)"
-                      [disabled]="filas.length === 1" title="Quitar fila">&times;</button>
+
+              <div class="fila-lote-resumen">
+                <span>Saldo: <strong>USD {{ saldoFila(fila) | number:'1.2-2' }}</strong></span>
+                @if ((fila.numCuotas || 0) > 0) {
+                  <span>
+                    {{ fila.numCuotas }} letras · cuota aprox.
+                    <strong>USD {{ cuotaFila(fila) | number:'1.2-2' }}</strong>
+                  </span>
+                }
+              </div>
             </div>
           }
 
@@ -303,16 +452,14 @@
       </div>
 
       <div class="modal-footer no-print">
-        @if (esEditable(vp)) {
-          <button class="btn btn-outline" (click)="cambiarEstado(vp, 'ACEPTADA')">
-            <i class="fas fa-check"></i> Marcar aceptada
-          </button>
-          <button class="btn btn-danger" (click)="cambiarEstado(vp, 'ANULADA')">
-            <i class="fas fa-ban"></i> Anular
-          </button>
-        }
+        <button class="btn btn-outline" (click)="descargarPdf(vp)">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn btn-whatsapp" (click)="compartirWhatsApp(vp)">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </button>
         <button class="btn btn-primary" (click)="imprimir()">
-          <i class="fas fa-print"></i> Imprimir / Guardar PDF
+          <i class="fas fa-print"></i> Imprimir
         </button>
         <button class="btn btn-outline" (click)="cerrarVista()">Cerrar</button>
       </div>
