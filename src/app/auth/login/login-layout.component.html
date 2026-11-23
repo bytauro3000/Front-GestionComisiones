@@ -1,77 +1,59 @@
 <div class="login-split">
-  <!-- Panel izquierdo: Branding -->
+  <!-- Panel izquierdo: marca + firma visual -->
   <aside class="branding-panel">
-    <div class="brand">
-      <div class="brand-mark">
-        <i class="fas fa-chart-line"></i>
-      </div>
-      <span class="brand-name">{{ nombreSistema }}</span>
+    <div class="branding-top">
+      <a class="brand" routerLink="/login" aria-label="Vende Lote">
+        <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+        <span class="brand-name">{{ nombreSistema }}</span>
+      </a>
     </div>
 
-    <div class="branding-content">
-      <div class="branding-hero">
-        <h1>Tus comisiones, bajo control</h1>
-        <p>
-          Registra tus ventas en cada empresa y lleva un control claro de
-          cuánto te pagan y cuánto te deben por cada lote vendido.
-        </p>
-
-        <ul class="branding-features">
-          <li>
-            <i class="fas fa-check-circle"></i>
-            <span>Registro de ventas por empresa, manzana y lote</span>
-          </li>
-          <li>
-            <i class="fas fa-check-circle"></i>
-            <span>Seguimiento de comisiones pagadas y pendientes</span>
-          </li>
-          <li>
-            <i class="fas fa-check-circle"></i>
-            <span>Acceso seguro con autenticación JWT</span>
-          </li>
-          <li>
-            <i class="fas fa-check-circle"></i>
-            <span>Multi-rol: Administrador y Vendedor</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="branding-footer">
-        <p>© {{ anioActual }} {{ nombreSistema }} · Control de comisiones de vendedores</p>
-      </div>
+    <div class="branding-hero">
+      <h1>Cada lote vendido.<br><em>Cada comisión clara.</em></h1>
+      <p class="lede">Ventas, comisiones y proformas en un solo lugar.</p>
     </div>
 
-    <div class="branding-bg">
-      <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format&fit=crop"
-           alt="" aria-hidden="true" />
-      <div class="branding-overlay"></div>
-      <div class="branding-glow"></div>
+    <div class="parcel-map" aria-hidden="true">
+      <svg viewBox="0 0 640 520" fill="none">
+        <g class="contours" stroke="currentColor" stroke-width="1">
+          <path d="M-40 350C90 290 180 420 320 360S520 250 700 320" />
+          <path d="M-40 395C100 335 190 465 330 405S530 295 700 365" />
+          <path d="M-40 440C110 380 200 510 340 450S540 340 700 410" />
+          <path d="M-40 485C120 425 210 555 350 495S550 385 700 455" />
+        </g>
+        <g class="parcels" stroke="currentColor" stroke-width="1.2">
+          <rect x="238" y="250" width="88" height="64" rx="3" />
+          <rect x="334" y="250" width="88" height="64" rx="3" />
+          <rect x="238" y="322" width="88" height="64" rx="3" />
+          <rect x="334" y="322" width="88" height="64" rx="3" />
+          <rect x="238" y="394" width="88" height="64" rx="3" />
+          <rect x="334" y="394" width="88" height="64" rx="3" />
+        </g>
+        <rect class="parcel-active" x="430" y="322" width="88" height="64" rx="3" />
+      </svg>
     </div>
   </aside>
 
-  <!-- Panel derecho: Formulario -->
+  <!-- Panel derecho: formulario -->
   <main class="form-panel">
     <div class="form-wrapper">
-      <div class="form-mobile-brand">
-        <div class="brand-mark">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <span class="brand-name dark">{{ nombreSistema }}</span>
+      <div class="mobile-brand">
+        <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+        <span class="brand-name">{{ nombreSistema }}</span>
       </div>
 
-      <div class="form-header">
-        <h2>{{ titulo }}</h2>
-        <p>{{ subtitulo }}</p>
+      <div class="auth-card">
+        <header class="form-header">
+          <h2>{{ titulo }}</h2>
+          @if (esRegistro) {
+            <p>{{ subtitulo }}</p>
+          }
+        </header>
+
+        <router-outlet></router-outlet>
       </div>
 
-      <router-outlet></router-outlet>
-
-      <div class="form-footer">
-        <p>
-          <i class="fas fa-shield-alt"></i>
-          Tus credenciales están protegidas con encriptación.
-        </p>
-      </div>
+      <p class="legal">© {{ anioActual }} {{ nombreSistema }}</p>
     </div>
   </main>
 </div>

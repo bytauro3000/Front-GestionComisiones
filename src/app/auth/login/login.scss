@@ -1,214 +1,226 @@
-/* ============================================== */
-/* Design Tokens                                  */
-/* ============================================== */
 @use '../../../styles/tokens' as t;
 
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
-$primary-2:     #6366f1;
-$primary-light: #818cf8;
-$primary-glow:  rgba(99, 102, 241, 0.2);
+$indigo:   #4f46e5;
+$indigo-2: #6366f1;
+$glow:     rgba(99, 102, 241, 0.18);
+$text:     #0f172a;
+$muted:    #64748b;
+$line:     #e6e9f2;
+$bg:       #f8fafc;
+$ease:     cubic-bezier(0.23, 1, 0.32, 1);
 
-$dark:          #0f172a;
-$gray-50:       #f8fafc;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-300:      #cbd5e1;
-$gray-500:      #64748b;
-$gray-700:      #334155;
-$danger:        #ef4444;
-
-$radius:        10px;
-$ease:          cubic-bezier(0.16, 1, 0.3, 1);
-
-/* ============================================== */
-/* LOGIN FORM (light theme)                       */
-/* ============================================== */
 .login-container {
-  display: block;
   width: 100%;
-  padding: 0;
-  box-sizing: border-box;
 }
 
-/* ── Input groups ───────────────────────────── */
-.input-group-modern {
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field > label,
+.label-row label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: -0.01em;
+}
+
+.label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hint {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+/* ── Input con icono ───────────────────────────── */
+.field-control {
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 1.1rem;
 
-  .input-icon-modern {
+  .field-icon {
     position: absolute;
-    left: 16px;
-    color: $gray-500;
-    font-size: 0.95rem;
-    z-index: 2;
-    transition: color 0.2s $ease;
+    left: 15px;
+    color: #94a3b8;
+    font-size: 0.9rem;
     pointer-events: none;
+    transition: color 0.18s $ease;
   }
 
-  .eye-icon {
-    position: absolute;
-    right: 8px;
-    color: $gray-500;
-    font-size: 1rem;
-    cursor: pointer;
-    z-index: 3;
-    transition: color 0.2s $ease;
-    background: none;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
+  input {
+    width: 100%;
+    height: 52px;
+    border: 1.5px solid $line;
+    border-radius: 12px;
+    background: $bg;
+    color: $text;
+    font-size: 16px; /* evita zoom en iOS */
+    font-family: inherit;
+    padding: 0 46px 0 44px;
+    transition: border-color 0.18s $ease, box-shadow 0.18s $ease, background 0.18s $ease;
 
-    &:hover { color: $primary; }
-  }
+    &::placeholder { color: #94a3b8; }
 
-  &:focus-within .input-icon-modern { color: $primary; }
-}
-
-.form-control-modern {
-  background: $gray-50 !important;
-  border: 1.5px solid $gray-200;
-  border-radius: $radius;
-  padding: 0 48px 0 46px;
-  color: $dark !important;
-  height: 50px;
-  width: 100%;
-  font-size: 1rem; /* 16px: evita el zoom automático de iOS al enfocar */
-  font-family: inherit;
-  transition: all 0.2s $ease;
-
-  &::placeholder {
-    color: $gray-500;
-  }
-
-  &:focus {
-    background: white !important;
-    border-color: $primary;
-    box-shadow: 0 0 0 4px $primary-glow !important;
-    outline: none;
-  }
-
-  /* Fix autocompletado */
-  &:-webkit-autofill,
-  &:-webkit-autofill:hover,
-  &:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px $gray-50 inset !important;
-    -webkit-text-fill-color: $dark !important;
-    transition: background-color 5000s ease-in-out 0s;
-  }
-  &:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px white inset !important, 0 0 0 4px $primary-glow !important;
-  }
-}
-
-.input-correo {
-  padding-right: 16px !important;
-}
-
-/* ── Opciones extra (recordar) ──────────────── */
-.extra-options-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  margin-bottom: 1.5rem;
-  margin-top: 4px;
-
-  .form-check {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding-left: 0;
-
-    .form-check-input {
-      width: 18px;
-      height: 18px;
-      margin: 0;
-      border: 1.5px solid $gray-300;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.2s $ease;
-      flex-shrink: 0;
-      accent-color: $primary;
-
-      &:checked {
-        background-color: $primary;
-        border-color: $primary;
-      }
-      &:focus {
-        box-shadow: 0 0 0 3px $primary-glow;
-        border-color: $primary;
-      }
+    &:focus {
+      outline: none;
+      border-color: $indigo;
+      background: #fff;
+      box-shadow: 0 0 0 4px $glow;
     }
 
-    .form-check-label {
-      color: $gray-700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      user-select: none;
+    /* Fix autocompletado */
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #fff inset;
+      -webkit-text-fill-color: $text;
+      transition: background-color 5000s ease-in-out 0s;
     }
+  }
+
+  &:focus-within .field-icon {
+    color: $indigo;
+  }
+
+  &.no-eye input {
+    padding-right: 16px;
   }
 }
 
-/* ── Botón submit ───────────────────────────── */
-.btn-login {
-  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-  border: none;
-  padding: 14px;
-  border-radius: $radius;
-  color: white;
-  font-weight: 700;
-  font-size: 0.95rem;
-  text-transform: none;
-  cursor: pointer;
-  width: 100%;
-  box-shadow: 0 6px 18px $primary-glow;
-  transition: all 0.25s $ease;
+.eye-toggle {
+  position: absolute;
+  right: 8px;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: color 0.18s $ease, background 0.18s $ease;
+
+  &:hover {
+    color: $indigo;
+    background: rgba(99, 102, 241, 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $indigo;
+    outline-offset: 2px;
+  }
+}
+
+/* ── Recordarme ────────────────────────────────── */
+.remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+  margin-top: -2px;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: $indigo;
+    cursor: pointer;
+  }
+}
+
+/* ── Botón principal ───────────────────────────── */
+.btn-login {
+  margin-top: 4px;
+  height: 52px;
+  border: none;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: linear-gradient(135deg, $indigo 0%, $indigo-2 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 14px 30px -12px rgba(79, 70, 229, 0.6);
+  transition: transform 0.16s $ease, box-shadow 0.16s $ease, filter 0.16s $ease;
+
+  i { font-size: 0.92rem; }
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.4);
+    filter: brightness(1.05);
+    box-shadow: 0 18px 34px -12px rgba(79, 70, 229, 0.65);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $indigo;
+    outline-offset: 3px;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.65;
     cursor: not-allowed;
+    box-shadow: none;
   }
 }
 
-/* ── Enlace a registro ───────────────────────── */
+/* ── Enlace a registro ─────────────────────────── */
 .link-registro {
+  margin: 6px 0 0;
   text-align: center;
-  font-size: 0.87rem;
-  color: $gray-500;
-  margin: 16px 0 0;
+  font-size: 0.86rem;
+  color: $muted;
 
   a {
-    color: $primary;
+    color: $indigo;
     font-weight: 600;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    i { font-size: 0.68rem; }
 
     &:hover { text-decoration: underline; }
+
+    &:focus-visible {
+      outline: 2px solid $indigo;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
   }
 }
 
-/* ============================================== */
-/* RESPONSIVE                                     */
-/* ============================================== */
 @media (max-width: $bp-sm) {
-  .extra-options-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
+  .login-form { gap: 16px; }
+
+  .field-control input { height: 50px; }
+
+  .btn-login { height: 50px; }
 }

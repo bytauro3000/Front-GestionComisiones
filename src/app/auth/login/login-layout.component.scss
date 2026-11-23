@@ -1,240 +1,232 @@
-@use "sass:color";
-
-/* ============================================== */
-/* Design Tokens                                  */
-/* ============================================== */
 @use '../../../styles/tokens' as t;
 
 $bp-lg: t.$bp-lg;
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
-$primary-2:     #6366f1;
-$primary-light: #818cf8;
-$primary-bg:    rgba(99, 102, 241, 0.1);
+$ink:      #0a1020;
+$indigo:   #4f46e5;
+$indigo-3: #818cf8;
+$sand:     #e7d7b8;
+$mist:     #f6f7fb;
+$text:     #0f172a;
+$muted:    #64748b;
+$line:     #e6e9f2;
 
-$dark:          #0f172a;
-$gray-50:       #f8fafc;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
-
-$radius:        12px;
-$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+$radius:   24px;
 
 /* ============================================== */
-/* SPLIT LAYOUT                                   */
+/* SPLIT                                          */
 /* ============================================== */
 .login-split {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.05fr 0.95fr;
   min-height: 100vh;
-  background: $gray-50;
+  background: $mist;
+  color: $text;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ============================================== */
-/* BRANDING PANEL (izquierda)                     */
+/* BRANDING PANEL                                 */
 /* ============================================== */
 .branding-panel {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 40px 48px;
-  color: white;
+  padding: 36px 56px 32px;
   overflow: hidden;
   isolation: isolate;
-}
+  color: #fff;
+  background:
+    radial-gradient(120% 90% at 82% 0%, rgba(99, 102, 241, 0.38) 0%, transparent 58%),
+    linear-gradient(160deg, #0a1020 0%, #101a34 52%, #0a1122 100%);
 
-.branding-bg {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .branding-overlay {
+  &::before {
+    content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(79, 70, 229, 0.7) 100%);
+    z-index: -1;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(120% 90% at 30% 20%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(120% 90% at 30% 20%, #000 20%, transparent 75%);
+    opacity: 0.6;
   }
-
-  .branding-glow {
-    position: absolute;
-    top: 20%;
-    left: -100px;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(129, 140, 248, 0.3) 0%, transparent 70%);
-    border-radius: 50%;
-    animation: float 8s ease-in-out infinite;
-  }
-}
-
-.branding-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  gap: 40px;
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 12px;
-  position: absolute;
-  top: 28px;
-  left: 40px;
-  z-index: 2;
+  text-decoration: none;
+  color: #fff;
+
+  &:focus-visible {
+    outline: 2px solid $sand;
+    outline-offset: 6px;
+    border-radius: 12px;
+  }
 }
 
 .brand-mark {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-  display: flex;
+  border-radius: 14px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 1.15rem;
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+  color: #fff;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, $indigo 0%, $indigo-3 100%);
+  box-shadow: 0 8px 22px rgba(79, 70, 229, 0.45);
   flex-shrink: 0;
 }
 
 .brand-name {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  color: white;
-
-  &.dark { color: $dark; }
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .branding-hero {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  max-width: 540px;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 40px 0;
 
   h1 {
-    font-size: clamp(1.75rem, 3vw, 2.4rem);
-    font-weight: 800;
-    margin: 0 0 16px;
-    line-height: 1.15;
-    letter-spacing: -0.5px;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
-  }
+    margin: 0 0 18px;
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-size: clamp(2.1rem, 3.5vw, 3.3rem);
+    font-weight: 600;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    color: #fff;
 
-  p {
-    font-size: 1.02rem;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 0 0 32px;
-  }
-}
-
-.branding-features {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: rgba(255, 255, 255, 0.92);
-    font-size: 0.92rem;
-    font-weight: 500;
-
-    i {
-      color: $primary-light;
-      font-size: 1.05rem;
-      width: 22px;
-      flex-shrink: 0;
+    em {
+      font-style: italic;
+      color: $sand;
     }
   }
+
+  .lede {
+    margin: 0;
+    max-width: 42ch;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.68);
+  }
 }
 
-.branding-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.parcel-map {
+  position: absolute;
+  right: -8%;
+  bottom: 2%;
+  width: 66%;
+  max-width: 500px;
+  color: $sand;
+  opacity: 0.42;
+  pointer-events: none;
+  z-index: 0;
 
-  p {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.78rem;
-    margin: 0;
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .contours { opacity: 0.5; }
+  .parcels { opacity: 0.65; }
+
+  .parcel-active {
+    fill: rgba(231, 215, 184, 0.16);
+    stroke: $sand;
+    stroke-width: 1.6;
   }
 }
 
 /* ============================================== */
-/* FORM PANEL (derecha)                           */
+/* FORM PANEL                                     */
 /* ============================================== */
 .form-panel {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
-  background: $gray-50;
-  position: relative;
+  padding: 40px 32px;
+  overflow-y: auto;
+  background:
+    radial-gradient(90% 60% at 100% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 55%),
+    $mist;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(80% 70% at 50% 50%, #000 10%, transparent 80%);
+    mask-image: radial-gradient(80% 70% at 50% 50%, #000 10%, transparent 80%);
+    pointer-events: none;
+  }
 }
 
 .form-wrapper {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
 }
 
-.form-mobile-brand {
+.mobile-brand {
   display: none;
 }
 
+.auth-card {
+  width: 100%;
+  padding: 38px 38px 32px;
+  background: #fff;
+  border: 1px solid $line;
+  border-radius: $radius;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 34px 70px -38px rgba(15, 23, 42, 0.35);
+}
+
 .form-header {
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 
   h2 {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: $dark;
-    margin: 0 0 8px;
-    letter-spacing: -0.4px;
+    margin: 0;
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-size: 1.85rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: $text;
   }
 
   p {
-    color: $gray-500;
-    font-size: 0.95rem;
-    margin: 0;
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: $muted;
   }
 }
 
-.form-footer {
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 1px solid $gray-200;
+.legal {
+  margin: 18px 0 0;
   text-align: center;
-
-  p {
-    color: $gray-500;
-    font-size: 0.82rem;
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    i { color: $primary-2; }
-  }
+  font-size: 0.72rem;
+  color: #94a3b8;
 }
 
 /* ============================================== */
@@ -243,35 +235,54 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 @media (max-width: $bp-lg) {
   .login-split { grid-template-columns: 1fr; }
 
-  .branding-panel {
-    display: none;
-  }
+  .branding-panel { display: none; }
 
   .form-panel {
-    min-height: 100vh;
-    padding: 24px;
     align-items: flex-start;
-    padding-top: 80px;
+    min-height: 100vh;
+    padding: 28px 18px 40px;
   }
 
-  .form-mobile-brand {
+  .form-wrapper {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .mobile-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
+    gap: 11px;
+    margin-bottom: 18px;
 
-  .form-header h2 { font-size: 1.5rem; }
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+
+    .brand-name {
+      color: $text;
+      font-size: 1.1rem;
+    }
+  }
 }
 
 @media (max-width: $bp-sm) {
-  .form-panel { padding: 20px 16px; }
+  .form-panel { padding: 22px 14px 34px; }
+
+  .auth-card {
+    padding: 28px 20px 24px;
+    border-radius: 20px;
+  }
+
+  .form-header h2 { font-size: 1.6rem; }
 }
 
-/* ============================================== */
-/* ANIMATIONS                                     */
-/* ============================================== */
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(30px, -20px); }
+@media (prefers-reduced-motion: reduce) {
+  .login-split *,
+  .login-split *::before,
+  .login-split *::after {
+    transition: none !important;
+  }
 }

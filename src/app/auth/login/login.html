@@ -1,36 +1,47 @@
 <div class="login-container">
-    <form (ngSubmit)="onLogin()">
-        <div class="input-group-modern">
-            <i class="fas fa-envelope input-icon-modern"></i>
-            <input type="email" name="correo" [(ngModel)]="loginRequest.correo"
-                   class="form-control-modern input-correo" placeholder="Correo Electrónico" required autocomplete="email">
-        </div>
+  <form (ngSubmit)="onLogin()" class="login-form">
+    <div class="field">
+      <label for="correo">Correo electrónico</label>
+      <div class="field-control no-eye">
+        <i class="fas fa-envelope field-icon" aria-hidden="true"></i>
+        <input id="correo" type="email" name="correo" [(ngModel)]="loginRequest.correo"
+               placeholder="tu@correo.com" required autocomplete="email">
+      </div>
+    </div>
 
-        <div class="input-group-modern">
-            <i class="fas fa-lock input-icon-modern"></i>
-            <input [type]="verContrasena ? 'text' : 'password'"
-                   name="contrasena" [(ngModel)]="loginRequest.contrasena"
-                   class="form-control-modern" placeholder="Contraseña" required autocomplete="current-password">
-            <i class="fas eye-icon" [ngClass]="verContrasena ? 'fa-eye-slash' : 'fa-eye'" (click)="togglePassword()"></i>
-        </div>
-
-        <div class="extra-options-container">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="rememberMe" name="recordar" [(ngModel)]="recordar">
-                <label class="form-check-label" for="rememberMe">Recuérdame</label>
-            </div>
-        </div>
-
-        <button type="submit" class="btn-login" [disabled]="cargando">
-            @if (cargando) {
-                <i class="fas fa-spinner fa-spin"></i> Verificando...
-            } @else {
-                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-            }
+    <div class="field">
+      <label for="contrasena">Contraseña</label>
+      <div class="field-control">
+        <i class="fas fa-lock field-icon" aria-hidden="true"></i>
+        <input id="contrasena" [type]="verContrasena ? 'text' : 'password'"
+               name="contrasena" [(ngModel)]="loginRequest.contrasena"
+               placeholder="••••••••" required autocomplete="current-password">
+        <button type="button" class="eye-toggle" (click)="togglePassword()"
+                [attr.aria-label]="verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                [attr.aria-pressed]="verContrasena">
+          <i class="fas" [ngClass]="verContrasena ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
         </button>
+      </div>
+    </div>
 
-        <p class="link-registro">
-            ¿No tienes cuenta? <a routerLink="/registro">Regístrate aquí</a>
-        </p>
-    </form>
+    <label class="remember">
+      <input type="checkbox" name="recordar" [(ngModel)]="recordar">
+      <span>Recordarme en este dispositivo</span>
+    </label>
+
+    <button type="submit" class="btn-login" [disabled]="cargando">
+      @if (cargando) {
+        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+        <span>Verificando…</span>
+      } @else {
+        <span>Entrar al panel</span>
+        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      }
+    </button>
+
+    <p class="link-registro">
+      ¿Aún no tienes cuenta?
+      <a routerLink="/registro">Solicita acceso <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+    </p>
+  </form>
 </div>

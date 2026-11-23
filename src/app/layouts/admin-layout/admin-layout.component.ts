@@ -1,8 +1,17 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  ViewChild
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
 import { TokenService } from '../../auth/token.service';
 import { LogoutService } from '../../auth/logout.service';
+import { AnimationService } from '../../services/animation.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -11,16 +20,28 @@ import { LogoutService } from '../../auth/logout.service';
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'
 })
-export class AdminLayoutComponent implements OnDestroy {
+export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
+
+  @ViewChild('contenido') contenido?: ElementRef<HTMLElement>;
 
   readonly nombreUsuario: string;
   menuAbierto = false;
+  private routerSub?: Subscription;
 
   constructor(
     private tokenService: TokenService,
-    private logoutService: LogoutService
+    private logoutService: LogoutService,
+    private router: Router,
+    private animations: AnimationService
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Administrador';
+    this.routerSub = this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => this.animations.pageEnter(this.contenido?.nativeElement));
+  }
+
+  ngAfterViewInit(): void {
+    this.animations.pageEnter(this.contenido?.nativeElement);
   }
 
   toggleMenu(): void {
@@ -42,6 +63,7 @@ export class AdminLayoutComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
     document.body.style.overflow = '';
   }
 

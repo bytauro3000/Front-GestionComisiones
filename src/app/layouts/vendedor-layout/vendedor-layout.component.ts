@@ -1,4 +1,11 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  ViewChild
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
@@ -6,6 +13,7 @@ import { TokenService } from '../../auth/token.service';
 import { LogoutService } from '../../auth/logout.service';
 import { NotificacionBellComponent } from '../../components/notificacion-bell/notificacion-bell.component';
 import { ProformaUiService } from '../../services/proforma-ui.service';
+import { AnimationService } from '../../services/animation.service';
 
 @Component({
   selector: 'app-vendedor-layout',
@@ -14,7 +22,9 @@ import { ProformaUiService } from '../../services/proforma-ui.service';
   templateUrl: './vendedor-layout.component.html',
   styleUrl: './vendedor-layout.component.scss'
 })
-export class VendedorLayoutComponent implements OnDestroy {
+export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
+
+  @ViewChild('contenido') contenido?: ElementRef<HTMLElement>;
 
   readonly nombreUsuario: string;
 
@@ -34,13 +44,21 @@ export class VendedorLayoutComponent implements OnDestroy {
     private tokenService: TokenService,
     private logoutService: LogoutService,
     private proformaUi: ProformaUiService,
-    private router: Router
+    private router: Router,
+    private animations: AnimationService
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Vendedor';
     this.actualizarFab(this.router.url);
     this.routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe((e) => this.actualizarFab((e as NavigationEnd).urlAfterRedirects));
+      .subscribe((e) => {
+        this.actualizarFab((e as NavigationEnd).urlAfterRedirects);
+        this.animations.pageEnter(this.contenido?.nativeElement);
+      });
+  }
+
+  ngAfterViewInit(): void {
+    this.animations.pageEnter(this.contenido?.nativeElement);
   }
 
   private actualizarFab(url: string): void {

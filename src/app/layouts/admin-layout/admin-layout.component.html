@@ -56,7 +56,7 @@
   <div class="nav-overlay" [class.open]="menuAbierto" (click)="cerrarMenu()" aria-hidden="true"></div>
 
   <!-- Contenido -->
-  <main class="admin-content">
+  <main #contenido class="admin-content">
     <router-outlet />
   </main>
 </div>
