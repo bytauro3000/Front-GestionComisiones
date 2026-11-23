@@ -9,6 +9,7 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { LoteService, Lote } from '../../services/lote.service';
 import { UsuarioService, Perfil } from '../../services/usuario.service';
 import { TokenService } from '../../auth/token.service';
+import { AlertService } from '../../services/alert.service';
 
 interface FilaDetalle {
   idLote: number | null;
@@ -55,6 +56,7 @@ export class ProformasComponent implements OnInit {
     private loteService: LoteService,
     private usuarioService: UsuarioService,
     private tokenService: TokenService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -178,7 +180,7 @@ export class ProformasComponent implements OnInit {
     return this.filas.reduce((s, f) => s + (Number(f.precioUnitario) || 0), 0);
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
@@ -205,6 +207,12 @@ export class ProformasComponent implements OnInit {
       }))
     };
 
+    if (this.modoEdicion && this.proformaEditando) {
+      const ok = await this.alert.confirmarEdicion(
+        `¿Guardar los cambios de la proforma <strong>${this.proformaEditando.numero}</strong>?`);
+      if (!ok) return;
+    }
+
     this.guardando = true;
     const peticion = this.modoEdicion && this.proformaEditando
       ? this.proformaService.editar(this.proformaEditando.id!, dto)
@@ -214,7 +222,7 @@ export class ProformasComponent implements OnInit {
       next: (guardada) => {
         this.guardando = false;
         this.modalAbierto = false;
-        this.toastr.success(this.modoEdicion ? 'Proforma actualizada' : 'Proforma emitida: ' + guardada.numero);
+        this.alert.success(this.modoEdicion ? 'Proforma actualizada' : 'Proforma emitida: ' + guardada.numero);
         this.cargarProformas();
         this.ver(guardada);
       },
@@ -277,7 +285,7 @@ export class ProformasComponent implements OnInit {
       this.proformaService.cambiarEstado(p.id!, estado).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success(`Proforma ${accion}da`);
+          this.alert.success(`Proforma ${accion}da`);
           this.cargarProformas();
           if (this.vistaPrevia?.id === p.id) this.vistaPrevia = null;
         },
@@ -304,7 +312,7 @@ export class ProformasComponent implements OnInit {
       this.proformaService.eliminar(p.id!).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Proforma eliminada');
+          this.alert.success('Proforma eliminada');
           if (this.vistaPrevia?.id === p.id) this.vistaPrevia = null;
           this.cargarProformas();
         },

@@ -12,6 +12,7 @@
       <div class="brand-mark"><i class="fas fa-chart-line"></i></div>
       <span class="brand-name">Vende Lote</span>
     </div>
+    <app-notificacion-bell />
     <button class="btn-logout btn-logout-top" (click)="logout()" title="Cerrar sesión">
       <i class="fas fa-sign-out-alt"></i>
     </button>
@@ -44,6 +45,9 @@
       <a routerLink="/vendedor/clientes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-address-book"></i><span>Clientes</span>
       </a>
+      <a routerLink="/vendedor/socios" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-user-friends"></i><span>Socios</span>
+      </a>
       <a routerLink="/vendedor/proyectos" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-drafting-compass"></i><span>Proyectos</span>
       </a>
@@ -65,6 +69,9 @@
       <a routerLink="/vendedor/comisiones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-coins"></i><span>Comisiones</span>
       </a>
+      <a routerLink="/vendedor/liquidaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-hand-holding-usd"></i><span>Liquidaciones</span>
+      </a>
       <a routerLink="/vendedor/comprobantes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-file-invoice-dollar"></i><span>Facturación</span>
       </a>
@@ -78,6 +85,7 @@
           <small>Vendedor</small>
         </div>
       </div>
+      <app-notificacion-bell />
       <button class="btn-logout" (click)="logout()" title="Cerrar sesión">
         <i class="fas fa-sign-out-alt"></i>
       </button>

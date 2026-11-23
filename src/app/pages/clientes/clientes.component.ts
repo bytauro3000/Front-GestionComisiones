@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { ClienteService, Cliente } from '../../services/cliente.service';
 import { DeclectaService } from '../../services/decolecta.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-clientes',
@@ -34,6 +35,7 @@ export class ClientesComponent implements OnInit {
   constructor(
     private clienteService: ClienteService,
     private decolectaService: DeclectaService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -88,7 +90,7 @@ export class ClientesComponent implements OnInit {
     this.modalAbierto = false;
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     if (!this.form.numDocumento || !this.form.numDocumento.trim()) {
@@ -98,6 +100,12 @@ export class ClientesComponent implements OnInit {
     if (!this.form.nombres || !this.form.nombres.trim()) {
       this.toastr.warning('Los nombres son obligatorios');
       return;
+    }
+
+    if (this.modoEdicion) {
+      const ok = await this.alert.confirmarEdicion(
+        `¿Guardar los cambios de <strong>${this.form.nombres}</strong>?`);
+      if (!ok) return;
     }
 
     this.form.telefono = this.telefonos.map(t => t.trim()).filter(Boolean).join(',');
@@ -111,7 +119,7 @@ export class ClientesComponent implements OnInit {
       next: () => {
         this.guardando = false;
         this.modalAbierto = false;
-        this.toastr.success(this.modoEdicion ? 'Cliente actualizado' : 'Cliente creado');
+        this.alert.success(this.modoEdicion ? 'Cliente actualizado' : 'Cliente creado');
         this.cargarClientes();
       },
       error: (err) => {
@@ -219,7 +227,7 @@ export class ClientesComponent implements OnInit {
       this.clienteService.eliminar(cliente.id!).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Cliente eliminado');
+          this.alert.success('Cliente eliminado');
           this.cargarClientes();
         },
         error: (err) => {

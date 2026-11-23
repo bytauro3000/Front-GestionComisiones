@@ -1,0 +1,43 @@
+<div class="noti">
+  <button class="noti-btn" (click)="togglePanel()" title="Notificaciones" aria-label="Notificaciones">
+    <i class="fas fa-bell"></i>
+    @if (noLeidas > 0) {
+      <span class="noti-badge">{{ noLeidas > 9 ? '9+' : noLeidas }}</span>
+    }
+  </button>
+
+  @if (panelAbierto) {
+    <div class="noti-panel">
+      <div class="noti-head">
+        <strong>Notificaciones</strong>
+        <button class="noti-link" (click)="marcarTodas()" [disabled]="noLeidas === 0">
+          Marcar todas
+        </button>
+      </div>
+
+      @if (permiso !== 'granted') {
+        <button class="noti-activar" (click)="activarNavegador()" [disabled]="permiso === 'no-soportado'">
+          <i class="fas fa-mobile-screen-button"></i>
+          {{ permiso === 'no-soportado' ? 'Avisos no soportados' : 'Activar avisos del navegador' }}
+        </button>
+      }
+
+      <div class="noti-list">
+        @if (notificaciones.length === 0) {
+          <div class="noti-empty">Sin notificaciones</div>
+        } @else {
+          @for (n of notificaciones; track n.id) {
+            <button class="noti-item" [class.no-leida]="!n.leida" (click)="marcarLeida(n)">
+              <div class="noti-item-title">
+                @if (!n.leida) { <span class="punto"></span> }
+                {{ n.titulo }}
+              </div>
+              <div class="noti-item-msg">{{ n.mensaje }}</div>
+              <div class="noti-item-fecha">{{ n.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</div>
+            </button>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

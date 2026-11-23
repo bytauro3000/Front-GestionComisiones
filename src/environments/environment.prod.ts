@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://AQUI-VA-LA-URL-DEL-BACKEND'
+  // ⚠️ Reemplaza por la URL pública de tu backend en Render (sin / final).
+  //    Ej.: https://vendelote-backend.onrender.com
+  apiUrl: 'https://TU-BACKEND.onrender.com'
 };

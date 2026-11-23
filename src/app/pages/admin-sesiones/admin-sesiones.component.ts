@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { AdminSesionesService, SesionResumen } from '../../services/admin-sesiones.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-admin-sesiones',
@@ -18,6 +19,7 @@ export class AdminSesionesComponent implements OnInit {
 
   constructor(
     private sesionesService: AdminSesionesService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) {}
 
@@ -52,7 +54,7 @@ export class AdminSesionesComponent implements OnInit {
       if (!result.isConfirmed) return;
       this.sesionesService.cerrar(idSesion).subscribe({
         next: () => {
-          this.toastr.success('Sesión cerrada');
+          this.alert.success('Sesión cerrada');
           this.cargar();
         },
         error: (err) => {

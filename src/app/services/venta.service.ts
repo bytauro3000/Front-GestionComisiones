@@ -3,6 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface ComisionRepartoSocio {
+  idSocio: number;
+  participaInicial: boolean;
+  porcentajeInicial?: number | null;
+  montoInicial?: number | null;
+  participaCuotas: boolean;
+  porcentajeCuotas?: number | null;
+  montoCuotaSocio?: number | null;
+}
+
 export interface VentaCrear {
   /** Uno o varios lotes bajo la MISMA venta. */
   idsLotes: number[];
@@ -15,6 +25,12 @@ export interface VentaCrear {
   modalidad: string;
   comisionManual?: number;
   notas?: string;
+  /** Override del % del inicial del cliente que se paga como anticipo (0.30 = 30%). */
+  porcentajeAnticipo?: number;
+  /** Override del monto de cada letra. */
+  montoCuota?: number;
+  /** Reparto con socios (máximo 2). */
+  socios?: ComisionRepartoSocio[];
 }
 
 export interface VentaListado {

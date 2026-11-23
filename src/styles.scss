@@ -590,11 +590,16 @@ body {
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  /* Mantiene las esquinas redondeadas aunque el contenido tenga scroll:
+     el scroll vive en .modal-body, no en la tarjeta. */
+  overflow: hidden;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
   animation: slideUp 0.25s $ease;
 
   .modal-header {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -631,9 +636,14 @@ body {
 
   .modal-body {
     padding: 24px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   .modal-footer {
+    flex: 0 0 auto;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -745,4 +755,85 @@ body {
 
 @page {
   margin: 14mm;
+}
+
+/* ── Reparto con socios (Fase 1) ─────────────────────────────────────── */
+.reparto-sep {
+  border: 0;
+  border-top: 1px dashed #e5e7eb;
+  margin: 16px 0;
+}
+
+.reparto-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f9fafb;
+
+  .reparto-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+
+    select {
+      flex: 1;
+    }
+  }
+
+  .reparto-comps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .reparto-comp {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+  }
+
+  .reparto-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .mini-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+}
+
+.reparto-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 14px;
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .reparto-card .reparto-comps {
+    grid-template-columns: 1fr;
+  }
 }

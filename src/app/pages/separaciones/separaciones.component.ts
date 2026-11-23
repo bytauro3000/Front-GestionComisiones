@@ -4,11 +4,26 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { LoteService, Lote } from '../../services/lote.service';
+import { EmpresaService, Empresa } from '../../services/empresa.service';
+import { ProyectoService, Proyecto } from '../../services/proyecto.service';
+import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
+import { AlertService } from '../../services/alert.service';
+
+interface SeparacionForm {
+  idEmpresa: number | null;
+  idProyecto: number | null;
+  idLote: number | null;
+  fechaVence: string;
+  monto: number | null;
+  ajena: boolean;
+  cliente: string;
+  nota: string;
+}
 
 @Component({
   selector: 'app-separaciones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatterDirective],
   templateUrl: './separaciones.component.html',
   styleUrl: './separaciones.component.scss'
 })
@@ -19,13 +34,34 @@ export class SeparacionesComponent implements OnInit {
   procesandoId: number | null = null;
   filtroTipo: '' | 'PROPIA' | 'AJENA' = '';
 
+  empresas: Empresa[] = [];
+  proyectos: Proyecto[] = [];
+  lotesDisponibles: Lote[] = [];
+
+  modalAbierto = false;
+  guardando = false;
+  form: SeparacionForm = this.formVacio();
+
+  /** Aviso: separaciones propias que vencen en ≤3 días. */
+  readonly diasAviso = 3;
+
+  readonly presets = [
+    { dias: 15, etiqueta: '15 días' },
+    { dias: 30, etiqueta: '1 mes' },
+    { dias: 60, etiqueta: '2 meses' }
+  ];
+
   constructor(
     private loteService: LoteService,
+    private empresaService: EmpresaService,
+    private proyectoService: ProyectoService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
     this.cargar();
+    this.cargarCatalogos();
   }
 
   cargar(): void {
@@ -42,9 +78,19 @@ export class SeparacionesComponent implements OnInit {
     });
   }
 
+  private cargarCatalogos(): void {
+    this.empresaService.listar().subscribe({ next: (d) => (this.empresas = d), error: () => undefined });
+    this.proyectoService.listar().subscribe({ next: (d) => (this.proyectos = d), error: () => undefined });
+  }
+
   get xFiltradas(): Lote[] {
     if (!this.filtroTipo) return this.separaciones;
     return this.separaciones.filter(l => this.filtroTipo === 'AJENA' ? !!l.separacionAjena : !l.separacionAjena);
+  }
+
+  get proyectosDisponibles(): Proyecto[] {
+    if (this.form.idEmpresa == null) return [];
+    return this.proyectos.filter(p => p.idEmpresa === this.form.idEmpresa && p.estado !== 'INACTIVO');
   }
 
   /** Días que faltan para que venza (negativo = vencida). */
@@ -56,32 +102,88 @@ export class SeparacionesComponent implements OnInit {
     return Math.round((fin.getTime() - hoy.getTime()) / 86400000);
   }
 
-  /** true = próxima a vencer (≤4 días) y propia → hay que contacting al cliente. */
   porVencer(l: Lote): boolean {
     const d = this.diasRestantes(l);
-    return !l.separacionAjena && d >= 0 && d <= 4;
+    return !l.separacionAjena && d >= 0 && d <= this.diasAviso;
   }
 
   vencida(l: Lote): boolean {
     return this.diasRestantes(l) < 0;
   }
 
-  /** Separaciones propias que vencen pronto → aviso para contactar al cliente. */
   get alertas(): Lote[] {
     return this.separaciones.filter(l => this.porVencer(l));
   }
 
-  formatearMoneda(v?: number): string {
-    return '$ ' + new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(v || 0);
+  // ── Nueva separación ──────────────────────────────────────────────────────
+
+  abrirNueva(): void {
+    this.form = this.formVacio();
+    this.lotesDisponibles = [];
+    this.modalAbierto = true;
   }
 
-  formatearFecha(iso?: string): string {
-    if (!iso) return '—';
-    const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  cerrarModal(): void {
+    this.modalAbierto = false;
+  }
+
+  onEmpresaChange(): void {
+    this.form.idProyecto = null;
+    this.form.idLote = null;
+    this.lotesDisponibles = [];
+  }
+
+  onProyectoChange(): void {
+    this.form.idLote = null;
+    this.lotesDisponibles = [];
+    if (this.form.idProyecto == null) return;
+    this.loteService.listar({ idProyecto: this.form.idProyecto }).subscribe({
+      next: (lotes) => {
+        this.lotesDisponibles = lotes.filter(l => l.estado !== 'VENDIDO' && !l.ventaActiva);
+      },
+      error: () => this.toastr.error('No se pudieron cargar los lotes', 'Error')
+    });
+  }
+
+  aplicarPreset(p: { dias: number }): void {
+    this.form.fechaVence = this.fechaDesde(p.dias);
+  }
+
+  confirmar(): void {
+    if (this.guardando) return;
+    if (this.form.idLote == null) {
+      this.toastr.warning('Seleccione el lote a separar');
+      return;
+    }
+    if (!this.form.fechaVence) {
+      this.toastr.warning('Indique la fecha de vencimiento');
+      return;
+    }
+    const hoy = this.hoy();
+    if (this.form.fechaVence < hoy) {
+      this.toastr.warning('La fecha de vencimiento no puede ser pasada');
+      return;
+    }
+
+    this.guardando = true;
+    this.loteService.separar(this.form.idLote, {
+      fechaVence: this.form.fechaVence,
+      monto: this.form.monto ?? undefined,
+      ajena: this.form.ajena,
+      cliente: this.form.cliente?.trim() || undefined,
+      nota: this.form.nota?.trim() || undefined
+    }).subscribe({
+      next: () => {
+        this.guardando = false;
+        this.modalAbierto = false;
+        this.alert.success('Separación registrada');
+        this.cargar();
+      },
+      error: (err) => {
+        this.guardando = false;
+        this.toastr.error(err?.error?.mensaje || 'No se pudo registrar la separación', 'Error');
+      }
+    });
   }
 
   liberar(l: Lote): void {
@@ -100,7 +202,7 @@ export class SeparacionesComponent implements OnInit {
       this.loteService.liberarSeparacion(l.id!).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Separación liberada');
+          this.alert.success('Separación liberada');
           this.cargar();
         },
         error: (err) => {
@@ -109,5 +211,52 @@ export class SeparacionesComponent implements OnInit {
         }
       });
     });
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  formatearMoneda(v?: number): string {
+    return '$ ' + new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(v || 0);
+  }
+
+  formatearFecha(iso?: string): string {
+    if (!iso) return '—';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  etiquetaLote(l: Lote): string {
+    return `${l.proyecto} Mz.${l.manzana} Lt.${l.numero}`;
+  }
+
+  hoy(): string {
+    const d = new Date();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mes}-${dia}`;
+  }
+
+  private fechaDesde(dias: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() + dias);
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mes}-${dia}`;
+  }
+
+  private formVacio(): SeparacionForm {
+    return {
+      idEmpresa: null,
+      idProyecto: null,
+      idLote: null,
+      fechaVence: '',
+      monto: null,
+      ajena: false,
+      cliente: '',
+      nota: ''
+    };
   }
 }

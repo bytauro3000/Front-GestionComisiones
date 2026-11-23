@@ -10,6 +10,7 @@ import {
   ComprobanteCrear
 } from '../../services/comprobante.service';
 import { IntegracionSunatService, IntegracionSunat } from '../../services/integracion-sunat.service';
+import { AlertService } from '../../services/alert.service';
 
 interface EmpresaConPagos {
   idEmpresa: number;
@@ -53,6 +54,7 @@ export class ComprobantesComponent implements OnInit {
   constructor(
     private comprobanteService: ComprobanteService,
     private integracionService: IntegracionSunatService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) {}
 
@@ -187,7 +189,7 @@ export class ComprobantesComponent implements OnInit {
         const numero = comprobante.serie && comprobante.correlativo
           ? `${comprobante.serie}-${comprobante.correlativo}`
           : `#${comprobante.id}`;
-        this.toastr.success(`Factura ${numero} emitida y enviada a SUNAT`, 'Factura emitida', { timeOut: 5000 });
+        this.alert.success(`Factura ${numero} emitida y enviada a SUNAT`, 'Factura emitida');
         this.cargar();
       },
       error: (err) => {
@@ -208,7 +210,7 @@ export class ComprobantesComponent implements OnInit {
       next: (actualizado) => {
         const idx = this.comprobantes.findIndex(x => x.id === c.id);
         if (idx >= 0) this.comprobantes[idx] = actualizado;
-        this.toastr.info(`Estado: ${this.etiquetaEstado(actualizado.estado)}`, 'Sincronizado con SUNAT');
+        this.alert.success(`Estado: ${this.etiquetaEstado(actualizado.estado)}`, 'Sincronizado con SUNAT');
       },
       error: (err) => {
         this.toastr.error(err?.error?.mensaje || 'No se pudo sincronizar con SUNAT', 'Error');
@@ -257,7 +259,7 @@ export class ComprobantesComponent implements OnInit {
     this.integOriginal = null;
   }
 
-  guardarIntegracion(): void {
+  async guardarIntegracion(): Promise<void> {
     if (!this.integ || this.guardandoInteg) return;
     if (!this.integ.serieFactura || !/^F\d{3}|\d{4}$/.test(this.integ.serieFactura)) {
       this.toastr.warning('La serie debe empezar con F (ej: F001)');
@@ -268,13 +270,16 @@ export class ComprobantesComponent implements OnInit {
       return;
     }
 
+    const ok = await this.alert.confirmarEdicion('¿Guardar los cambios de la configuración de facturación?');
+    if (!ok) return;
+
     this.guardandoInteg = true;
     this.integracionService.guardar(this.integ).subscribe({
       next: (guardado) => {
         this.guardandoInteg = false;
         this.integ = { ...guardado };
         this.integOriginal = { ...guardado };
-        this.toastr.success('Configuración de facturación guardada');
+        this.alert.success('Configuración de facturación guardada');
         this.cerrarIntegracion();
       },
       error: (err) => {
@@ -291,7 +296,7 @@ export class ComprobantesComponent implements OnInit {
       next: (res) => {
         this.probando = false;
         if (res.conectado) {
-          this.toastr.success('Conexión exitosa con api-sunat', 'Conectado');
+          this.alert.success('Conexión exitosa con api-sunat', 'Conectado');
         } else {
           this.toastr.error('api-sunat rechazó las credenciales o no responde', 'Sin conexión');
         }

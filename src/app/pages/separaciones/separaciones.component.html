@@ -2,11 +2,16 @@
   <div class="page-header">
     <div>
       <h1>Separaciones</h1>
-      <p>Lotes separados con plazo: tuyos (puedes venderlos) y de otros vendedores (bloqueados)</p>
+      <p>Lotes reservados con plazo: tuyos (puedes venderlos) y de otros vendedores (bloqueados)</p>
     </div>
-    <button class="btn btn-outline" (click)="cargar()">
-      <i class="fas fa-rotate"></i> Actualizar
-    </button>
+    <div class="header-acciones">
+      <button class="btn btn-outline" (click)="cargar()">
+        <i class="fas fa-rotate"></i> Actualizar
+      </button>
+      <button class="btn btn-primary" (click)="abrirNueva()">
+        <i class="fas fa-plus"></i> Nueva separación
+      </button>
+    </div>
   </div>
 
   @if (alertas.length > 0) {
@@ -42,18 +47,19 @@
           <th>MZ/LT</th>
           <th>Proyecto</th>
           <th>Tipo</th>
+          <th>Cliente</th>
           <th>Vence</th>
           <th>Días</th>
           <th>Monto</th>
-          <th>Precio lote</th>
+          <th>Nota</th>
           <th style="text-align: right;">Acciones</th>
         </tr>
       </thead>
       <tbody>
         @if (cargando) {
-          <tr><td colspan="8" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+          <tr><td colspan="9" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
         } @else if (xFiltradas.length === 0) {
-          <tr><td colspan="8" class="empty-cell">No hay separaciones registradas</td></tr>
+          <tr><td colspan="9" class="empty-cell">No hay separaciones registradas</td></tr>
         } @else {
           @for (l of xFiltradas; track l.id) {
             <tr [class.fila-alerta]="porVencer(l)">
@@ -66,6 +72,7 @@
                   <span class="badge badge-activo">MÍA</span>
                 }
               </td>
+              <td data-label="Cliente">{{ l.clienteSeparacion || '—' }}</td>
               <td data-label="Vence">{{ formatearFecha(l.fechaVinceSeparacion) }}</td>
               <td data-label="Días">
                 @if (vencida(l)) {
@@ -77,7 +84,7 @@
                 }
               </td>
               <td data-label="Monto">{{ l.montoSeparacion != null ? formatearMoneda(l.montoSeparacion) : '—' }}</td>
-              <td data-label="Precio lote">{{ l.precio | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
+              <td data-label="Nota">{{ l.notaSeparacion || '—' }}</td>
               <td class="actions-cell cell-actions" data-label="Acciones">
                 <button class="btn btn-outline btn-sm" (click)="liberar(l)"
                         [disabled]="procesandoId === l.id" title="Liberar separación">
@@ -91,3 +98,102 @@
     </table>
   </div>
 </div>
+
+<!-- Modal nueva separación -->
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fas fa-hourglass-half"></i> Nueva separación</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Empresa *</label>
+          <select [(ngModel)]="form.idEmpresa" (change)="onEmpresaChange()">
+            <option [ngValue]="null" disabled>Seleccione una empresa</option>
+            @for (e of empresas; track e.id) {
+              <option [ngValue]="e.id">{{ e.razonSocial }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Proyecto *</label>
+          <select [(ngModel)]="form.idProyecto" [disabled]="form.idEmpresa == null" (change)="onProyectoChange()">
+            <option [ngValue]="null" disabled>
+              {{ form.idEmpresa ? 'Seleccione un proyecto' : 'Primero seleccione una empresa' }}
+            </option>
+            @for (p of proyectosDisponibles; track p.id) {
+              <option [ngValue]="p.id">{{ p.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Lote *</label>
+          <select [(ngModel)]="form.idLote" [disabled]="form.idProyecto == null">
+            <option [ngValue]="null" disabled>
+              {{ form.idProyecto ? 'Seleccione el lote' : 'Primero seleccione un proyecto' }}
+            </option>
+            @for (l of lotesDisponibles; track l.id) {
+              <option [ngValue]="l.id">{{ etiquetaLote(l) }} — {{ formatearMoneda(l.precio) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Plazo de la separación *</label>
+          <div class="preset-row">
+            @for (p of presets; track p.dias) {
+              <button type="button" class="preset-chip" (click)="aplicarPreset(p)">{{ p.etiqueta }}</button>
+            }
+          </div>
+          <input type="date" [(ngModel)]="form.fechaVence" class="input-fecha" [min]="hoy()">
+          <small class="field-hint">La separación vence y el lote vuelve a DISPONIBLE.</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Monto pagado</label>
+            <input type="text" appCurrencyFormatter currencySymbol="$ "
+              [(ngModel)]="form.monto" placeholder="$ 50.00">
+          </div>
+          <div class="form-field">
+            <label>Cliente (opcional)</label>
+            <input type="text" [(ngModel)]="form.cliente" maxlength="150" placeholder="Ej.: Juan Pérez">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="check-label">
+            <input type="checkbox" [(ngModel)]="form.ajena">
+            <span>La separación la hizo <strong>otro vendedor</strong> (me la informó la oficina)</span>
+          </label>
+          <small class="field-hint">
+            @if (form.ajena) {
+              El lote queda bloqueado: no podré venderlo mientras esté vigente.
+            } @else {
+              Es mi separación: puedo vender el lote a mi cliente dentro del plazo.
+            }
+          </small>
+        </div>
+
+        <div class="form-field">
+          <label>Nota (opcional)</label>
+          <input type="text" [(ngModel)]="form.nota" maxlength="300" placeholder="Observaciones">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="confirmar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          } @else {
+            <i class="fas fa-hourglass-half"></i> Separar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -18,6 +18,18 @@ export interface PagoComision {
   fechaRegistro?: string;
 }
 
+export interface RepartoComision {
+  id: number;
+  idSocio: number;
+  socioNombre: string;
+  participaInicial: boolean;
+  porcentajeInicial?: number | null;
+  montoInicial?: number | null;
+  participaCuotas: boolean;
+  porcentajeCuotas?: number | null;
+  montoCuotaSocio?: number | null;
+}
+
 export interface ComisionListado {
   id: number;
   idVenta: number;
@@ -26,6 +38,8 @@ export interface ComisionListado {
   montoPagado: number;
   montoSaldo: number;
   montoAnticipo: number;
+  porcentajeAnticipo?: number | null;
+  montoCuota?: number;
   cantidadCuotas?: number;
   idLote: number;
   loteEtiqueta: string;
@@ -34,6 +48,7 @@ export interface ComisionListado {
   clienteNombre: string;
   pagosPendientes: number;
   montoPendiente: number;
+  repartos?: RepartoComision[];
   pagos: PagoComision[];
 }
 

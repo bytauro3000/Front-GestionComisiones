@@ -8,13 +8,17 @@ import {
   VentaService,
   VentaCrear,
   VentaListado,
-  VentaDetalle
+  VentaDetalle,
+  ComisionRepartoSocio
 } from '../../services/venta.service';
 import { LoteService, Lote } from '../../services/lote.service';
 import { ClienteService, Cliente } from '../../services/cliente.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
+import { SocioService, Socio } from '../../services/socio.service';
+import { ParametroComisionService, ParametroComision } from '../../services/parametro-comision.service';
 import { PagoComision } from '../../services/comision.service';
+import { AlertService } from '../../services/alert.service';
 import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 
 interface VentaForm {
@@ -26,7 +30,25 @@ interface VentaForm {
   montoInicial: number | null;
   numCuotas: number | null;
   comisionManual: number | null;
+  /** En porcentaje (30 = 30%). Null = usar el parámetro vigente. */
+  porcentajeAnticipo: number | null;
+  /** Monto de cada letra. Null = usar el parámetro vigente. */
+  montoCuota: number | null;
   notas: string;
+}
+
+interface RepartoForm {
+  idSocio: number | null;
+  participaInicial: boolean;
+  inicialModo: 'PCT' | 'MONTO';
+  /** En porcentaje (50 = 50%). */
+  porcentajeInicial: number | null;
+  montoInicial: number | null;
+  participaCuotas: boolean;
+  cuotasModo: 'PCT' | 'MONTO';
+  /** En porcentaje (50 = 50%). */
+  porcentajeCuotas: number | null;
+  montoCuotaSocio: number | null;
 }
 
 @Component({
@@ -46,8 +68,11 @@ export class VentasComponent implements OnInit {
   proyectos: Proyecto[] = [];
   lotes: Lote[] = [];               // lotes del programa seleccionado (sin VENDIDOS)
   clientes: Cliente[] = [];
+  socios: Socio[] = [];
   lotesSeleccionados: Lote[] = [];
   clientesSeleccionados: Cliente[] = [];
+  repartos: RepartoForm[] = [];
+  parametro: ParametroComision | null = null;
 
   cargandoCatalogos = false;
   modalAbierto = false;
@@ -89,6 +114,9 @@ export class VentasComponent implements OnInit {
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
     private proyectoService: ProyectoService,
+    private socioService: SocioService,
+    private parametroService: ParametroComisionService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -133,6 +161,8 @@ export class VentasComponent implements OnInit {
     this.form = this.formVacio();
     this.lotesSeleccionados = [];
     this.clientesSeleccionados = [];
+    this.repartos = [];
+    this.parametro = null;
     this.lotes = [];
     this.lotesFiltrados = [];
     this.filtroEmpresa = '';
@@ -147,14 +177,16 @@ export class VentasComponent implements OnInit {
     this.cargandoCatalogos = true;
 
     try {
-      const [empresas, proyectos, clientes] = await Promise.all([
+      const [empresas, proyectos, clientes, socios] = await Promise.all([
         firstValueFrom(this.empresaService.listar()),
         firstValueFrom(this.proyectoService.listar()),
-        firstValueFrom(this.clienteService.listar())
+        firstValueFrom(this.clienteService.listar()),
+        firstValueFrom(this.socioService.listar(true))
       ]);
       this.empresas = empresas;
       this.proyectos = proyectos;
       this.clientes = clientes;
+      this.socios = socios;
       // Las listas se calculan al enfocar cada campo (focus),
       // así el modal NO se abre con los desplegables ya visibles.
     } catch (err: any) {
@@ -204,6 +236,7 @@ export class VentasComponent implements OnInit {
       this.lotesFiltrados = [];
       this.lotesSeleccionados = [];
       this.actualizarTotalDesdeLotes();
+      this.cargarParametro(this.form.idEmpresa);
     }
     this.filtrarProyectos();
   }
@@ -341,6 +374,202 @@ export class VentasComponent implements OnInit {
     return `${c.nombres || ''} ${c.apellidos || ''}`.trim();
   }
 
+  // ── Parámetro vigente + reparto con socios ──────────────────────────────────
+
+  private cargarParametro(idEmpresa: number | null): void {
+    this.parametro = null;
+    if (idEmpresa == null) return;
+    this.parametroService.vigente(idEmpresa).subscribe({
+      next: (p) => {
+        this.parametro = p;
+        this.recalcularRepartos();
+      },
+      error: () => {
+        this.parametro = null;
+      }
+    });
+  }
+
+  get porcentajeComisionCalc(): number {
+    const p = this.parametro;
+    if (!p) return 0.03;
+    return this.form.modalidad === 'CONTADO'
+      ? (p.porcentajeComisionContado ?? 0.03)
+      : (p.porcentajeComision ?? 0.03);
+  }
+
+  get comisionTotalCalc(): number {
+    if (this.form.comisionManual != null) return this.form.comisionManual;
+    return Math.round((this.form.precioVenta || 0) * this.porcentajeComisionCalc * 100) / 100;
+  }
+
+  /** % (fracción 0..1) del inicial del cliente que se paga como anticipo. */
+  get porcentajeAnticipoCalc(): number {
+    if (this.form.porcentajeAnticipo != null) return this.form.porcentajeAnticipo / 100;
+    const p = this.parametro;
+    if (p?.anticipoMontoFijo != null) return 0;
+    return p?.anticipoPorcentaje ?? 0.30;
+  }
+
+  get inicialTotalCalc(): number {
+    const total = this.comisionTotalCalc;
+    if (this.form.modalidad === 'CONTADO') return total;
+    if (this.parametro?.anticipoMontoFijo != null) {
+      return Math.min(this.parametro.anticipoMontoFijo, total);
+    }
+    const montoInicial = this.form.montoInicial || 0;
+    const ant = Math.round(montoInicial * this.porcentajeAnticipoCalc * 100) / 100;
+    return Math.min(Math.max(0, ant), total);
+  }
+
+  get cuotaBaseCalc(): number {
+    if (this.form.modalidad === 'CONTADO') return 0;
+    if (this.form.montoCuota != null) return this.form.montoCuota;
+    return this.parametro?.montoCuota ?? 50;
+  }
+
+  get saldoComisionCalc(): number {
+    return Math.max(0, Math.round((this.comisionTotalCalc - this.inicialTotalCalc) * 100) / 100);
+  }
+
+  onPorcentajeAnticipoChange(valor: number | null): void {
+    this.form.porcentajeAnticipo = valor;
+    this.recalcularRepartos();
+  }
+
+  onMontoCuotaChange(valor: number | null): void {
+    this.form.montoCuota = valor;
+    this.recalcularRepartos();
+  }
+
+  sociosDisponiblesPara(indice: number): Socio[] {
+    const usados = this.repartos
+      .filter((_, i) => i !== indice)
+      .map(r => r.idSocio)
+      .filter((id): id is number => id != null);
+    return this.socios.filter(s => s.id != null && !usados.includes(s.id));
+  }
+
+  agregarReparto(): void {
+    if (this.repartos.length >= 2) {
+      this.toastr.info('Máximo 2 socios (tú + 2 = 3 partes)');
+      return;
+    }
+    this.repartos.push({
+      idSocio: null,
+      participaInicial: true,
+      inicialModo: 'PCT',
+      porcentajeInicial: 50,
+      montoInicial: this.calcularMontoInicial(50),
+      participaCuotas: true,
+      cuotasModo: 'PCT',
+      porcentajeCuotas: 50,
+      montoCuotaSocio: this.calcularMontoCuota(50)
+    });
+  }
+
+  quitarReparto(indice: number): void {
+    this.repartos.splice(indice, 1);
+  }
+
+  onToggleInicial(r: RepartoForm, valor: boolean): void {
+    r.participaInicial = valor;
+  }
+
+  onToggleCuotas(r: RepartoForm, valor: boolean): void {
+    r.participaCuotas = valor;
+  }
+
+  onPctInicial(r: RepartoForm, valor: number | null): void {
+    r.porcentajeInicial = valor;
+    r.inicialModo = 'PCT';
+    r.montoInicial = this.calcularMontoInicial(valor);
+  }
+
+  onMontoInicial(r: RepartoForm, valor: number | null): void {
+    r.montoInicial = valor;
+    r.inicialModo = 'MONTO';
+    r.porcentajeInicial = this.calcularPct(valor, this.inicialTotalCalc);
+  }
+
+  onPctCuota(r: RepartoForm, valor: number | null): void {
+    r.porcentajeCuotas = valor;
+    r.cuotasModo = 'PCT';
+    r.montoCuotaSocio = this.calcularMontoCuota(valor);
+  }
+
+  onMontoCuotaSocio(r: RepartoForm, valor: number | null): void {
+    r.montoCuotaSocio = valor;
+    r.cuotasModo = 'MONTO';
+    r.porcentajeCuotas = this.calcularPct(valor, this.cuotaBaseCalc);
+  }
+
+  recalcularRepartos(): void {
+    for (const r of this.repartos) {
+      if (r.inicialModo === 'PCT') {
+        r.montoInicial = this.calcularMontoInicial(r.porcentajeInicial);
+      } else {
+        r.porcentajeInicial = this.calcularPct(r.montoInicial, this.inicialTotalCalc);
+      }
+      if (r.cuotasModo === 'PCT') {
+        r.montoCuotaSocio = this.calcularMontoCuota(r.porcentajeCuotas);
+      } else {
+        r.porcentajeCuotas = this.calcularPct(r.montoCuotaSocio, this.cuotaBaseCalc);
+      }
+    }
+  }
+
+  sumaInicialSocios(): number {
+    const s = this.repartos
+      .filter(r => r.participaInicial)
+      .reduce((acc, r) => acc + this.shareInicial(r), 0);
+    return Math.round(s * 100) / 100;
+  }
+
+  sumaCuotaSocios(): number {
+    const s = this.repartos
+      .filter(r => r.participaCuotas)
+      .reduce((acc, r) => acc + this.shareCuota(r), 0);
+    return Math.round(s * 100) / 100;
+  }
+
+  miParteInicial(): number {
+    return Math.max(0, Math.round((this.inicialTotalCalc - this.sumaInicialSocios()) * 100) / 100);
+  }
+
+  miParteCuota(): number {
+    return Math.max(0, Math.round((this.cuotaBaseCalc - this.sumaCuotaSocios()) * 100) / 100);
+  }
+
+  private shareInicial(r: RepartoForm): number {
+    if (!r.participaInicial) return 0;
+    return r.inicialModo === 'MONTO'
+      ? (r.montoInicial || 0)
+      : (this.calcularMontoInicial(r.porcentajeInicial) || 0);
+  }
+
+  private shareCuota(r: RepartoForm): number {
+    if (!r.participaCuotas) return 0;
+    return r.cuotasModo === 'MONTO'
+      ? (r.montoCuotaSocio || 0)
+      : (this.calcularMontoCuota(r.porcentajeCuotas) || 0);
+  }
+
+  private calcularMontoInicial(pct: number | null): number | null {
+    if (pct == null) return null;
+    return Math.round(this.inicialTotalCalc * (pct / 100) * 100) / 100;
+  }
+
+  private calcularMontoCuota(pct: number | null): number | null {
+    if (pct == null) return null;
+    return Math.round(this.cuotaBaseCalc * (pct / 100) * 100) / 100;
+  }
+
+  private calcularPct(monto: number | null, base: number): number | null {
+    if (monto == null || base <= 0) return null;
+    return Math.round((monto / base) * 100 * 100) / 100;
+  }
+
   // ── Cuotas (misma lógica que la vista "registrar contrato") ────────────────
 
   /** Saldo a financiar = max(0, total de venta − inicial). */
@@ -438,6 +667,44 @@ export class VentasComponent implements OnInit {
       dto.comisionManual = comision;
     }
 
+    // ── Reparto con socios (opcional, máx. 2) ─────────────────────────────
+    const repartosActivos = this.repartos.filter(r => r.idSocio != null);
+    if (this.repartos.length > 0 && repartosActivos.length !== this.repartos.length) {
+      this.toastr.warning('Seleccione el socio en cada reparto o quítelo');
+      return;
+    }
+    const idsSocios = repartosActivos.map(r => r.idSocio!);
+    if (new Set(idsSocios).size !== idsSocios.length) {
+      this.toastr.warning('No puede repetir el mismo socio');
+      return;
+    }
+    if (this.sumaInicialSocios() > this.inicialTotalCalc + 0.01) {
+      this.toastr.warning('El reparto del pago inicial supera el anticipo');
+      return;
+    }
+    if (modalidad === 'FINANCIADO' && this.saldoComisionCalc > 0
+        && this.sumaCuotaSocios() > this.cuotaBaseCalc + 0.01) {
+      this.toastr.warning('El reparto por letra supera el monto de la cuota');
+      return;
+    }
+    if (repartosActivos.length > 0) {
+      dto.socios = repartosActivos.map((r): ComisionRepartoSocio => ({
+        idSocio: r.idSocio!,
+        participaInicial: r.participaInicial,
+        porcentajeInicial: r.participaInicial ? (r.porcentajeInicial ?? 0) / 100 : null,
+        montoInicial: r.participaInicial && r.inicialModo === 'MONTO' ? r.montoInicial : null,
+        participaCuotas: r.participaCuotas,
+        porcentajeCuotas: r.participaCuotas ? (r.porcentajeCuotas ?? 0) / 100 : null,
+        montoCuotaSocio: r.participaCuotas && r.cuotasModo === 'MONTO' ? r.montoCuotaSocio : null
+      }));
+    }
+    if (this.form.porcentajeAnticipo != null) {
+      dto.porcentajeAnticipo = this.form.porcentajeAnticipo / 100;
+    }
+    if (this.form.montoCuota != null) {
+      dto.montoCuota = this.form.montoCuota;
+    }
+
     if (this.form.notas.trim()) {
       dto.notas = this.form.notas.trim();
     }
@@ -448,7 +715,7 @@ export class VentasComponent implements OnInit {
         this.guardando = false;
         this.cerrarModal();
         const n = this.lotesSeleccionados.length;
-        this.toastr.success(`Venta registrada con ${n} lote(s). Comisión generada.`);
+        this.alert.success(`Venta registrada con ${n} lote(s). Comisión generada.`);
         this.cargar();
       },
       error: (err) => {
@@ -499,7 +766,7 @@ export class VentasComponent implements OnInit {
       if (!result.isConfirmed) return;
       this.ventaService.anular(id).subscribe({
         next: () => {
-          this.toastr.success('Venta anulada');
+          this.alert.success('Venta anulada');
           if (this.detalleAbierto) {
             this.cerrarDetalle();
           }
@@ -565,6 +832,8 @@ export class VentasComponent implements OnInit {
       montoInicial: null,
       numCuotas: null,
       comisionManual: null,
+      porcentajeAnticipo: null,
+      montoCuota: null,
       notas: ''
     };
   }

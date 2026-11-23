@@ -5,6 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
 import { RegistroService, RegistroPublico } from '../../auth/registro.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-registro',
@@ -32,6 +33,7 @@ export class RegistroComponent {
   constructor(
     private registroService: RegistroService,
     private router: Router,
+    private alert: AlertService,
     private toastr: ToastrService,
     private titleService: Title
   ) {
@@ -83,9 +85,9 @@ export class RegistroComponent {
     this.registroService.registrar(dto).subscribe({
       next: (res) => {
         this.cargando = false;
-        this.toastr.success(res.mensaje || 'Cuenta creada. Debe ser aprobada por un administrador.',
-          'Registro exitoso', { timeOut: 5000 });
-        this.router.navigate(['/login']);
+        this.alert.success(res.mensaje || 'Cuenta creada. Debe ser aprobada por un administrador.',
+          'Registro exitoso');
+        setTimeout(() => this.router.navigate(['/login']), 1400);
       },
       error: (err) => {
         this.cargando = false;

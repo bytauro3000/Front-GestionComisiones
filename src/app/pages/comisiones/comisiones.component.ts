@@ -7,8 +7,10 @@ import {
   ComisionService,
   ComisionListado,
   CobrarPagos,
-  PagoComision
+  PagoComision,
+  RepartoComision
 } from '../../services/comision.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-comisiones',
@@ -40,6 +42,7 @@ export class ComisionesComponent implements OnInit {
 
   constructor(
     private comisionService: ComisionService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -176,7 +179,7 @@ export class ComisionesComponent implements OnInit {
     this.comisionService.cobrar(idComision, dto).subscribe({
       next: () => {
         this.cobrando = false;
-        this.toastr.success('Cobro registrado');
+        this.alert.success('Cobro registrado');
         this.pagosSeleccionados = [];
         this.fechaPago = this.hoy();
         this.formaPago = 'TRANSFERENCIA';
@@ -212,7 +215,7 @@ export class ComisionesComponent implements OnInit {
       this.comisionService.revertir(idComision, p.id).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.info('Pago revertido');
+          this.alert.success('Pago revertido');
           this.pagosSeleccionados = this.pagosSeleccionados.filter((id) => id !== p.id);
           this.cargar();
           this.recargarDetalle(idComision);
@@ -265,5 +268,52 @@ export class ComisionesComponent implements OnInit {
       default:
         return p.numeroCuota != null ? `Cuota #${p.numeroCuota}` : 'Cuota';
     }
+  }
+
+  // ── Reparto con socios ────────────────────────────────────────────────────
+
+  repartosDe(c: ComisionListado): RepartoComision[] {
+    return c.repartos ?? [];
+  }
+
+  nombresSocios(c: ComisionListado): string {
+    const repartos = this.repartosDe(c);
+    return repartos.length ? repartos.map((r) => r.socioNombre).join(', ') : '—';
+  }
+
+  detalleReparto(r: RepartoComision, c: ComisionListado): string {
+    const partes: string[] = [];
+    if (r.participaInicial) {
+      partes.push('inicial ' + this.etiquetaShareInicial(r, c));
+    }
+    if (r.participaCuotas) {
+      partes.push('letras ' + this.etiquetaShareCuota(r, c));
+    }
+    return partes.length ? partes.join(' · ') : '—';
+  }
+
+  private etiquetaShareInicial(r: RepartoComision, c: ComisionListado): string {
+    if (r.montoInicial != null) {
+      return this.moneda(r.montoInicial);
+    }
+    const pct = (r.porcentajeInicial ?? 0) * 100;
+    const monto = (c.montoAnticipo || 0) * (r.porcentajeInicial ?? 0);
+    return `${pct.toFixed(0)}% (${this.moneda(monto)})`;
+  }
+
+  private etiquetaShareCuota(r: RepartoComision, c: ComisionListado): string {
+    if (r.montoCuotaSocio != null) {
+      return `${this.moneda(r.montoCuotaSocio)}/letra`;
+    }
+    const pct = (r.porcentajeCuotas ?? 0) * 100;
+    const monto = (c.montoCuota || 0) * (r.porcentajeCuotas ?? 0);
+    return `${pct.toFixed(0)}% (${this.moneda(monto)}/letra)`;
+  }
+
+  moneda(v: number): string {
+    return '$ ' + new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(v || 0);
   }
 }

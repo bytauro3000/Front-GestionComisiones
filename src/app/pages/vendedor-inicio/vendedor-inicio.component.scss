@@ -87,6 +87,30 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   .modulos {
     padding: 18px;
   }
+
+  /* En celular: dos tarjetas por fila (dos columnas) */
+  .modulos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .modulo-card {
+    padding: 12px;
+
+    i {
+      font-size: 1.05rem;
+      margin-bottom: 2px;
+    }
+
+    strong {
+      font-size: 0.82rem;
+    }
+
+    span {
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
+  }
 }
 
 .modulos {

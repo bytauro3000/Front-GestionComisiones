@@ -8,6 +8,7 @@ import {
   ParametroComision
 } from '../../services/parametro-comision.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-parametros-comision',
@@ -32,6 +33,7 @@ export class ParametrosComisionComponent implements OnInit {
   constructor(
     private parametroService: ParametroComisionService,
     private empresaService: EmpresaService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -94,7 +96,7 @@ export class ParametrosComisionComponent implements OnInit {
     this.editando = null;
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     const f = this.form;
@@ -154,12 +156,14 @@ export class ParametrosComisionComponent implements OnInit {
     if (this.modoEdicion) {
       const idEdit = this.editando?.id;
       if (idEdit == null) return;
+      const ok = await this.alert.confirmarEdicion('¿Guardar los cambios del parámetro de comisión?');
+      if (!ok) return;
       this.guardando = true;
       this.parametroService.editar(idEdit, dto).subscribe({
         next: () => {
           this.guardando = false;
           this.cerrarModal();
-          this.toastr.success('Parámetro actualizado');
+          this.alert.success('Parámetro actualizado');
           this.cargar();
         },
         error: (err) => {
@@ -173,7 +177,7 @@ export class ParametrosComisionComponent implements OnInit {
         next: () => {
           this.guardando = false;
           this.cerrarModal();
-          this.toastr.success('Parámetro de comisión creado');
+          this.alert.success('Parámetro de comisión creado');
           this.cargar();
         },
         error: (err) => {
@@ -204,7 +208,7 @@ export class ParametrosComisionComponent implements OnInit {
       this.parametroService.eliminar(p.id!).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Parámetro eliminado');
+          this.alert.success('Parámetro eliminado');
           this.cargar();
         },
         error: (err) => {

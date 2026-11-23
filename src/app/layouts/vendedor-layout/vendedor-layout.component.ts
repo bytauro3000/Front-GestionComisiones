@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TokenService } from '../../auth/token.service';
 import { LogoutService } from '../../auth/logout.service';
+import { NotificacionBellComponent } from '../../components/notificacion-bell/notificacion-bell.component';
 
 @Component({
   selector: 'app-vendedor-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificacionBellComponent],
   templateUrl: './vendedor-layout.component.html',
   styleUrl: './vendedor-layout.component.scss'
 })

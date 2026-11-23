@@ -29,6 +29,10 @@ export interface Lote {
   montoSeparacion?: number;
   /** true = la separación la hizo otro vendedor (bloquea la venta). */
   separacionAjena?: boolean;
+  /** Cliente con quien se separó el lote. */
+  clienteSeparacion?: string;
+  /** Nota libre de la separación. */
+  notaSeparacion?: string;
   fechaRegistro?: string;
 }
 
@@ -36,6 +40,7 @@ export interface LoteSeparacion {
   fechaVence: string;
   monto?: number;
   ajena: boolean;
+  cliente?: string;
   nota?: string;
 }
 

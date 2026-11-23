@@ -29,6 +29,7 @@
           <th>Venta</th>
           <th>Lote</th>
           <th>Cliente</th>
+          <th>Socios</th>
           <th>Empresa</th>
           <th>Total</th>
           <th>Pagado</th>
@@ -40,15 +41,16 @@
       </thead>
       <tbody>
         @if (cargando) {
-          <tr><td colspan="10" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+          <tr><td colspan="11" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
         } @else if (comisionesFiltradas.length === 0) {
-          <tr><td colspan="10" class="empty-cell">No se encontraron comisiones</td></tr>
+          <tr><td colspan="11" class="empty-cell">No se encontraron comisiones</td></tr>
         } @else {
           @for (c of comisionesFiltradas; track c.id) {
             <tr>
               <td data-label="Venta"><strong class="cell-venta">#{{ c.idVenta }}</strong></td>
               <td data-label="Lote">{{ c.loteEtiqueta }}</td>
               <td data-label="Cliente">{{ c.clienteNombre }}</td>
+              <td data-label="Socios">{{ nombresSocios(c) }}</td>
               <td data-label="Empresa">{{ c.empresaNombre }}</td>
               <td data-label="Total">{{ c.montoTotal | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
               <td data-label="Pagado">{{ c.montoPagado | currency:'USD':'symbol-narrow':'1.0-2' }}</td>
@@ -132,6 +134,28 @@
               </strong>
             </div>
           </div>
+
+          @if (repartosDe(detalle).length > 0) {
+            <h4 class="seccion-titulo"><i class="fas fa-user-friends"></i> Reparto con socios</h4>
+            <div class="table-wrap">
+              <table class="data-table tabla-cards">
+                <thead>
+                  <tr>
+                    <th>Socio</th>
+                    <th>Participación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of repartosDe(detalle); track r.id) {
+                    <tr>
+                      <td data-label="Socio"><strong>{{ r.socioNombre }}</strong></td>
+                      <td data-label="Participación">{{ detalleReparto(r, detalle) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
 
           <h4 class="seccion-titulo"><i class="fas fa-list"></i> Pagos de la comisión</h4>
           <div class="table-wrap">

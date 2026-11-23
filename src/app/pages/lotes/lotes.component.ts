@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { LoteService, Lote, LoteSeparacion } from '../../services/lote.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-lotes',
@@ -48,6 +49,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     private loteService: LoteService,
     private empresaService: EmpresaService,
     private proyectoService: ProyectoService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -148,7 +150,7 @@ export class LotesComponent implements OnInit, OnDestroy {
         this.nombreProyectoRapido = '';
         this.proyectos = [...this.proyectos, creado];
         this.form.idProyecto = creado.id;
-        this.toastr.success('Proyecto creado y seleccionado');
+        this.alert.success('Proyecto creado y seleccionado');
       },
       error: (err) => {
         this.creandoProyectoRapido = false;
@@ -349,7 +351,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     this.modalAbierto = false;
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
@@ -382,6 +384,12 @@ export class LotesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.modoEdicion) {
+      const ok = await this.alert.confirmarEdicion(
+        `¿Guardar los cambios del lote <strong>Mz.${this.form.manzana} Lt.${this.form.numero}</strong>?`);
+      if (!ok) return;
+    }
+
     this.guardando = true;
     const dto: Lote = {
       idEmpresa: this.form.idEmpresa,
@@ -405,7 +413,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       next: () => {
         this.guardando = false;
         this.modalAbierto = false;
-        this.toastr.success(this.modoEdicion ? 'Lote actualizado' : 'Lote creado');
+        this.alert.success(this.modoEdicion ? 'Lote actualizado' : 'Lote creado');
         this.cargarLotes();
       },
       error: (err) => {
@@ -432,7 +440,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       this.loteService.eliminar(lote.id!).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Lote eliminado');
+          this.alert.success('Lote eliminado');
           this.cargarLotes();
         },
         error: (err) => {
@@ -498,7 +506,7 @@ export class LotesComponent implements OnInit, OnDestroy {
         this.procesandoId = null;
         lote.estado = actualizado.estado;
         lote.motivoEstado = actualizado.motivoEstado;
-        this.toastr.success(
+        this.alert.success(
           estado === 'VENDIDO' ? 'Lote marcado como VENDIDO' : 'Lote devuelto a DISPONIBLE');
       },
       error: (err) => {
@@ -571,7 +579,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       next: (actualizado) => {
         this.separando = false;
         this.cerrarSeparar();
-        this.toastr.success(
+        this.alert.success(
           this.sepAjena ? 'Separación ajena registrada' : 'Lote separado');
         this.lotes = this.lotes.map(l => l.id === actualizado.id ? actualizado : l);
       },
@@ -599,7 +607,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       this.loteService.liberarSeparacion(lote.id!).subscribe({
         next: (actualizado) => {
           this.procesandoId = null;
-          this.toastr.success('Separación liberada');
+          this.alert.success('Separación liberada');
           this.lotes = this.lotes.map(l => l.id === actualizado.id ? actualizado : l);
         },
         error: (err) => {

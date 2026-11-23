@@ -92,6 +92,11 @@ export const routes: Routes = [
           import('./pages/clientes/clientes.component').then((m) => m.ClientesComponent)
       },
       {
+        path: 'socios',
+        loadComponent: () =>
+          import('./pages/socios/socios.component').then((m) => m.SociosComponent)
+      },
+      {
         path: 'proyectos',
         loadComponent: () =>
           import('./pages/proyectos/proyectos.component').then((m) => m.ProyectosComponent)
@@ -129,6 +134,13 @@ export const routes: Routes = [
         path: 'comisiones',
         loadComponent: () =>
           import('./pages/comisiones/comisiones.component').then((m) => m.ComisionesComponent)
+      },
+      {
+        path: 'liquidaciones',
+        loadComponent: () =>
+          import('./pages/liquidaciones/liquidaciones.component').then(
+            (m) => m.LiquidacionesComponent
+          )
       },
       {
         path: 'comprobantes',

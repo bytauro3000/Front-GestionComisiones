@@ -242,7 +242,7 @@
             <div class="form-field">
               <label>Precio de venta (total) *</label>
               <input type="text" appCurrencyFormatter currencySymbol="$ "
-                [(ngModel)]="form.precioVenta" placeholder="$ 0.00">
+                [(ngModel)]="form.precioVenta" (change)="recalcularRepartos()" placeholder="$ 0.00">
             </div>
           </div>
 
@@ -250,11 +250,13 @@
             <label>Modalidad *</label>
             <div class="opciones-radio">
               <label class="radio-op" [class.radio-activo]="form.modalidad === 'CONTADO'">
-                <input type="radio" name="modalidad" value="CONTADO" [(ngModel)]="form.modalidad">
+                <input type="radio" name="modalidad" value="CONTADO" [(ngModel)]="form.modalidad"
+                       (change)="recalcularRepartos()">
                 Contado
               </label>
               <label class="radio-op" [class.radio-activo]="form.modalidad === 'FINANCIADO'">
-                <input type="radio" name="modalidad" value="FINANCIADO" [(ngModel)]="form.modalidad">
+                <input type="radio" name="modalidad" value="FINANCIADO" [(ngModel)]="form.modalidad"
+                       (change)="recalcularRepartos()">
                 Financiado
               </label>
             </div>
@@ -265,7 +267,7 @@
               <div class="form-field">
                 <label>Monto inicial *</label>
                 <input type="text" appCurrencyFormatter currencySymbol="$ "
-                  [(ngModel)]="form.montoInicial" placeholder="$ 0.00">
+                  [(ngModel)]="form.montoInicial" (change)="recalcularRepartos()" placeholder="$ 0.00">
               </div>
               <div class="form-field">
                 <label>N° de cuotas</label>
@@ -296,7 +298,7 @@
             <div class="form-field">
               <label>Comisión manual (opcional)</label>
               <input type="text" appCurrencyFormatter currencySymbol="$ "
-                [(ngModel)]="form.comisionManual" placeholder="$">
+                [(ngModel)]="form.comisionManual" (change)="recalcularRepartos()" placeholder="$">
               <small class="field-hint">Vacío = % del parámetro vigente (contado/financiado).</small>
             </div>
             <div class="form-field">
@@ -304,6 +306,110 @@
               <textarea rows="3" [(ngModel)]="form.notas" placeholder="Observaciones (opcional)"></textarea>
             </div>
           </div>
+
+          <hr class="reparto-sep">
+          <h4 class="seccion-titulo"><i class="fas fa-percent"></i> Montos de la comisión</h4>
+          <div class="form-row">
+            <div class="form-field">
+              <label>% del inicial para el anticipo</label>
+              <input type="number" min="0" max="100" step="0.01"
+                [(ngModel)]="form.porcentajeAnticipo" (change)="recalcularRepartos()" placeholder="30">
+              <small class="field-hint">
+                Comisión total: {{ formatearMoneda(comisionTotalCalc) }} ·
+                Anticipo: {{ formatearMoneda(inicialTotalCalc) }} ·
+                Saldo: {{ formatearMoneda(saldoComisionCalc) }}
+              </small>
+            </div>
+            <div class="form-field">
+              <label>Monto de cada letra</label>
+              <input type="text" appCurrencyFormatter currencySymbol="$ "
+                [(ngModel)]="form.montoCuota" (change)="recalcularRepartos()" placeholder="$ 50.00">
+              <small class="field-hint">Vacío = parámetro vigente ({{ formatearMoneda(cuotaBaseCalc) }}).</small>
+            </div>
+          </div>
+
+          <hr class="reparto-sep">
+          <h4 class="seccion-titulo"><i class="fas fa-user-friends"></i> Reparto con socios (opcional)</h4>
+          @if (socios.length === 0) {
+            <p class="nota-info">
+              <i class="fas fa-info-circle"></i>
+              Aún no tienes socios. Créalos en la sección <strong>Socios</strong> del menú.
+            </p>
+          } @else {
+            @for (r of repartos; track $index; let i = $index) {
+              <div class="reparto-card">
+                <div class="reparto-head">
+                  <select [(ngModel)]="r.idSocio">
+                    <option [ngValue]="null" disabled>Seleccione socio</option>
+                    @for (s of sociosDisponiblesPara(i); track s.id) {
+                      <option [ngValue]="s.id">{{ s.nombres }} {{ s.apellidos || '' }}</option>
+                    }
+                  </select>
+                  <button type="button" class="btn btn-danger btn-sm" (click)="quitarReparto(i)" title="Quitar socio">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+
+                <div class="reparto-comps">
+                  <div class="reparto-comp">
+                    <label class="check-label">
+                      <input type="checkbox" [(ngModel)]="r.participaInicial">
+                      <span>Pago inicial</span>
+                    </label>
+                    @if (r.participaInicial) {
+                      <div class="reparto-inputs">
+                        <div class="mini-field">
+                          <label>%</label>
+                          <input type="number" min="0" max="100" step="0.01"
+                            [ngModel]="r.porcentajeInicial" (ngModelChange)="onPctInicial(r, $event)">
+                        </div>
+                        <div class="mini-field">
+                          <label>$</label>
+                          <input type="text" appCurrencyFormatter currencySymbol="$ "
+                            [ngModel]="r.montoInicial" (ngModelChange)="onMontoInicial(r, $event)">
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="reparto-comp">
+                    <label class="check-label">
+                      <input type="checkbox" [(ngModel)]="r.participaCuotas">
+                      <span>Letras (por cuota)</span>
+                    </label>
+                    @if (r.participaCuotas) {
+                      <div class="reparto-inputs">
+                        <div class="mini-field">
+                          <label>%</label>
+                          <input type="number" min="0" max="100" step="0.01"
+                            [ngModel]="r.porcentajeCuotas" (ngModelChange)="onPctCuota(r, $event)">
+                        </div>
+                        <div class="mini-field">
+                          <label>$ / letra</label>
+                          <input type="text" appCurrencyFormatter currencySymbol="$ "
+                            [ngModel]="r.montoCuotaSocio" (ngModelChange)="onMontoCuotaSocio(r, $event)">
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <button type="button" class="btn btn-outline btn-sm" (click)="agregarReparto()"
+                    [disabled]="repartos.length >= 2">
+              <i class="fas fa-plus"></i> Agregar socio ({{ repartos.length }}/2)
+            </button>
+
+            @if (repartos.length > 0) {
+              <div class="reparto-preview">
+                <span>Tu parte del inicial: <strong>{{ formatearMoneda(miParteInicial()) }}</strong></span>
+                @if (form.modalidad === 'FINANCIADO') {
+                  <span>Tu parte por letra: <strong>{{ formatearMoneda(miParteCuota()) }}</strong></span>
+                }
+              </div>
+            }
+          }
         }
       </div>
       <div class="modal-footer">

@@ -168,3 +168,41 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
   .btn + .btn { margin-left: 6px; }
 }
+
+.header-acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preset-chip {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    border-color: #6366f1;
+    color: #4f46e5;
+  }
+}
+
+.input-fecha {
+  width: 100%;
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}

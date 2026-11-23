@@ -1,0 +1,185 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Liquidaciones a socios</h1>
+      <p>Reparte las comisiones cobradas y descuenta IGV / detracción</p>
+    </div>
+    <button class="btn btn-outline" (click)="cargar()">
+      <i class="fas fa-rotate"></i> Actualizar
+    </button>
+  </div>
+
+  <h4 class="seccion-titulo"><i class="fas fa-user-friends"></i> Saldos por socio</h4>
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Socio</th>
+          <th>Generado</th>
+          <th>Liquidado</th>
+          <th>Pendiente</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="5" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (saldos.length === 0) {
+          <tr><td colspan="5" class="empty-cell">No hay socios registrados</td></tr>
+        } @else {
+          @for (s of saldos; track s.idSocio) {
+            <tr>
+              <td data-label="Socio"><strong>{{ s.socioNombre }}</strong></td>
+              <td data-label="Generado">{{ moneda(s.montoGenerado) }}</td>
+              <td data-label="Liquidado">{{ moneda(s.montoLiquidado) }}</td>
+              <td data-label="Pendiente">
+                <strong [class.saldo-pendiente]="s.montoPendiente > 0">{{ moneda(s.montoPendiente) }}</strong>
+              </td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-primary btn-sm" (click)="abrirLiquidar(s)" title="Liquidar">
+                  <i class="fas fa-hand-holding-usd"></i> Liquidar
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h4 class="seccion-titulo"><i class="fas fa-history"></i> Historial de liquidaciones</h4>
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Socio</th>
+          <th>Bruto</th>
+          <th>IGV</th>
+          <th>Detracción</th>
+          <th>Neto pagado</th>
+          <th>Referencia</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargandoHistorial) {
+          <tr><td colspan="8" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (liquidaciones.length === 0) {
+          <tr><td colspan="8" class="empty-cell">Aún no hay liquidaciones</td></tr>
+        } @else {
+          @for (l of liquidaciones; track l.id) {
+            <tr>
+              <td data-label="Fecha">{{ l.fecha | date:'dd/MM/yyyy' }}</td>
+              <td data-label="Socio"><strong>{{ l.socioNombre }}</strong></td>
+              <td data-label="Bruto">{{ moneda(l.montoBruto) }}</td>
+              <td data-label="IGV">{{ moneda(l.descuentoIgv) }}</td>
+              <td data-label="Detracción">{{ moneda(l.descuentoDetraccion) }}</td>
+              <td data-label="Neto pagado"><strong>{{ moneda(l.montoNeto || 0) }}</strong></td>
+              <td data-label="Referencia">{{ l.referencia || '—' }}</td>
+              <td class="actions-cell cell-actions" data-label="Acciones">
+                <button class="btn btn-danger btn-sm" (click)="eliminar(l)"
+                        [disabled]="procesandoId === l.id" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fas fa-hand-holding-usd"></i> Liquidar a {{ form.socioNombre }}</h3>
+        <button class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        @if (cargandoSugerencia) {
+          <p class="nota-info"><i class="fas fa-spinner fa-spin"></i> Calculando sugerencia...</p>
+        } @else if (sugerencia) {
+          <div class="resumen-grid">
+            <div class="dato">
+              <span>Generado (cobrado)</span>
+              <strong>{{ moneda(sugerencia.montoBruto) }}</strong>
+            </div>
+            <div class="dato">
+              <span>Ya liquidado</span>
+              <strong>{{ moneda(sugerencia.montoLiquidado) }}</strong>
+            </div>
+            <div class="dato">
+              <span>Pendiente</span>
+              <strong class="saldo-pendiente">{{ moneda(sugerencia.montoPendiente) }}</strong>
+            </div>
+            <div class="dato">
+              <span>Sugerido IGV</span>
+              <strong>{{ moneda(sugerencia.descuentoIgv) }}</strong>
+            </div>
+            <div class="dato">
+              <span>Sugerido detracción</span>
+              <strong>{{ moneda(sugerencia.descuentoDetraccion) }}</strong>
+            </div>
+          </div>
+        }
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Fecha *</label>
+            <input type="date" [(ngModel)]="form.fecha" [max]="hoy()">
+          </div>
+          <div class="form-field">
+            <label>Monto bruto del socio *</label>
+            <input type="text" appCurrencyFormatter currencySymbol="$ "
+              [(ngModel)]="form.montoBruto" placeholder="$ 0.00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Descuento IGV</label>
+            <input type="text" appCurrencyFormatter currencySymbol="$ "
+              [(ngModel)]="form.descuentoIgv" placeholder="$ 0.00">
+          </div>
+          <div class="form-field">
+            <label>Descuento detracción</label>
+            <input type="text" appCurrencyFormatter currencySymbol="$ "
+              [(ngModel)]="form.descuentoDetraccion" placeholder="$ 0.00">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Neto a pagar al socio</label>
+          <div class="cuota-display">
+            <span class="cuota-valor">{{ moneda(neto) }}</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Referencia</label>
+            <input type="text" [(ngModel)]="form.referencia" maxlength="60"
+              placeholder="N° de operación / voucher (opcional)">
+          </div>
+          <div class="form-field">
+            <label>Notas</label>
+            <input type="text" [(ngModel)]="form.notas" maxlength="200" placeholder="Opcional">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Registrando...
+          } @else {
+            <i class="fas fa-save"></i> Registrar liquidación
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

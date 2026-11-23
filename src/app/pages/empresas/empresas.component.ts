@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { EmpresaService, Empresa, CuentaBancaria } from '../../services/empresa.service';
 import { DeclectaService } from '../../services/decolecta.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-empresas',
@@ -40,6 +41,7 @@ export class EmpresasComponent implements OnInit {
   constructor(
     private empresaService: EmpresaService,
     private decolectaService: DeclectaService,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -144,7 +146,7 @@ export class EmpresasComponent implements OnInit {
     return { banco: '', tipoCuenta: '', numeroCuenta: '', cci: '' };
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     if (!/^\d{11}$/.test(this.form.ruc || '')) {
@@ -195,6 +197,12 @@ export class EmpresasComponent implements OnInit {
     }
     this.form.cuentas = cuentasLimpias;
 
+    if (this.modoEdicion) {
+      const ok = await this.alert.confirmarEdicion(
+        `¿Guardar los cambios de <strong>${this.form.razonSocial}</strong>?`);
+      if (!ok) return;
+    }
+
     this.guardando = true;
     const peticion = this.modoEdicion && this.empresaEditando
       ? this.empresaService.editar(this.empresaEditando.id!, this.form)
@@ -204,7 +212,7 @@ export class EmpresasComponent implements OnInit {
       next: () => {
         this.guardando = false;
         this.modalAbierto = false;
-        this.toastr.success(this.modoEdicion ? 'Empresa actualizada' : 'Empresa creada');
+        this.alert.success(this.modoEdicion ? 'Empresa actualizada' : 'Empresa creada');
         this.cargarEmpresas();
       },
       error: (err) => {
@@ -261,7 +269,7 @@ export class EmpresasComponent implements OnInit {
       this.empresaService.eliminar(empresa.id!).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Empresa eliminada');
+          this.alert.success('Empresa eliminada');
           this.cargarEmpresas();
         },
         error: (err) => {

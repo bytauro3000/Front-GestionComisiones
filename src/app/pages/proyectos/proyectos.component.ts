@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
+import { AlertService } from '../../services/alert.service';
 import * as L from 'leaflet';
 
 @Component({
@@ -72,6 +73,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     private proyectoService: ProyectoService,
     private empresaService: EmpresaService,
     private sanitizer: DomSanitizer,
+    private alert: AlertService,
     private toastr: ToastrService
   ) { }
 
@@ -206,7 +208,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     this.quitarPlano = false;
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     if (!this.form.idEmpresa) {
@@ -216,6 +218,12 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     if (!this.form.nombre || !this.form.nombre.trim()) {
       this.toastr.warning('El nombre del proyecto es obligatorio');
       return;
+    }
+
+    if (this.modoEdicion) {
+      const ok = await this.alert.confirmarEdicion(
+        `¿Guardar los cambios de <strong>${this.form.nombre}</strong>?`);
+      if (!ok) return;
     }
 
     this.guardando = true;
@@ -274,7 +282,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     this.cancelarEditor();
     this.asignarPreview(null, false);
     this.archivoNuevo = null;
-    this.toastr.success(this.modoEdicion ? 'Proyecto actualizado' : 'Proyecto creado');
+    this.alert.success(this.modoEdicion ? 'Proyecto actualizado' : 'Proyecto creado');
     this.cargarProyectos();
   }
 
@@ -664,7 +672,7 @@ export class ProyectosComponent implements OnInit, OnDestroy {
             delete this.planoUrls[p.id];
             delete this.planoTipos[p.id];
           }
-          this.toastr.success('Proyecto eliminado');
+          this.alert.success('Proyecto eliminado');
           this.cargarProyectos();
         },
         error: (err) => {

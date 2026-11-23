@@ -152,3 +152,40 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     line-height: 1.5;
   }
 }
+
+/* En celular: dos tarjetas por fila (dos columnas) */
+@media (max-width: 640px) {
+  .stats-grid,
+  .quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    gap: 10px;
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 1rem;
+      border-radius: 10px;
+    }
+
+    .stat-body .stat-value {
+      font-size: 1.25rem;
+    }
+
+    .stat-body .stat-label {
+      font-size: 0.72rem;
+    }
+  }
+
+  .quick-card {
+    padding: 14px;
+
+    i { font-size: 1.15rem; margin-bottom: 4px; }
+    strong { font-size: 0.86rem; }
+    span { font-size: 0.74rem; }
+  }
+}

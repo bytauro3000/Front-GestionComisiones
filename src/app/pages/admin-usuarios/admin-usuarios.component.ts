@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { jwtDecode } from 'jwt-decode';
 import { UsuarioService, UsuarioListado, UsuarioRegistro } from '../../services/usuario.service';
 import { TokenService } from '../../auth/token.service';
+import { AlertService } from '../../services/alert.service';
 
 @Component({
   selector: 'app-admin-usuarios',
@@ -40,6 +41,7 @@ export class AdminUsuariosComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
+    private alert: AlertService,
     private toastr: ToastrService,
     tokenService: TokenService
   ) {
@@ -99,7 +101,7 @@ export class AdminUsuariosComponent implements OnInit {
       this.usuarioService.aprobar(usuario.id).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.success('Cuenta aprobada: ' + usuario.correo);
+          this.alert.success('Cuenta aprobada: ' + usuario.correo);
           this.cargarUsuarios();
         },
         error: (err) => {
@@ -125,7 +127,7 @@ export class AdminUsuariosComponent implements OnInit {
       this.usuarioService.rechazar(usuario.id).subscribe({
         next: () => {
           this.procesandoId = null;
-          this.toastr.info('Cuenta rechazada: ' + usuario.correo);
+          this.alert.success('Cuenta rechazada: ' + usuario.correo);
           this.cargarUsuarios();
         },
         error: (err) => {
@@ -191,7 +193,7 @@ export class AdminUsuariosComponent implements OnInit {
     return lista.length ? lista : [''];
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.guardando) return;
 
     if (!this.form.nombres.trim() || !this.form.apellidos.trim() || !this.form.correo.trim()) {
@@ -209,6 +211,12 @@ export class AdminUsuariosComponent implements OnInit {
 
     this.form.telefono = this.telefonos.map(t => t.trim()).filter(Boolean).join(',');
 
+    if (this.modoEdicion) {
+      const ok = await this.alert.confirmarEdicion(
+        `¿Guardar los cambios de <strong>${this.form.correo}</strong>?`);
+      if (!ok) return;
+    }
+
     this.guardando = true;
     const peticion = this.modoEdicion && this.usuarioEditando
       ? this.usuarioService.editar(this.usuarioEditando.id, this.form)
@@ -218,7 +226,7 @@ export class AdminUsuariosComponent implements OnInit {
       next: () => {
         this.guardando = false;
         this.modalAbierto = false;
-        this.toastr.success(this.modoEdicion ? 'Usuario actualizado' : 'Usuario creado');
+        this.alert.success(this.modoEdicion ? 'Usuario actualizado' : 'Usuario creado');
         this.cargarUsuarios();
       },
       error: (err) => {
@@ -248,7 +256,7 @@ export class AdminUsuariosComponent implements OnInit {
       if (!result.isConfirmed) return;
       this.usuarioService.cambiarEstado(usuario.id).subscribe({
         next: () => {
-          this.toastr.success(activando ? 'Usuario activado' : 'Usuario desactivado');
+          this.alert.success(activando ? 'Usuario activado' : 'Usuario desactivado');
           this.cargarUsuarios();
         },
         error: (err) => {
@@ -283,7 +291,7 @@ export class AdminUsuariosComponent implements OnInit {
       next: (res) => {
         this.confirmandoReset = false;
         this.cerrarReset();
-        this.toastr.success(res.mensaje || 'Contraseña restablecida');
+        this.alert.success(res.mensaje || 'Contraseña restablecida');
       },
       error: (err) => {
         this.confirmandoReset = false;
@@ -322,7 +330,7 @@ export class AdminUsuariosComponent implements OnInit {
       this.usuarioService.eliminar(usuario.id).subscribe({
         next: (res) => {
           this.procesandoId = null;
-          this.toastr.success(res?.mensaje || 'Usuario eliminado');
+          this.alert.success(res?.mensaje || 'Usuario eliminado');
           this.cargarUsuarios();
         },
         error: (err) => {
