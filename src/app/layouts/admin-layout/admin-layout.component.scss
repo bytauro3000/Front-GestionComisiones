@@ -220,6 +220,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   .mobile-topbar {
     display: flex;
     align-items: center;
+    flex-wrap: nowrap;
     gap: 12px;
     position: sticky;
     top: 0;
@@ -227,11 +228,22 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     background: white;
     border-bottom: 1px solid $gray-200;
     padding: 10px 16px;
+    height: 64px;
+    min-height: 64px;
+    max-height: 64px;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    > * {
+      flex-shrink: 0;
+    }
 
     .topbar-brand {
       display: flex;
       align-items: center;
       gap: 10px;
+      min-width: 0;
+      flex: 1 1 auto;
 
       .brand-mark {
         width: 36px;
@@ -243,6 +255,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
         justify-content: center;
         color: white;
         font-size: 0.95rem;
+        flex-shrink: 0;
       }
 
       .brand-name {
@@ -250,6 +263,9 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
         font-size: 1.05rem;
         color: $dark;
         letter-spacing: -0.3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
