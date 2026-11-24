@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { TokenRefreshService } from './auth/token-refresh.service';
 
@@ -8,13 +9,152 @@ import { TokenRefreshService } from './auth/token-refresh.service';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
 
   private readonly tokenRefreshService = inject(TokenRefreshService);
+  private readonly doc = inject(DOCUMENT);
+  private readonly zone = inject(NgZone);
+  private readonly win = this.doc.defaultView;
+
+  private campoActivo: HTMLElement | null = null;
+  private tarjetaActiva: HTMLElement | null = null;
+  private shiftActual = 0;
+  private timers: number[] = [];
 
   ngOnInit(): void {
     // Reanuda el refresco automático del token al cargar la app (tras un F5
     // el temporizador se perdía y el token se vencía a los 30 minutos).
     this.tokenRefreshService.scheduleNext();
+
+    const win = this.win;
+    if (!win) return;
+
+    this.zone.runOutsideAngular(() => {
+      this.doc.addEventListener('focusin', this.onFocusIn);
+      win.visualViewport?.addEventListener('resize', this.onViewportChange);
+      win.visualViewport?.addEventListener('scroll', this.onViewportChange);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.limpiarTimers();
+    this.doc.removeEventListener('focusin', this.onFocusIn);
+    this.win?.visualViewport?.removeEventListener('resize', this.onViewportChange);
+    this.win?.visualViewport?.removeEventListener('scroll', this.onViewportChange);
+  }
+
+  // Al enfocar un campo dentro de un modal, el teclado móvil se superpone al
+  // modal (interactive-widget=overlays-content). Aquí desplazamos el cuerpo del
+  // modal —y si hace falta la tarjeta— para que el campo quede visible.
+  private readonly onFocusIn = (event: Event): void => {
+    const el = event.target as HTMLElement | null;
+    if (!el) return;
+
+    if (!this.esCampoEditable(el)) {
+      this.campoActivo = null;
+      this.tarjetaActiva = null;
+      this.resetTransform();
+      return;
+    }
+
+    const card = el.closest('.modal-card') as HTMLElement | null;
+    if (!card) return;
+
+    this.campoActivo = el;
+    const mismaTarjeta = this.tarjetaActiva === card;
+    if (!mismaTarjeta) {
+      this.resetTransform();
+    }
+    this.tarjetaActiva = card;
+    this.limpiarTimers();
+
+    // Reajustar mientras termina la animación del teclado.
+    [80, 320, 620].forEach(ms => {
+      this.timers.push(this.win!.setTimeout(() => this.ajustar(), ms));
+    });
+  };
+
+  private readonly onViewportChange = (): void => {
+    if (this.campoActivo) {
+      this.ajustar();
+    } else {
+      this.resetTransform();
+    }
+  };
+
+  private ajustar(): void {
+    const el = this.campoActivo;
+    const card = this.tarjetaActiva;
+    const win = this.win;
+    const vv = win?.visualViewport;
+    if (!el || !card || !win || !vv) return;
+
+    const altoTeclado = win.innerHeight - (vv.offsetTop + vv.height);
+    if (altoTeclado < 120) {
+      this.resetTransform();
+      return;
+    }
+
+    const body = el.closest('.modal-body') as HTMLElement | null;
+    if (!body) return;
+
+    const margen = 16;
+    const limiteInferior = vv.offsetTop + vv.height - margen;
+    const limiteSuperior = Math.max(vv.offsetTop, body.getBoundingClientRect().top) + margen;
+
+    let rect = el.getBoundingClientRect();
+
+    if (rect.bottom > limiteInferior) {
+      const delta = rect.bottom - limiteInferior;
+      const maxScroll = body.scrollHeight - body.clientHeight - body.scrollTop;
+      const scroll = Math.min(delta, Math.max(0, maxScroll));
+      if (scroll > 0) {
+        body.scrollTop += scroll;
+        rect = el.getBoundingClientRect();
+      }
+    } else if (rect.top < limiteSuperior && body.scrollTop > 0) {
+      body.scrollTop = Math.max(0, body.scrollTop - (limiteSuperior - rect.top));
+      rect = el.getBoundingClientRect();
+    }
+
+    // Si el cuerpo ya no puede desplazarse más, mover la tarjeta hacia arriba
+    // solo lo necesario (sin ocultar el encabezado).
+    if (rect.bottom > limiteInferior) {
+      const restante = rect.bottom - limiteInferior;
+      const cardRect = card.getBoundingClientRect();
+      const espacio = Math.max(0, cardRect.top - margen - vv.offsetTop);
+      const extra = Math.min(restante, espacio);
+      if (extra > 0) {
+        this.shiftActual += extra;
+        card.style.transform = `translateY(-${this.shiftActual}px)`;
+      }
+    }
+  }
+
+  private resetTransform(): void {
+    if (this.tarjetaActiva) {
+      this.tarjetaActiva.style.transform = '';
+    }
+    this.shiftActual = 0;
+  }
+
+  private limpiarTimers(): void {
+    this.timers.forEach(id => this.win?.clearTimeout(id));
+    this.timers = [];
+  }
+
+  private esCampoEditable(el: HTMLElement): boolean {
+    const win = this.win;
+    if (!win) return false;
+
+    if (el instanceof win.HTMLTextAreaElement) return true;
+    if (el instanceof win.HTMLInputElement) {
+      return ![
+        'checkbox', 'radio', 'button', 'submit', 'reset',
+        'file', 'range', 'color', 'date', 'time',
+        'datetime-local', 'month', 'week'
+      ].includes(el.type);
+    }
+    return false;
   }
 }
