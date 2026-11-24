@@ -78,7 +78,8 @@
                                                                                                                                         }
                                                                                                                                     ],
                                                                                                                         "outputHashing":  "all",
-                                                                                                                        "allowedCommonJsDependencies": ["sweetalert2", "leaflet"]
+                                                                                                                        "allowedCommonJsDependencies": ["sweetalert2", "leaflet"],
+                                                                                                                        "serviceWorker": "ngsw-config.json"
                                                                                                                     },
                                                                                                      "development":  {
                                                                                                                          "optimization":  false,

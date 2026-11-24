@@ -69,6 +69,15 @@
       </div>
 
       <p class="legal">© {{ anioActual }} {{ nombreSistema }}</p>
+
+      @if (puedeInstalar) {
+        <div class="install-wrap">
+          <button type="button" class="install-app" (click)="instalar()">
+            <i class="fas fa-download" aria-hidden="true"></i>
+            {{ esIOS ? 'Cómo instalar en iPhone' : 'Instalar Closure' }}
+          </button>
+        </div>
+      }
     </div>
   </main>
 </div>

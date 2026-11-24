@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
+import Swal from 'sweetalert2';
 import { AnimationService } from '../../services/animation.service';
 
 @Component({
@@ -14,6 +15,18 @@ export class LoginLayoutComponent implements AfterViewInit, OnDestroy {
 
   readonly anioActual = new Date().getFullYear();
   readonly nombreSistema = 'Closure';
+
+  readonly esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  readonly estaInstalada = window.matchMedia('(display-mode: standalone)').matches
+    || (navigator as unknown as { standalone?: boolean }).standalone === true;
+
+  puedeInstalar = this.esIOS && !this.estaInstalada;
+
+  private promptInstalacion: {
+    prompt: () => void;
+    userChoice: Promise<{ outcome: string }>;
+  } | null = null;
 
   private animCtx?: { revert: () => void };
 
@@ -29,6 +42,50 @@ export class LoginLayoutComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.animCtx?.revert();
+  }
+
+  @HostListener('window:beforeinstallprompt', ['$event'])
+  onBeforeInstallPrompt(event: Event): void {
+    event.preventDefault();
+    this.promptInstalacion = event as unknown as {
+      prompt: () => void;
+      userChoice: Promise<{ outcome: string }>;
+    };
+    this.puedeInstalar = true;
+  }
+
+  @HostListener('window:appinstalled')
+  onAppInstalled(): void {
+    this.puedeInstalar = false;
+    this.promptInstalacion = null;
+  }
+
+  async instalar(): Promise<void> {
+    if (this.esIOS) {
+      await Swal.fire({
+        title: 'Instalar Closure en iPhone',
+        html: `
+          <ol style="text-align:left;line-height:1.7;padding-left:1.2rem;margin:0.5rem 0 0">
+            <li>Abre esta página en <b>Safari</b>.</li>
+            <li>Toca el botón <b>Compartir</b> (el cuadro con la flecha hacia arriba).</li>
+            <li>Elige <b>Agregar a pantalla de inicio</b>.</li>
+            <li>Toca <b>Agregar</b>.</li>
+          </ol>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+
+    const prompt = this.promptInstalacion;
+    if (prompt) {
+      this.promptInstalacion = null;
+      prompt.prompt();
+      await prompt.userChoice;
+      this.puedeInstalar = false;
+    }
   }
 
   /** true cuando se muestra el auto-registro público. */

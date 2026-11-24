@@ -236,6 +236,38 @@ $radius:   24px;
   color: #94a3b8;
 }
 
+.install-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.install-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid $line;
+  background: #fff;
+  color: $text;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    border-color: $indigo-3;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.16);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
 /* ============================================== */
 /* RESPONSIVE                                     */
 /* ============================================== */
