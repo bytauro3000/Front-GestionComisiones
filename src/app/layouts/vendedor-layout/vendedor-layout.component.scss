@@ -17,6 +17,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 .vendedor-shell {
   display: grid;
   grid-template-columns: 1fr;
+  align-content: start;
   min-height: 100vh;
   background: $gray-50;
 }
