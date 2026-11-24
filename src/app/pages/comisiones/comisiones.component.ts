@@ -201,7 +201,7 @@ export class ComisionesComponent implements OnInit {
 
     Swal.fire({
       title: 'Revertir pago',
-      html: `¿Revertir el pago de <strong>${this.etiquetaTipoPago(p)}</strong> por <strong>USD ${p.monto.toFixed(2)}</strong>?<br><small>El pago volverá a estado pendiente.</small>`,
+      html: `¿Revertir el pago de <strong>${this.etiquetaTipoPago(p)}</strong> por <strong>${this.moneda(p.monto)}</strong>?<br><small>El pago volverá a estado pendiente.</small>`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, revertir',

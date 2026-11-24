@@ -147,7 +147,7 @@ export class SeparacionesComponent implements OnInit {
       .map(l => ({
         id: l.id!,
         label: this.etiquetaLote(l),
-        badge: l.precio != null ? `USD ${l.precio}` : undefined
+        badge: l.precio != null ? this.formatearMoneda(l.precio) : undefined
       }));
   }
 

@@ -23,6 +23,7 @@ import {
   SearchableSelectComponent,
   SelectOption
 } from '../../components/searchable-select/searchable-select.component';
+import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 
 interface FilaDetalle {
   idEmpresa: number | null;
@@ -46,7 +47,7 @@ interface ProformaForm {
 @Component({
   selector: 'app-proformas',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableSelectComponent],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent, CurrencyFormatterDirective],
   templateUrl: './proformas.component.html',
   styleUrl: './proformas.component.scss'
 })
@@ -626,6 +627,11 @@ export class ProformasComponent implements OnInit, OnDestroy {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(Number(valor) || 0);
+  }
+
+  /** Formato de moneda usado en toda la vista ($ 1,234.00). */
+  formatearMoneda(valor?: number | null): string {
+    return '$ ' + this.moneda(valor);
   }
 
   private guardarBlob(blob: Blob, nombre: string): void {

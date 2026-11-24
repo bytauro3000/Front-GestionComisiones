@@ -336,8 +336,9 @@
                   <input type="number" [(ngModel)]="integ.porcentajeDetraccion" min="0" max="100" step="0.5">
                 </div>
                 <div class="form-field">
-                  <label>Umbral (USD)</label>
-                  <input type="number" [(ngModel)]="integ.umbralDetraccion" min="0" step="1">
+                  <label>Umbral de detracción</label>
+                  <input type="text" appCurrencyFormatter currencySymbol="$ "
+                    [(ngModel)]="integ.umbralDetraccion" placeholder="$ 700.00">
                   <small class="campo-ayuda">≈ S/ 700 al tipo de cambio</small>
                 </div>
                 <div class="form-field">

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import {
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-parametros-comision',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableSelectComponent],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent, CurrencyFormatterDirective],
   templateUrl: './parametros-comision.component.html',
   styleUrl: './parametros-comision.component.scss'
 })

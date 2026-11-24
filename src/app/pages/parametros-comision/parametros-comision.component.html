@@ -123,15 +123,17 @@
           </div>
           <div class="form-field">
             <label>Anticipo monto fijo (opcional)</label>
-            <input type="number" min="0" step="0.01" [(ngModel)]="form.anticipoMontoFijo" placeholder="USD">
+            <input type="text" appCurrencyFormatter currencySymbol="$ "
+              [(ngModel)]="form.anticipoMontoFijo" placeholder="$ 0.00">
             <small class="field-hint">Si tiene valor, el backend lo usa en lugar del % de anticipo.</small>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-field">
-            <label>Cuota (USD) *</label>
-            <input type="number" min="0" step="0.01" [(ngModel)]="form.montoCuota">
+            <label>Cuota *</label>
+            <input type="text" appCurrencyFormatter currencySymbol="$ "
+              [(ngModel)]="form.montoCuota" placeholder="$ 0.00">
           </div>
           <div class="form-field">
             <label>Meses de espera *</label>

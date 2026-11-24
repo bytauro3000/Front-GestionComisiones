@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import {
@@ -20,7 +21,7 @@ interface EmpresaConPagos {
 @Component({
   selector: 'app-comprobantes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CurrencyFormatterDirective],
   templateUrl: './comprobantes.component.html',
   styleUrl: './comprobantes.component.scss'
 })

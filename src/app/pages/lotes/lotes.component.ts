@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { LoteService, Lote, LoteSeparacion } from '../../services/lote.service';
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-lotes',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableSelectComponent],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent, CurrencyFormatterDirective],
   templateUrl: './lotes.component.html',
   styleUrl: './lotes.component.scss'
 })

@@ -53,7 +53,7 @@
             <th>Fecha</th>
             <th>Cliente</th>
             <th style="text-align: center;">Ítems</th>
-            <th style="text-align: right;">Total USD</th>
+            <th style="text-align: right;">Total</th>
             <th>Estado</th>
             <th style="text-align: right;">Acciones</th>
           </tr>
@@ -255,15 +255,15 @@
                 <div class="campo-monto">
                   <span class="campo-label">Costo total</span>
                   <div class="campo-precio">
-                    <span class="prefijo">USD</span>
-                    <input type="number" [(ngModel)]="fila.precioUnitario" min="0" step="0.01" placeholder="0.00">
+                    <input type="text" appCurrencyFormatter currencySymbol="$ "
+                      [(ngModel)]="fila.precioUnitario" placeholder="$ 0.00">
                   </div>
                 </div>
                 <div class="campo-monto">
                   <span class="campo-label">Inicial</span>
                   <div class="campo-precio">
-                    <span class="prefijo">USD</span>
-                    <input type="number" [(ngModel)]="fila.inicial" min="0" step="0.01" placeholder="0.00">
+                    <input type="text" appCurrencyFormatter currencySymbol="$ "
+                      [(ngModel)]="fila.inicial" placeholder="$ 0.00">
                   </div>
                 </div>
                 <div class="campo-monto">
@@ -277,11 +277,11 @@
               </div>
 
               <div class="fila-lote-resumen">
-                <span>Saldo: <strong>USD {{ saldoFila(fila) | number:'1.2-2' }}</strong></span>
+                <span>Saldo: <strong>{{ formatearMoneda(saldoFila(fila)) }}</strong></span>
                 @if ((fila.numCuotas || 0) > 0) {
                   <span>
                     {{ fila.numCuotas }} letras · cuota aprox.
-                    <strong>USD {{ cuotaFila(fila) | number:'1.2-2' }}</strong>
+                    <strong>{{ formatearMoneda(cuotaFila(fila)) }}</strong>
                   </span>
                 }
               </div>
@@ -290,7 +290,7 @@
 
           <div class="total-linea">
             <span>Total de la proforma</span>
-            <strong>USD {{ totalForm | number:'1.2-2' }}</strong>
+            <strong>{{ formatearMoneda(totalForm) }}</strong>
           </div>
         </div>
 
@@ -377,7 +377,7 @@
               <th style="width: 34px;">#</th>
               <th>Lote</th>
               <th style="text-align: right;">Área (m²)</th>
-              <th style="text-align: right;">Precio USD</th>
+              <th style="text-align: right;">Precio</th>
             </tr>
           </thead>
           <tbody>
@@ -386,14 +386,14 @@
                 <td>{{ i + 1 }}</td>
                 <td>{{ d.descripcion || '—' }}</td>
                 <td style="text-align: right;">{{ d.areaM2 != null ? (d.areaM2 | number:'1.2-2') : '—' }}</td>
-                <td style="text-align: right;">{{ d.precioUnitario | number:'1.2-2' }}</td>
+                <td style="text-align: right;">{{ formatearMoneda(d.precioUnitario) }}</td>
               </tr>
             }
           </tbody>
           <tfoot>
             <tr>
               <th colspan="3">TOTAL</th>
-              <th style="text-align: right;">{{ vp.total | number:'1.2-2' }}</th>
+              <th style="text-align: right;">{{ formatearMoneda(vp.total) }}</th>
             </tr>
           </tfoot>
         </table>
@@ -404,11 +404,11 @@
             <div class="doc-pago-grid">
               <div>
                 <span class="etiqueta">Inicial:</span>
-                <strong>{{ inicialDoc | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+                <strong>{{ formatearMoneda(inicialDoc) }}</strong>
               </div>
               <div>
                 <span class="etiqueta">Saldo a financiar:</span>
-                <strong>{{ saldoDoc | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+                <strong>{{ formatearMoneda(saldoDoc) }}</strong>
               </div>
               <div>
                 <span class="etiqueta">N° de cuotas (letras):</span>
@@ -416,12 +416,12 @@
               </div>
               <div>
                 <span class="etiqueta">Importe por cuota:</span>
-                <strong>{{ cuotaDoc | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+                <strong>{{ formatearMoneda(cuotaDoc) }}</strong>
               </div>
             </div>
             @if (tieneResiduoDoc) {
               <small class="doc-pago-nota">
-                La última letra absorbe la diferencia: {{ ultimaCuotaDoc | currency:'USD':'symbol-narrow':'1.0-2' }}.
+                La última letra absorbe la diferencia: {{ formatearMoneda(ultimaCuotaDoc) }}.
               </small>
             }
           </section>
