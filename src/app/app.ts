@@ -20,6 +20,7 @@ export class App implements OnInit, OnDestroy {
   private tarjetaActiva: HTMLElement | null = null;
   private shiftActual = 0;
   private timers: number[] = [];
+  private alturaViewport = 0;
 
   ngOnInit(): void {
     // Reanuda el refresco automático del token al cargar la app (tras un F5
@@ -29,10 +30,13 @@ export class App implements OnInit, OnDestroy {
     const win = this.win;
     if (!win) return;
 
+    this.alturaViewport = win.visualViewport?.height ?? win.innerHeight;
+
     this.zone.runOutsideAngular(() => {
       this.doc.addEventListener('focusin', this.onFocusIn);
       win.visualViewport?.addEventListener('resize', this.onViewportChange);
       win.visualViewport?.addEventListener('scroll', this.onViewportChange);
+      win.addEventListener('resize', this.onWindowResize);
     });
   }
 
@@ -41,6 +45,7 @@ export class App implements OnInit, OnDestroy {
     this.doc.removeEventListener('focusin', this.onFocusIn);
     this.win?.visualViewport?.removeEventListener('resize', this.onViewportChange);
     this.win?.visualViewport?.removeEventListener('scroll', this.onViewportChange);
+    this.win?.removeEventListener('resize', this.onWindowResize);
   }
 
   // Al enfocar un campo dentro de un modal, el teclado móvil se superpone al
@@ -82,6 +87,13 @@ export class App implements OnInit, OnDestroy {
     }
   };
 
+  private readonly onWindowResize = (): void => {
+    const vv = this.win?.visualViewport;
+    if (vv && !this.campoActivo) {
+      this.alturaViewport = vv.height;
+    }
+  };
+
   private ajustar(): void {
     const el = this.campoActivo;
     const card = this.tarjetaActiva;
@@ -89,8 +101,16 @@ export class App implements OnInit, OnDestroy {
     const vv = win?.visualViewport;
     if (!el || !card || !win || !vv) return;
 
-    const altoTeclado = win.innerHeight - (vv.offsetTop + vv.height);
+    // El layout no cambia con el teclado (resizes-visual). Comparamos contra la
+    // altura del viewport visual sin teclado para saber cuánto se superpone.
+    const alturaLayout = this.doc.documentElement.clientHeight;
+    const porOffset = alturaLayout - (vv.offsetTop + vv.height);
+    const porAltura = this.alturaViewport - vv.height;
+    const altoTeclado = Math.max(porOffset, porAltura);
     if (altoTeclado < 120) {
+      if (vv.height > this.alturaViewport) {
+        this.alturaViewport = vv.height;
+      }
       this.resetTransform();
       return;
     }
