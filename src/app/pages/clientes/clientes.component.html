@@ -55,13 +55,18 @@
               </td>
               <td data-label="Tipo">
                 @if (c.prospecto) {
-                  <span class="badge badge-warning">Prospecto</span>
+                  <span class="badge badge-warning">
+                    <i class="fas fa-user-clock" aria-hidden="true"></i> Prospecto
+                  </span>
                 } @else {
-                  <span class="badge badge-activo">Cliente</span>
+                  <span class="badge badge-activo">
+                    <i class="fas fa-user-check" aria-hidden="true"></i> Cliente
+                  </span>
                 }
               </td>
               <td data-label="Seguimiento">
                 <span class="badge" [ngClass]="claseSeguimiento(c.estadoSeguimiento)">
+                  <i class="fas fa-circle badge-dot" aria-hidden="true"></i>
                   {{ etiquetaSeguimiento(c.estadoSeguimiento) }}
                 </span>
               </td>
