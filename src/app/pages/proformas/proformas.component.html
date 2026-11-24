@@ -272,8 +272,10 @@
                     <input type="number" [(ngModel)]="fila.numCuotas" min="0" max="160" step="1" placeholder="150">
                   </div>
                 </div>
-                <button type="button" class="btn-quitar-fila" (click)="quitarFila(i)"
-                        [disabled]="filas.length === 1" title="Quitar fila">&times;</button>
+                @if (filas.length > 1) {
+                  <button type="button" class="btn-quitar-fila" (click)="quitarFila(i)"
+                          title="Quitar fila">&times;</button>
+                }
               </div>
 
               <div class="fila-lote-resumen">
