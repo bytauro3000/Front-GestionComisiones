@@ -8,7 +8,7 @@
       aria-label="Abrir menú de navegación">
       <i class="fas" [ngClass]="menuAbierto ? 'fa-times' : 'fa-bars'"></i>
     </button>
-    <div class="topbar-brand">
+    <a class="topbar-brand" routerLink="/vendedor/inicio" (click)="cerrarMenu()" aria-label="Ir al inicio">
       <div class="brand-mark">
         <img
           src="https://res.cloudinary.com/kqee6exq/image/upload/e_trim,f_auto,q_auto:best,w_192,h_192,c_fit/v1795518731/logoinmo.png"
@@ -19,7 +19,7 @@
           fetchpriority="high" />
       </div>
       <span class="brand-name">Closure</span>
-    </div>
+    </a>
     <app-notificacion-bell />
     <button class="btn-logout btn-logout-top" (click)="logout()" title="Cerrar sesión">
       <i class="fas fa-sign-out-alt"></i>
@@ -43,7 +43,7 @@
     [class.open]="menuAbierto"
     (mouseenter)="entrarHover()"
     (mouseleave)="salirHover()">
-    <div class="sidebar-brand">
+    <a class="sidebar-brand" routerLink="/vendedor/inicio" (click)="cerrarMenu()" aria-label="Ir al inicio">
       <span class="brand-mark">
         <img
           src="https://res.cloudinary.com/kqee6exq/image/upload/e_trim,f_auto,q_auto:best,w_192,h_192,c_fit/v1795518731/logoinmo.png"
@@ -54,7 +54,7 @@
           loading="eager" />
       </span>
       <span class="brand-name">Closure</span>
-    </div>
+    </a>
     <nav class="sidebar-nav">
       <a routerLink="/vendedor/inicio" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-home"></i><span>Inicio</span>
