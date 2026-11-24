@@ -22,6 +22,13 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   background: $gray-50;
 }
 
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 /* ── Topbar móvil (oculto en escritorio) ───── */
 .mobile-topbar {
   display: none;
@@ -101,12 +108,43 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px 64px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px;
+    background: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .brand-name {
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: -0.3px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .sidebar-nav {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 64px 12px 16px;
+  padding: 10px 12px 16px;
 
   .nav-item {
     display: flex;
@@ -227,6 +265,14 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
 /* ── Responsive ───────────────────────────── */
 @media (max-width: $bp-lg) {
+  .sidebar-brand {
+    display: none;
+  }
+
+  .sidebar-nav {
+    padding-top: 64px;
+  }
+
   .mobile-topbar {
     display: flex;
     align-items: center;
@@ -260,13 +306,14 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 0.95rem;
+        padding: 4px;
+        background: #fff;
+        border: 1px solid $gray-200;
         flex-shrink: 0;
+        overflow: hidden;
       }
 
       .brand-name {

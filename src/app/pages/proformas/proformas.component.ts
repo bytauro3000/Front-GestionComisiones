@@ -574,7 +574,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
       cuota,
       enlace ? `\nVer PDF: ${enlace}` : '',
       '',
-      '_Vende Lote_'
+      '_Closure_'
     ].filter(l => l !== '').join('\n');
   }
 

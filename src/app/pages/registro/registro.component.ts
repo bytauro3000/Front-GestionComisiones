@@ -35,7 +35,7 @@ export class RegistroComponent {
     private alert: AlertService,
     private titleService: Title
   ) {
-    this.titleService.setTitle('Crear cuenta | Vende Lote');
+    this.titleService.setTitle('Crear cuenta | Closure');
   }
 
   agregarTelefono(): void {

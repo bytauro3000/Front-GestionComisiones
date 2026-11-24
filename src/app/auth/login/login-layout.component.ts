@@ -13,7 +13,7 @@ import { AnimationService } from '../../services/animation.service';
 export class LoginLayoutComponent implements AfterViewInit, OnDestroy {
 
   readonly anioActual = new Date().getFullYear();
-  readonly nombreSistema = 'Vende Lote';
+  readonly nombreSistema = 'Closure';
 
   private animCtx?: { revert: () => void };
 

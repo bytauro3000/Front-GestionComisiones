@@ -35,7 +35,7 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.titleService.setTitle('Iniciar Sesión | Vende Lote');
+    this.titleService.setTitle('Iniciar Sesión | Closure');
     const correoGuardado = localStorage.getItem('remembered_email');
     if (correoGuardado) {
       this.loginRequest.correo = correoGuardado;
