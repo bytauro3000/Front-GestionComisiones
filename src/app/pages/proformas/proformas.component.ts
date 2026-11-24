@@ -6,7 +6,8 @@ import Swal from 'sweetalert2';
 import {
   ProformaService,
   Proforma,
-  ProformaSeguimiento
+  ProformaSeguimiento,
+  DetalleProforma
 } from '../../services/proforma.service';
 import { ClienteService, Cliente } from '../../services/cliente.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
@@ -17,6 +18,7 @@ import { UsuarioService, Perfil } from '../../services/usuario.service';
 import { TokenService } from '../../auth/token.service';
 import { AlertService } from '../../services/alert.service';
 import { ProformaUiService } from '../../services/proforma-ui.service';
+import { environment } from '../../../environments/environment';
 import {
   SearchableSelectComponent,
   SelectOption
@@ -511,10 +513,21 @@ export class ProformasComponent implements OnInit, OnDestroy {
     });
   }
 
-  compartirWhatsApp(p: Proforma): void {
+  /** Envía la proforma al celular registrado del cliente (texto + enlace al PDF). */
+  compartirWhatsApp(p: Proforma, telefonoRegistrado?: string): void {
     if (!p.id) return;
-    const telefono = this.clienteDe(p.idCliente)?.telefono || '';
-    this.compartirPdf(p.id, p.numero, telefono);
+    const cliente = this.clienteDe(p.idCliente);
+    const telefono = this.normalizarTelefono(telefonoRegistrado || cliente?.telefono);
+    const texto = this.textoProforma(p);
+    const url = telefono
+      ? `https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`
+      : `https://wa.me/?text=${encodeURIComponent(texto)}`;
+
+    if (!telefono) {
+      this.alert.toastWarning(
+        'El cliente no tiene celular registrado; elige el contacto en WhatsApp.');
+    }
+    window.open(url, '_blank');
   }
 
   whatsappSeguimiento(s: ProformaSeguimiento): void {
@@ -522,37 +535,83 @@ export class ProformasComponent implements OnInit, OnDestroy {
       this.alert.toastWarning('No hay proforma para compartir');
       return;
     }
-    this.compartirPdf(s.ultimaProformaId, s.ultimaProformaNumero, s.clienteTelefono);
+    this.proformaService.obtener(s.ultimaProformaId).subscribe({
+      next: (p) => this.compartirWhatsApp(p, s.clienteTelefono),
+      error: () => this.alert.toastError('No se pudo cargar la proforma', 'Error')
+    });
   }
 
-  private compartirPdf(id: number, numero: string | null | undefined, telefono: string): void {
-    this.proformaService.descargarPdf(id).subscribe({
-      next: async (blob) => {
-        const nombre = `Proforma-${numero || id}.pdf`;
-        const tel = (telefono || '').replace(/\D/g, '');
-        const nav: any = navigator;
-        const file = new File([blob], nombre, { type: 'application/pdf' });
-        if (nav.canShare && nav.canShare({ files: [file] })) {
-          try {
-            await nav.share({
-              files: [file],
-              title: `Proforma ${numero || ''}`,
-              text: 'Te comparto la proforma.'
-            });
-          } catch {
-            // El usuario canceló el compartir.
-          }
-          return;
-        }
-        this.guardarBlob(blob, nombre);
-        if (tel) {
-          const texto = encodeURIComponent(`Te comparto la proforma ${numero || ''}.`);
-          window.open(`https://wa.me/${tel}?text=${texto}`, '_blank');
-        }
-        this.alert.toastInfo('PDF descargado. Adjúntalo en el chat de WhatsApp.');
-      },
-      error: () => this.alert.toastError('No se pudo generar el PDF', 'Error')
-    });
+  /** Texto legible con el resumen y el enlace al PDF (por si no abre el PDF). */
+  private textoProforma(p: Proforma): string {
+    const cliente = this.clienteDe(p.idCliente);
+    const nombre = cliente
+      ? `${cliente.nombres} ${cliente.apellidos || ''}`.trim()
+      : 'Cliente';
+    const r = this.resumenPago(p);
+    const lineas = (p.detalles || []).map(d => {
+      const ini = this.inicialDetalle(d);
+      return `• ${d.descripcion || 'Lote'} — USD ${this.moneda(d.precioUnitario)}`
+        + (ini > 0 ? ` · Inicial USD ${this.moneda(ini)}` : '');
+    }).join('\n');
+    const enlace = p.publicToken
+      ? `${environment.apiUrl}/api/proformas/pdf-publico/${p.publicToken}`
+      : '';
+    const fecha = p.fecha ? new Date(p.fecha).toLocaleDateString('es-PE') : '—';
+    const cuota = r.cuotas > 0
+      ? `*Cuota aprox.:* USD ${this.moneda(r.cuota)} × ${r.cuotas} letras`
+      : '';
+
+    return [
+      `*PROFORMA ${p.numero || ''}*`,
+      `Cliente: ${nombre}`,
+      `Fecha: ${fecha}`,
+      '',
+      lineas,
+      '',
+      `*Total:* USD ${this.moneda(r.total)}`,
+      `*Inicial:* USD ${this.moneda(r.inicial)}`,
+      `*Saldo:* USD ${this.moneda(r.saldo)}`,
+      cuota,
+      enlace ? `\nVer PDF: ${enlace}` : '',
+      '',
+      '_Vende Lote_'
+    ].filter(l => l !== '').join('\n');
+  }
+
+  private inicialDetalle(d: DetalleProforma): number {
+    if (d.inicial != null) return Number(d.inicial);
+    return Number(this.lotes.find(l => l.id === d.idLote)?.inicial) || 0;
+  }
+
+  private resumenPago(p: Proforma): {
+    total: number; inicial: number; saldo: number; cuotas: number; cuota: number;
+  } {
+    const total = Number(p.total) || 0;
+    const inicial = (p.detalles || []).reduce((s, d) => s + this.inicialDetalle(d), 0);
+    const saldo = Math.max(0, total - inicial);
+    const cuotasList = (p.detalles || [])
+      .map(d => d.numCuotas != null
+        ? Number(d.numCuotas)
+        : (this.lotes.find(l => l.id === d.idLote)?.numCuotas ?? 0))
+      .filter(n => n > 0);
+    const cuotas = cuotasList.length ? Math.max(...cuotasList) : 0;
+    const cuota = cuotas > 0 ? Math.floor(saldo / cuotas) : 0;
+    return { total, inicial, saldo, cuotas, cuota };
+  }
+
+  /** Normaliza al formato de WhatsApp (móvil Perú: 9 dígitos → 51XXXXXXXXX). */
+  private normalizarTelefono(telefono?: string): string {
+    const primero = (telefono || '').split(',')[0].replace(/\D/g, '');
+    if (!primero) return '';
+    if (primero.length === 9) return '51' + primero;
+    return primero;
+  }
+
+  private moneda(valor?: number | null): string {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(Number(valor) || 0);
   }
 
   private guardarBlob(blob: Blob, nombre: string): void {
