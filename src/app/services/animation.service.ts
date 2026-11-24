@@ -28,12 +28,23 @@ export class AnimationService {
     }, scope);
   }
 
+  /**
+   * Transición de página al cambiar de ruta.
+   * Solo anima opacidad: un transform en este contenedor rompería el
+   * `position: fixed` de los modales (se centrarían respecto al contenido).
+   */
   pageEnter(el?: HTMLElement | null): void {
     if (!el || this.reducedMotion) {
       return;
     }
     gsap.fromTo(el,
-      { autoAlpha: 0, y: 10 },
-      { autoAlpha: 1, y: 0, duration: 0.32, ease: 'power2.out', overwrite: 'auto' });
+      { autoAlpha: 0 },
+      {
+        autoAlpha: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'all'
+      });
   }
 }
