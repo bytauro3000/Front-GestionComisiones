@@ -113,6 +113,11 @@ export class ProyectosComponent implements OnInit, OnDestroy {
         this.proyectoService.descargarPlano(p.id!).subscribe({
           next: (blob) => {
             if (p.id == null) return;
+            if (!blob || blob.size === 0) {
+              // 204: el proyecto ya no tiene el archivo (disco efímero de Render).
+              this.planoTipos[p.id] = 'error';
+              return;
+            }
             this.planoTipos[p.id] = blob.type || 'desconocido';
             // Solo las imágenes sirven en <img>; los PDF muestran el ícono representativo
             if (blob.type.startsWith('image/')) {
@@ -186,6 +191,10 @@ export class ProyectosComponent implements OnInit, OnDestroy {
     if (p.tienePlano && p.id != null) {
       this.proyectoService.descargarPlano(p.id).subscribe({
         next: (blob) => {
+          if (!blob || blob.size === 0) {
+            this.prepararPlano(null, false, false);
+            return;
+          }
           const ext = blob.type === 'image/png' ? 'png'
             : blob.type === 'image/webp' ? 'webp'
             : blob.type === 'application/pdf' ? 'pdf' : 'jpg';
@@ -358,7 +367,13 @@ export class ProyectosComponent implements OnInit, OnDestroy {
       return;
     }
     this.proyectoService.descargarPlano(p.id).subscribe({
-      next: (blob) => window.open(URL.createObjectURL(blob), '_blank'),
+      next: (blob) => {
+        if (!blob || blob.size === 0) {
+          this.alert.toastWarning('Este proyecto no tiene el plano disponible');
+          return;
+        }
+        window.open(URL.createObjectURL(blob), '_blank');
+      },
       error: () => this.alert.toastWarning('No se pudo abrir el plano')
     });
   }
