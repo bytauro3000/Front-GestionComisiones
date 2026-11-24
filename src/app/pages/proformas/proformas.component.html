@@ -192,14 +192,14 @@
             <div class="input-accion">
               <input type="text" [(ngModel)]="form.numDocumento" (input)="onDocumentoInput()"
                      maxlength="8" placeholder="8 dígitos" autocomplete="off">
-              <button class="btn btn-outline btn-sm" (click)="buscarDni()" [disabled]="buscandoDni"
-                      title="Buscar en RENIEC">
+              <button type="button" class="btn-buscar-doc" (click)="buscarDni()"
+                      [disabled]="buscandoDni" title="Buscar en RENIEC"
+                      aria-label="Buscar en RENIEC">
                 @if (buscandoDni) {
                   <i class="fas fa-spinner fa-spin"></i>
                 } @else {
                   <i class="fas fa-search"></i>
                 }
-                Buscar
               </button>
             </div>
           </div>

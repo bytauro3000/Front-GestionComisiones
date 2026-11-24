@@ -117,6 +117,46 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   gap: 12px;
 }
 
+.input-accion {
+  position: relative;
+  display: block;
+
+  input {
+    width: 100%;
+    padding-right: 46px;
+  }
+
+  .btn-buscar-doc {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: $primary;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s $ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+}
+
 // ── Filas de detalle (lotes) ────────────────────────────────────────────────
 
 .detalles-block {

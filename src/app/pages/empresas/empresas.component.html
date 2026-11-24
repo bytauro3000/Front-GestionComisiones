@@ -99,14 +99,14 @@
           <label>RUC *</label>
           <div class="input-accion">
             <input type="text" [(ngModel)]="form.ruc" placeholder="11 dígitos" maxlength="11">
-            <button class="btn btn-outline btn-sm" (click)="buscarSunat()"
-                    [disabled]="buscandoRuc" title="Buscar en SUNAT">
+            <button type="button" class="btn-buscar-ruc" (click)="buscarSunat()"
+                    [disabled]="buscandoRuc" title="Buscar en SUNAT"
+                    aria-label="Buscar en SUNAT">
               @if (buscandoRuc) {
                 <i class="fas fa-spinner fa-spin"></i>
               } @else {
                 <i class="fas fa-search"></i>
               }
-              Buscar SUNAT
             </button>
           </div>
         </div>
