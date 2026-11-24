@@ -122,38 +122,73 @@ export class App implements OnInit, OnDestroy {
     const limiteInferior = vv.offsetTop + vv.height - margen;
     const limiteSuperior = Math.max(vv.offsetTop, body.getBoundingClientRect().top) + margen;
 
-    let rect = el.getBoundingClientRect();
+    // Si el campo pertenece a un select con búsqueda y su lista está abierta,
+    // también hay que dejar visible la lista (no solo el input).
+    const lista = this.listaActiva();
 
-    if (rect.bottom > limiteInferior) {
-      const delta = rect.bottom - limiteInferior;
+    const medir = (): { top: number; bottom: number } => {
+      const rEl = el.getBoundingClientRect();
+      const rLista = lista?.getBoundingClientRect();
+      return {
+        top: rLista ? Math.min(rEl.top, rLista.top) : rEl.top,
+        bottom: rLista ? Math.max(rEl.bottom, rLista.bottom) : rEl.bottom
+      };
+    };
+
+    let medida = medir();
+
+    if (medida.bottom > limiteInferior) {
       const maxScroll = body.scrollHeight - body.clientHeight - body.scrollTop;
-      const scroll = Math.min(delta, Math.max(0, maxScroll));
+      const espacioArriba = Math.max(0, medida.top - limiteSuperior);
+      const delta = medida.bottom - limiteInferior;
+      const scroll = Math.min(delta, Math.max(0, maxScroll), espacioArriba);
       if (scroll > 0) {
         body.scrollTop += scroll;
-        rect = el.getBoundingClientRect();
+        medida = medir();
       }
-    } else if (rect.top < limiteSuperior && body.scrollTop > 0) {
-      body.scrollTop = Math.max(0, body.scrollTop - (limiteSuperior - rect.top));
-      rect = el.getBoundingClientRect();
+    } else if (medida.top < limiteSuperior && body.scrollTop > 0) {
+      body.scrollTop = Math.max(0, body.scrollTop - (limiteSuperior - medida.top));
+      medida = medir();
     }
 
     // Si el cuerpo ya no puede desplazarse más, mover la tarjeta hacia arriba
-    // solo lo necesario (sin ocultar el encabezado).
-    if (rect.bottom > limiteInferior) {
-      const restante = rect.bottom - limiteInferior;
+    // solo lo necesario (sin ocultar el campo ni el encabezado).
+    if (medida.bottom > limiteInferior) {
+      const restante = medida.bottom - limiteInferior;
       const cardRect = card.getBoundingClientRect();
-      const espacio = Math.max(0, cardRect.top - margen - vv.offsetTop);
-      const extra = Math.min(restante, espacio);
+      const espacioTarjeta = Math.max(0, cardRect.top - margen - vv.offsetTop);
+      const espacioArriba = Math.max(0, medida.top - limiteSuperior);
+      const extra = Math.min(restante, espacioTarjeta, espacioArriba);
       if (extra > 0) {
         this.shiftActual += extra;
         card.style.transform = `translateY(-${this.shiftActual}px)`;
+        medida = medir();
       }
     }
+
+    // Último recurso: si la lista aún sobresale, limitar su alto para que se
+    // vea completa y el resto se consulte desplazándola internamente.
+    if (lista) {
+      const rLista = lista.getBoundingClientRect();
+      const disponible = limiteInferior - rLista.top;
+      if (rLista.bottom > limiteInferior && disponible > 0) {
+        lista.style.maxHeight = `${Math.max(72, disponible)}px`;
+      }
+    }
+  }
+
+  private listaActiva(): HTMLElement | null {
+    const host = this.campoActivo?.closest('app-searchable-select');
+    return (host?.querySelector('.ss-list') as HTMLElement | null) ?? null;
   }
 
   private resetTransform(): void {
     if (this.tarjetaActiva) {
       this.tarjetaActiva.style.transform = '';
+    }
+    const lista = this.listaActiva();
+    if (lista) {
+      lista.style.maxHeight = '';
     }
     this.shiftActual = 0;
   }
