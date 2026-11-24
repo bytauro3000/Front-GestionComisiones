@@ -64,55 +64,6 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
-@media (max-width: $bp-sm) {
-  .welcome-hero {
-    padding: 24px;
-
-    .welcome-icon {
-      width: 48px;
-      height: 48px;
-      font-size: 1.25rem;
-      margin-bottom: 14px;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-    }
-
-    p {
-      font-size: 0.92rem;
-    }
-  }
-
-  .modulos {
-    padding: 18px;
-  }
-
-  /* En celular: dos tarjetas por fila (dos columnas) */
-  .modulos-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .modulo-card {
-    padding: 12px;
-
-    i {
-      font-size: 1.05rem;
-      margin-bottom: 2px;
-    }
-
-    strong {
-      font-size: 0.82rem;
-    }
-
-    span {
-      font-size: 0.7rem;
-      line-height: 1.35;
-    }
-  }
-}
-
 .modulos {
   background: white;
   border-radius: $radius;
@@ -170,5 +121,54 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     background: rgba(99, 102, 241, 0.06);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.12);
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .welcome-hero {
+    padding: 24px;
+
+    .welcome-icon {
+      width: 48px;
+      height: 48px;
+      font-size: 1.25rem;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    p {
+      font-size: 0.92rem;
+    }
+  }
+
+  .modulos {
+    padding: 18px;
+  }
+
+  /* En celular: dos tarjetas por fila (dos columnas) */
+  .modulos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .modulo-card {
+    padding: 12px;
+
+    i {
+      font-size: 1.05rem;
+      margin-bottom: 2px;
+    }
+
+    strong {
+      font-size: 0.82rem;
+    }
+
+    span {
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
   }
 }
