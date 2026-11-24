@@ -1078,3 +1078,87 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* SweetAlert más compacto en celular/tablet (modales y toasts) */
+@media (max-width: $bp-lg) {
+  .swal2-popup {
+    width: min(92vw, 400px) !important;
+    padding: 18px 16px !important;
+    border-radius: 18px !important;
+    font-size: 0.9rem !important;
+  }
+  .swal2-title {
+    font-size: 1.15rem !important;
+    line-height: 1.25 !important;
+  }
+  .swal2-html-container {
+    font-size: 0.87rem !important;
+    margin: 8px 0 0 !important;
+  }
+  .swal2-icon {
+    width: 3.5rem !important;
+    height: 3.5rem !important;
+    margin: 0.5rem auto 0.75rem !important;
+  }
+  .swal2-icon .swal2-icon-content {
+    font-size: 2rem !important;
+  }
+  .swal2-actions {
+    gap: 8px !important;
+    margin-top: 14px !important;
+  }
+  .swal2-styled {
+    padding: 9px 16px !important;
+    font-size: 0.85rem !important;
+    border-radius: 10px !important;
+  }
+
+  .swal2-popup.swal2-toast {
+    width: min(94vw, 360px) !important;
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+  }
+  .swal2-toast .swal2-title {
+    font-size: 0.85rem !important;
+  }
+  .swal2-toast .swal2-html-container {
+    font-size: 0.8rem !important;
+  }
+  .swal2-toast .swal2-icon {
+    width: 1.9rem !important;
+    height: 1.9rem !important;
+    margin: 0 !important;
+  }
+  .swal2-toast .swal2-icon .swal2-icon-content {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .swal2-popup {
+    width: min(94vw, 360px) !important;
+    padding: 16px 14px !important;
+    border-radius: 16px !important;
+  }
+  .swal2-title {
+    font-size: 1.05rem !important;
+  }
+  .swal2-html-container {
+    font-size: 0.82rem !important;
+  }
+  .swal2-icon {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+  .swal2-icon .swal2-icon-content {
+    font-size: 1.7rem !important;
+  }
+  .swal2-styled {
+    padding: 8px 14px !important;
+    font-size: 0.82rem !important;
+  }
+  .swal2-popup.swal2-toast {
+    width: min(96vw, 340px) !important;
+    padding: 8px 10px !important;
+  }
+}
