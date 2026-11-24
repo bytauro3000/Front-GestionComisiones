@@ -280,8 +280,10 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     align-items: center;
     flex-wrap: nowrap;
     gap: 12px;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 330;
     background: white;
     border-bottom: 1px solid $gray-200;
@@ -342,13 +344,13 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .vendedor-content {
-    padding: 18px;
+    padding: 82px 18px 18px;
   }
 }
 
 @media (max-width: $bp-sm) {
   .vendedor-content {
-    padding: 12px;
+    padding: 76px 12px 12px;
   }
 }
 
