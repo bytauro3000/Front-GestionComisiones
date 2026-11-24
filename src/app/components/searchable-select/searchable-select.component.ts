@@ -13,6 +13,8 @@ export interface SelectOption {
   label: string;
   sub?: string;
   badge?: string;
+  /** Texto adicional para búsqueda (no se muestra). */
+  keywords?: string;
 }
 
 /**
@@ -66,7 +68,8 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     return this.options.filter(o =>
       o.label.toLowerCase().includes(t) ||
       (o.sub || '').toLowerCase().includes(t) ||
-      (o.badge || '').toLowerCase().includes(t)
+      (o.badge || '').toLowerCase().includes(t) ||
+      (o.keywords || '').toLowerCase().includes(t)
     );
   }
 

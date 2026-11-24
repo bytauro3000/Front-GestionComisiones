@@ -316,9 +316,10 @@ export class ProformasComponent implements OnInit, OnDestroy {
       .filter(l => l.id != null)
       .map(l => ({
         id: l.id!,
-        label: `Mz ${l.manzana} N° ${l.numero}`,
-        sub: l.areaM2 != null ? `${l.areaM2} m²` : undefined,
-        badge: l.precio != null ? `USD ${l.precio}` : undefined
+        label: `Mz.${l.manzana} Lt.${l.numero}`,
+        badge: l.precio != null ? `${l.precio}` : undefined,
+        // Permite buscar "B-6", "B 6", "B6", "Mz.B" o "Lt.6".
+        keywords: `${l.manzana}-${l.numero} ${l.manzana} ${l.numero} ${l.manzana}${l.numero} Mz.${l.manzana} Lt.${l.numero}`
       }));
   }
 
@@ -344,7 +345,20 @@ export class ProformasComponent implements OnInit, OnDestroy {
         && l.estado !== 'VENDIDO'
         && !l.ventaActiva
         && !usados.includes(l.id))
-      .sort((a, b) => this.etiquetaLoteCorto(a).localeCompare(this.etiquetaLoteCorto(b)));
+      .sort((a, b) => this.compararLotes(a, b));
+  }
+
+  /** Ordena por manzana y luego por lote, comparando números de forma natural. */
+  private compararLotes(a: Lote, b: Lote): number {
+    const mz = (a.manzana || '').localeCompare(b.manzana || '', undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
+    if (mz !== 0) return mz;
+    return (a.numero || '').localeCompare(b.numero || '', undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
   }
 
   onEmpresaFila(indice: number, valor: number | null): void {
