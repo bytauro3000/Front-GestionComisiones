@@ -3,15 +3,20 @@
 $bp-lg: t.$bp-lg;
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
+$primary:       #4338ca;
 $primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-50:       #f8fafc;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
+$dark:          #0b1220;
+$ink:           #171a21;
+$gold:          #c29a5b;
+$sand:          #e7d7b8;
+$gray-50:       #f6f3ec;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-500:      #6b665c;
+$gray-700:      #34302a;
+$surface-2:     #fbf9f4;
 $radius:        12px;
+$shadow-sm:     0 1px 2px rgba(23, 26, 33, 0.05);
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
 .vendedor-shell {
@@ -63,13 +68,13 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   top: 16px;
   left: 16px;
   z-index: 340;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 4px 14px rgba(23, 26, 33, 0.14);
 }
 
 .btn-logout-top {
   margin-left: auto;
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
+  background: rgba(180, 35, 24, 0.08);
+  color: #b42318;
   border: none;
   width: 42px;
   height: 42px;
@@ -79,7 +84,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   transition: all 0.2s $ease;
 
   &:hover {
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(180, 35, 24, 0.16);
   }
 }
 
@@ -93,7 +98,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 85vw;
   height: 100vh;
   height: 100dvh;
-  background: $dark;
+  background: linear-gradient(180deg, #0b1220 0%, #111c33 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   color: white;
   display: flex;
   flex-direction: column;
@@ -101,7 +107,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   transition: transform 0.28s $ease;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.25);
+  box-shadow: 8px 0 30px rgba(23, 26, 33, 0.25);
 
   &.open {
     transform: translateX(0);
@@ -153,25 +159,33 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     align-items: center;
     gap: 12px;
     padding: 11px 14px;
-    border-radius: 10px;
-    color: rgba(255, 255, 255, 0.72);
+    border-radius: 11px;
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.2s $ease;
+    transition: background 0.18s $ease, color 0.18s $ease;
     white-space: nowrap;
 
-    i { width: 18px; text-align: center; flex-shrink: 0; }
+    i {
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+      color: rgba(231, 215, 184, 0.72);
+      transition: color 0.18s $ease;
+    }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       color: white;
     }
 
     &.active {
-      background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+      background: rgba(194, 154, 91, 0.14);
       color: white;
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      box-shadow: inset 0 0 0 1px rgba(194, 154, 91, 0.32);
+
+      i { color: $gold; }
     }
   }
 }
@@ -195,7 +209,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(194, 154, 91, 0.22);
+    color: $sand;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -223,8 +238,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .btn-logout {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
+    background: rgba(180, 35, 24, 0.16);
+    color: #f0a9a3;
     border: none;
     width: 36px;
     height: 36px;
@@ -234,7 +249,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     flex-shrink: 0;
 
     &:hover {
-      background: rgba(239, 68, 68, 0.3);
+      background: rgba(180, 35, 24, 0.3);
       color: white;
     }
   }
@@ -246,7 +261,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   position: fixed;
   inset: 0;
   z-index: 310;
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(23, 26, 33, 0.35);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -285,8 +300,10 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     left: 0;
     right: 0;
     z-index: 330;
-    background: white;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid $gray-200;
+    box-shadow: $shadow-sm;
     padding: 10px 16px;
     height: 64px;
     min-height: 64px;
@@ -325,8 +342,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       .brand-name {
         font-weight: 800;
         font-size: 1.05rem;
-        color: $dark;
-        letter-spacing: -0.3px;
+        color: $ink;
+        letter-spacing: -0.02em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -340,7 +357,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .nav-overlay {
-    background: rgba(15, 23, 42, 0.45);
+    background: rgba(23, 26, 33, 0.45);
   }
 
   .vendedor-content {
@@ -365,11 +382,11 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   gap: 8px;
   border: none;
   border-radius: 999px;
-  background: #4f46e5;
+  background: #4338ca;
   color: #fff;
   padding: 13px 18px;
   font-weight: 700;
-  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 10px 25px rgba(67, 56, 202, 0.4);
   cursor: pointer;
 
   i {

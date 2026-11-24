@@ -2,13 +2,13 @@
 
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
+$primary:       #4338ca;
 $primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
+$dark:          #171a21;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-500:      #6b665c;
+$gray-700:      #34302a;
 $radius:        12px;
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -86,7 +86,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     &:focus {
       outline: none;
       border-color: $primary-light;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.12);
     }
   }
 
@@ -102,7 +102,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: 14px;
   background: white;
   border: 1px solid $gray-200;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 1px 3px rgba(23, 26, 33, 0.05);
 }
 
 .data-table {
@@ -130,7 +130,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   tbody tr:hover {
-    background: rgba(79, 70, 229, 0.03);
+    background: rgba(67, 56, 202, 0.03);
   }
 
   /* Fila con separación propia por vencer */
@@ -191,8 +191,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 13px;
 
   &:hover {
-    border-color: #6366f1;
-    color: #4f46e5;
+    border-color: #4f46e5;
+    color: #4338ca;
   }
 }
 

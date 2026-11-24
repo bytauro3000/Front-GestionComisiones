@@ -7,23 +7,35 @@ $bp-sm: t.$bp-sm;   // 576px  móvil
 $bp-md: t.$bp-md;   // 768px  tablet
 $bp-lg: t.$bp-lg;   // 992px  escritorio
 
-$primary:       #4f46e5;
-$primary-2:     #6366f1;
+$primary:       #4338ca;
+$primary-2:     #4338ca;
 $primary-light: #818cf8;
-$primary-bg:    rgba(99, 102, 241, 0.08);
+$primary-bg:    rgba(67, 56, 202, 0.08);
 
-$dark:          #0f172a;
-$gray-50:       #f8fafc;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-300:      #cbd5e1;
-$gray-500:      #64748b;
-$gray-700:      #334155;
-$green:         #10b981;
-$red:           #ef4444;
-$amber:         #f59e0b;
+$gold:          #c29a5b;
+$gold-strong:   #8c6a32;
+$sand:          #e7d7b8;
 
-$radius:        10px;
+$dark:          #171a21;
+$ink:           #0b1220;
+$surface:       #ffffff;
+$surface-2:     #fbf9f4;
+$gray-50:       #f6f3ec;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-300:      #d6cdbb;
+$gray-500:      #6b665c;
+$gray-700:      #34302a;
+$green:         #0f766e;
+$red:           #b42318;
+$amber:         #b45309;
+
+$font-display:  'Newsreader', Georgia, 'Times New Roman', serif;
+$font-ui:       'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+$radius:        12px;
+$shadow-sm:     0 1px 2px rgba(23, 26, 33, 0.05);
+$shadow-md:     0 14px 34px -22px rgba(23, 26, 33, 0.32);
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
 html, body {
@@ -37,16 +49,37 @@ html, body {
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  font-family: $font-ui;
   min-height: 100vh;
   background: $gray-50;
   color: $dark;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(194, 154, 91, 0.35);
+  color: $ink;
+}
+
+:focus-visible {
+  outline-color: $primary;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Encabezados de página: la serif de marca para el título, UI sans para el resto. */
+.page-header h1 {
+  font-family: $font-display;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: $ink;
+}
+
+.page-header p {
+  color: $gray-500;
 }
 
 /* ============================================== */
@@ -54,36 +87,39 @@ body {
 /* ============================================== */
 .data-table {
   width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: $surface;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
 
   th {
-    background: $gray-100;
-    color: $gray-700;
-    font-size: 0.78rem;
+    background: $surface-2;
+    color: $gray-500;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    padding: 12px 16px;
+    letter-spacing: 0.7px;
+    padding: 13px 16px;
     text-align: left;
     border-bottom: 1px solid $gray-200;
   }
 
   td {
-    padding: 12px 16px;
+    padding: 13px 16px;
     font-size: 0.9rem;
     color: $gray-700;
     border-bottom: 1px solid $gray-100;
     vertical-align: middle;
+    font-variant-numeric: tabular-nums;
   }
 
   tbody tr {
     transition: background 0.15s $ease;
 
-    &:hover { background: $primary-bg; }
+    &:hover { background: rgba(194, 154, 91, 0.08); }
     &:last-child td { border-bottom: none; }
   }
 }
@@ -107,15 +143,15 @@ body {
 
     tbody tr {
       display: block;
-      background: white;
+      background: $surface;
       border: 1px solid $gray-200;
-      border-radius: 12px;
+      border-radius: 14px;
       margin-bottom: 12px;
       padding: 4px 0;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      box-shadow: $shadow-sm;
       transition: none;
 
-      &:hover { background: white; }
+      &:hover { background: $surface; }
       &:last-child { margin-bottom: 0; }
     }
 
@@ -216,25 +252,25 @@ body {
   &.badge-activo,
   &.badge-PAGADO,
   &.badge-ok {
-    background: rgba(16, 185, 129, 0.12);
-    color: #059669;
+    background: rgba(15, 118, 110, 0.1);
+    color: $green;
   }
 
   &.badge-inactivo,
   &.badge-ANULADO,
   &.badge-error {
-    background: rgba(239, 68, 68, 0.12);
+    background: rgba(180, 35, 24, 0.1);
     color: $red;
   }
 
   &.badge-info {
-    background: rgba(99, 102, 241, 0.12);
-    color: $primary-2;
+    background: rgba(67, 56, 202, 0.1);
+    color: $primary;
   }
 
   &.badge-warning {
-    background: rgba(245, 158, 11, 0.14);
-    color: #b45309;
+    background: rgba(180, 83, 9, 0.12);
+    color: $amber;
   }
 }
 
@@ -258,7 +294,7 @@ body {
   &:focus {
     outline: none;
     border-color: $primary;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.15);
   }
 }
 
@@ -270,7 +306,7 @@ body {
   justify-content: center;
   gap: 8px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 18px;
   min-height: 40px;
   font-size: 0.88rem;
@@ -304,37 +340,37 @@ body {
   }
 
   &.btn-primary {
-    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+    background: linear-gradient(135deg, #3730a3 0%, #4338ca 55%, #4338ca 100%);
     color: #fff;
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.28);
+    box-shadow: 0 8px 18px -10px rgba(67, 56, 202, 0.75);
 
     &:hover:not(:disabled) {
-      filter: brightness(1.05);
+      filter: brightness(1.06);
       transform: translateY(-1px);
-      box-shadow: 0 10px 22px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 14px 26px -12px rgba(67, 56, 202, 0.8);
     }
   }
 
   &.btn-outline {
-    background: #fff;
+    background: $surface;
     color: $gray-700;
     border-color: $gray-200;
 
     &:hover:not(:disabled) {
-      border-color: $primary-light;
-      color: $primary-2;
-      background: $primary-bg;
+      border-color: $gold;
+      color: $ink;
+      background: $surface-2;
     }
   }
 
   &.btn-danger {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(180, 35, 24, 0.08);
     color: $red;
-    border-color: rgba(239, 68, 68, 0.18);
+    border-color: rgba(180, 35, 24, 0.18);
 
     &:hover:not(:disabled) {
-      background: rgba(239, 68, 68, 0.16);
-      border-color: rgba(239, 68, 68, 0.32);
+      background: rgba(180, 35, 24, 0.14);
+      border-color: rgba(180, 35, 24, 0.32);
     }
   }
 
@@ -342,7 +378,7 @@ body {
     padding: 7px 12px;
     min-height: 34px;
     font-size: 0.8rem;
-    border-radius: 8px;
+    border-radius: 9px;
   }
 
   /* El press siempre gana sobre el hover */
@@ -365,9 +401,10 @@ body {
   margin-bottom: 14px;
 
   label {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: $gray-700;
+    letter-spacing: -0.01em;
   }
 
   input,
@@ -379,7 +416,7 @@ body {
     font-size: 1rem; /* 16px: evita el zoom automático de iOS al enfocar */
     font-family: inherit;
     color: $dark;
-    background: $gray-50;
+    background: $surface-2;
     transition:
       border-color 0.18s $ease,
       box-shadow 0.18s $ease,
@@ -388,13 +425,13 @@ body {
     &:focus {
       outline: none;
       border-color: $primary;
-      background: white;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+      background: $surface;
+      box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.14);
     }
 
     &:disabled {
-      background: #f1f5f9;
-      color: #94a3b8;
+      background: $gray-100;
+      color: $gray-500;
       cursor: not-allowed;
     }
   }
@@ -492,7 +529,7 @@ body {
     &:hover {
       border-color: $red;
       color: $red;
-      background: rgba(239, 68, 68, 0.06);
+      background: rgba(180, 35, 24, 0.06);
     }
   }
 }
@@ -614,7 +651,7 @@ body {
     &:hover {
       border-color: $red;
       color: $red;
-      background: rgba(239, 68, 68, 0.06);
+      background: rgba(180, 35, 24, 0.06);
     }
   }
 }
@@ -657,8 +694,8 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(3px);
+  background: rgba(11, 18, 32, 0.56);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   align-items: safe center;
@@ -672,8 +709,9 @@ body {
 }
 
 .modal-card {
-  background: white;
-  border-radius: 16px;
+  background: $surface;
+  border: 1px solid $gray-200;
+  border-radius: 20px;
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
@@ -683,7 +721,7 @@ body {
   /* Mantiene las esquinas redondeadas aunque el contenido tenga scroll:
      el scroll vive en .modal-body, no en la tarjeta. */
   overflow: hidden;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 32px 80px -40px rgba(11, 18, 32, 0.55), $shadow-sm;
   animation: slideUp 0.25s $ease;
 
   .modal-header {
@@ -692,13 +730,16 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px;
+    background: $surface-2;
     border-bottom: 1px solid $gray-200;
 
     h3 {
       margin: 0;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: $dark;
+      font-family: $font-display;
+      font-size: 1.22rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: $ink;
     }
 
     .modal-close {
@@ -737,6 +778,7 @@ body {
     justify-content: flex-end;
     gap: 10px;
     padding: 16px 24px;
+    background: $surface-2;
     border-top: 1px solid $gray-200;
   }
 }
@@ -940,9 +982,9 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e5dfd3;
     background: #fff;
-    color: #475569;
+    color: #4a453d;
     padding: 9px 16px;
     border-radius: 999px;
     cursor: pointer;
@@ -950,7 +992,7 @@ body {
     font-size: 0.9rem;
 
     &.activa {
-      background: #eef2ff;
+      background: #f4efe4;
       border-color: #c7d2fe;
       color: #4338ca;
     }
@@ -968,7 +1010,7 @@ body {
   }
 
   .preset-chip {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e5dfd3;
     background: #fff;
     border-radius: 999px;
     padding: 6px 12px;
@@ -977,7 +1019,7 @@ body {
 
     &:hover {
       border-color: #818cf8;
-      color: #4f46e5;
+      color: #4338ca;
     }
   }
 
@@ -988,7 +1030,7 @@ body {
     flex-wrap: wrap;
 
     input[type="date"] {
-      border: 1px solid #e2e8f0;
+      border: 1px solid #e5dfd3;
       border-radius: 8px;
       padding: 7px 10px;
     }
@@ -996,7 +1038,7 @@ body {
 }
 
 .select-seguimiento {
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5dfd3;
   border-radius: 8px;
   padding: 6px 8px;
   font-size: 0.82rem;
@@ -1024,11 +1066,11 @@ body {
   gap: 8px;
   border: none;
   border-radius: 999px;
-  background: #4f46e5;
+  background: #4338ca;
   color: #fff;
   padding: 14px 20px;
   font-weight: 700;
-  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 10px 25px rgba(67, 56, 202, 0.4);
   cursor: pointer;
 
   i {

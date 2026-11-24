@@ -3,13 +3,13 @@
 $bp-sm: t.$bp-sm;
 $bp-md: t.$bp-md;
 
-$primary:       #4f46e5;
+$primary:       #4338ca;
 $primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
+$dark:          #171a21;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-500:      #6b665c;
+$gray-700:      #34302a;
 $radius:        12px;
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -54,8 +54,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: rgba(67, 56, 202, 0.08);
+    border: 1px solid rgba(67, 56, 202, 0.25);
     border-radius: 10px;
     padding: 8px 14px;
     font-size: 0.83rem;
@@ -142,9 +142,9 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   &:hover { border-color: $primary-light; }
 
   &.seleccionada {
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(67, 56, 202, 0.08);
     border-color: $primary;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.12);
 
     strong { color: $primary; }
   }
@@ -269,8 +269,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 /* ── Integración ───────────────────────────────────────────── */
 .seccion-detraccion {
   margin-top: 16px;
-  background: rgba(245, 158, 11, 0.06);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(180, 83, 9, 0.06);
+  border: 1px solid rgba(180, 83, 9, 0.3);
   border-radius: 10px;
   padding: 14px;
 

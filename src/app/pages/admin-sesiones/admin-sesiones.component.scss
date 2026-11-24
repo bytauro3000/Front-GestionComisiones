@@ -2,12 +2,12 @@
 
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
+$primary:       #4338ca;
 $primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
+$dark:          #171a21;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-500:      #6b665c;
 $radius:        12px;
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -47,7 +47,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     flex: 1 1 200px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 3px rgba(23, 26, 33, 0.06);
 
     .mini-value {
       font-size: 1.6rem;
@@ -77,7 +77,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: rgba(16, 185, 129, 0.14);
+    background: rgba(15, 118, 110, 0.14);
     color: #059669;
     display: flex;
     align-items: center;

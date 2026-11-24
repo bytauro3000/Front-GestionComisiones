@@ -1,57 +1,87 @@
 <div class="welcome">
   <div class="welcome-hero">
-    <div class="welcome-icon"><i class="fas fa-hand-holding-usd"></i></div>
-    <h1>Hola, {{ nombreUsuario }} 👋</h1>
-    <p>Bienvenido a tu panel de comisiones.</p>
+    <div class="hero-copy">
+      <h1>Hola, <em>{{ nombreUsuario }}</em></h1>
+      <p class="hero-lede">Lotes, proformas y comisiones en un solo lugar. Todo lo que necesitas para tu jornada, a la vista.</p>
+    </div>
+
+    <svg class="hero-parcels" viewBox="0 0 640 520" fill="none" aria-hidden="true">
+      <g class="contours" stroke="currentColor" stroke-width="1">
+        <path d="M-40 350C90 290 180 420 320 360S520 250 700 320" />
+        <path d="M-40 395C100 335 190 465 330 405S530 295 700 365" />
+        <path d="M-40 440C110 380 200 510 340 450S540 340 700 410" />
+        <path d="M-40 485C120 425 210 555 350 495S550 385 700 455" />
+      </g>
+      <g class="parcels" stroke="currentColor" stroke-width="1.2">
+        <rect x="238" y="250" width="88" height="64" rx="3" />
+        <rect x="334" y="250" width="88" height="64" rx="3" />
+        <rect x="238" y="322" width="88" height="64" rx="3" />
+        <rect x="334" y="322" width="88" height="64" rx="3" />
+        <rect x="238" y="394" width="88" height="64" rx="3" />
+        <rect x="334" y="394" width="88" height="64" rx="3" />
+      </g>
+      <rect class="parcel-active" x="430" y="322" width="88" height="64" rx="3" />
+    </svg>
   </div>
 
   <div class="modulos">
-    <h2><i class="fas fa-th-large"></i> Tus módulos</h2>
+    <div class="modulos-head">
+      <h2><i class="fas fa-th-large" aria-hidden="true"></i> Tus módulos</h2>
+    </div>
     <div class="modulos-grid">
       <a routerLink="/vendedor/empresas" class="modulo-card">
-        <i class="fas fa-building"></i>
+        <span class="modulo-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
         <strong>Empresas</strong>
-        <span>Clientes con RUC a los que les facturas</span>
+        <span class="modulo-desc">Clientes con RUC a los que les facturas</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/clientes" class="modulo-card">
-        <i class="fas fa-address-book"></i>
+        <span class="modulo-icon"><i class="fas fa-address-book" aria-hidden="true"></i></span>
         <strong>Clientes</strong>
-        <span>Compradores con DNI/RUC autocompletados</span>
+        <span class="modulo-desc">Compradores con DNI/RUC autocompletados</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/proyectos" class="modulo-card">
-        <i class="fas fa-drafting-compass"></i>
+        <span class="modulo-icon"><i class="fas fa-drafting-compass" aria-hidden="true"></i></span>
         <strong>Proyectos</strong>
-        <span>Ubicación en mapa y datos de cada proyecto</span>
+        <span class="modulo-desc">Ubicación en mapa y datos de cada proyecto</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/lotes" class="modulo-card">
-        <i class="fas fa-map-pin"></i>
+        <span class="modulo-icon"><i class="fas fa-map-pin" aria-hidden="true"></i></span>
         <strong>Lotes</strong>
-        <span>Inventario por proyecto, manzana y lote</span>
+        <span class="modulo-desc">Inventario por proyecto, manzana y lote</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/proformas" class="modulo-card">
-        <i class="fas fa-file-signature"></i>
+        <span class="modulo-icon"><i class="fas fa-file-signature" aria-hidden="true"></i></span>
         <strong>Proformas</strong>
-        <span>Ofertas de lotes con número correlativo</span>
+        <span class="modulo-desc">Ofertas de lotes con número correlativo</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/parametros-comision" class="modulo-card">
-        <i class="fas fa-percent"></i>
+        <span class="modulo-icon"><i class="fas fa-percent" aria-hidden="true"></i></span>
         <strong>Parámetros</strong>
-        <span>Porcentajes de comisión y cuotas</span>
+        <span class="modulo-desc">Porcentajes de comisión y cuotas</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/ventas" class="modulo-card">
-        <i class="fas fa-handshake"></i>
+        <span class="modulo-icon"><i class="fas fa-handshake" aria-hidden="true"></i></span>
         <strong>Ventas</strong>
-        <span>Contado y financiado con comisión automática</span>
+        <span class="modulo-desc">Contado y financiado con comisión automática</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/comisiones" class="modulo-card">
-        <i class="fas fa-coins"></i>
+        <span class="modulo-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
         <strong>Comisiones</strong>
-        <span>Anticipo, cuotas y cobros</span>
+        <span class="modulo-desc">Anticipo, cuotas y cobros</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
       <a routerLink="/vendedor/comprobantes" class="modulo-card">
-        <i class="fas fa-file-invoice-dollar"></i>
+        <span class="modulo-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>
         <strong>Facturación</strong>
-        <span>Facturas electrónicas con IGV y detracción</span>
+        <span class="modulo-desc">Facturas electrónicas con IGV y detracción</span>
+        <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
     </div>
   </div>

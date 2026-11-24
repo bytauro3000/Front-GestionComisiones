@@ -2,13 +2,13 @@
 
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
+$primary:       #4338ca;
 $primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
+$dark:          #171a21;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-500:      #6b665c;
+$gray-700:      #34302a;
 $radius:        12px;
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -71,7 +71,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       &:focus {
         outline: none;
         border-color: $primary-light;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+        box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.12);
       }
     }
   }
@@ -116,14 +116,14 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       &:hover { border-color: $primary-light; color: $primary; }
 
       &.chip-activo {
-        background: rgba(99, 102, 241, 0.1);
+        background: rgba(67, 56, 202, 0.1);
         border-color: $primary-light;
         color: $primary;
 
         .chip-count { background: white; color: $primary; }
       }
 
-      &.chip-pendiente i { color: #f59e0b; }
+      &.chip-pendiente i { color: #b45309; }
     }
   }
 }
@@ -142,7 +142,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: rgba(99, 102, 241, 0.12);
+    background: rgba(67, 56, 202, 0.12);
     color: $primary;
     display: flex;
     align-items: center;
@@ -185,8 +185,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reset-info {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(180, 83, 9, 0.1);
+  border: 1px solid rgba(180, 83, 9, 0.3);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 0.87rem;

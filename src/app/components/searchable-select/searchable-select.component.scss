@@ -10,24 +10,24 @@
 .ss-input {
   width: 100%;
   height: 40px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #e5dfd3;
   border-radius: 10px;
   padding: 0 34px 0 12px;
   font-size: 0.88rem;
   font-family: inherit;
   background: #fff;
-  color: #334155;
+  color: #34302a;
 
   &:focus {
     outline: none;
     border-color: #818cf8;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.12);
   }
 
   &:disabled {
-    background: #f1f5f9;
+    background: #f1ece2;
     cursor: not-allowed;
-    color: #94a3b8;
+    color: #746e64;
   }
 }
 
@@ -37,7 +37,7 @@
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.7rem;
-  color: #94a3b8;
+  color: #746e64;
   pointer-events: none;
 }
 
@@ -51,9 +51,9 @@
   padding: 4px;
   list-style: none;
   background: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5dfd3;
   border-radius: 10px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 12px 30px rgba(23, 26, 33, 0.16);
   max-height: 240px;
   overflow-y: auto;
 
@@ -67,14 +67,14 @@
     font-size: 0.82rem;
 
     &:hover {
-      background: #f5f7ff;
+      background: #fbf9f4;
     }
   }
 
   .ss-label {
     flex: 1 1 auto;
     min-width: 0;
-    color: #0f172a;
+    color: #171a21;
     white-space: normal;
     overflow-wrap: anywhere;
     line-height: 1.2;
@@ -85,19 +85,19 @@
     font-size: 0.66rem;
     font-weight: 700;
     color: #4338ca;
-    background: #eef2ff;
+    background: #f4efe4;
     border-radius: 999px;
     padding: 1px 6px;
   }
 
   .ss-sub {
     flex: 0 0 auto;
-    color: #94a3b8;
+    color: #746e64;
     font-size: 0.7rem;
   }
 
   .ss-empty {
-    color: #94a3b8;
+    color: #746e64;
     justify-content: center;
     cursor: default;
 

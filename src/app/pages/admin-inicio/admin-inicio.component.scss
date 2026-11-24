@@ -1,27 +1,22 @@
-$primary:       #4f46e5;
-$primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
-$radius:        14px;
-$ease:          cubic-bezier(0.16, 1, 0.3, 1);
+@use '../../../styles/tokens' as t;
+
+$bp-sm: t.$bp-sm;
 
 .page-header {
   margin-bottom: 26px;
 
   h1 {
     margin: 0 0 6px;
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: $dark;
+    font-family: t.$font-display;
+    font-size: 2.15rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: t.$ink;
   }
 
   p {
     margin: 0;
-    color: $gray-500;
+    color: t.$muted;
     font-size: 0.95rem;
   }
 }
@@ -29,39 +24,42 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 26px;
 }
 
 .stat-card {
-  background: white;
-  border-radius: $radius;
+  background: t.$surface;
+  border: 1px solid t.$border;
+  border-radius: 16px;
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  transition: transform 0.2s $ease, box-shadow 0.2s $ease;
+  box-shadow: t.$shadow-sm;
+  transition: transform 0.2s t.$ease, box-shadow 0.2s t.$ease, border-color 0.2s t.$ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+    border-color: t.$border-strong;
+    box-shadow: t.$shadow-md;
   }
 
   .stat-icon {
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     flex-shrink: 0;
+    border: 1px solid transparent;
 
-    &.indigo { background: rgba(99, 102, 241, 0.12); color: $primary; }
-    &.green  { background: rgba(16, 185, 129, 0.12); color: #059669; }
-    &.amber  { background: rgba(245, 158, 11, 0.14); color: #b45309; }
-    &.blue   { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+    &.indigo { background: rgba(67, 56, 202, 0.09); border-color: rgba(67, 56, 202, 0.14); color: t.$primary; }
+    &.green  { background: rgba(15, 118, 110, 0.09); border-color: rgba(15, 118, 110, 0.14); color: t.$success; }
+    &.amber  { background: rgba(194, 154, 91, 0.16); border-color: rgba(194, 154, 91, 0.24); color: t.$gold-strong; }
+    &.blue   { background: rgba(67, 56, 202, 0.07); border-color: rgba(67, 56, 202, 0.12); color: t.$primary-2; }
   }
 
   .stat-body {
@@ -69,16 +67,19 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     flex-direction: column;
 
     .stat-value {
-      font-size: 1.7rem;
-      font-weight: 800;
-      color: $dark;
-      line-height: 1.1;
+      font-family: t.$font-display;
+      font-size: 2rem;
+      font-weight: 600;
+      color: t.$ink;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
     }
 
     .stat-label {
-      font-size: 0.82rem;
-      color: $gray-500;
-      margin-top: 3px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: t.$muted;
+      margin-top: 5px;
     }
   }
 }
@@ -86,41 +87,74 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 26px;
 
   .quick-card {
-    background: white;
-    border-radius: $radius;
-    padding: 22px;
+    position: relative;
+    background: t.$surface;
+    border: 1px solid t.$border;
+    border-radius: 16px;
+    padding: 20px;
     text-decoration: none;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-    border: 1.5px solid transparent;
-    transition: all 0.2s $ease;
+    box-shadow: t.$shadow-sm;
+    transition: transform 0.2s t.$ease, border-color 0.2s t.$ease, box-shadow 0.2s t.$ease;
 
-    i {
-      font-size: 1.4rem;
-      color: $primary;
+    .quick-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 8px;
+      background: linear-gradient(160deg, #fbf9f4 0%, #f1ece2 100%);
+      border: 1px solid t.$border;
+      color: t.$gold-strong;
+      font-size: 0.92rem;
     }
 
     strong {
-      color: $dark;
-      font-size: 0.98rem;
+      color: t.$ink;
+      font-size: 0.96rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
     }
 
-    span {
-      color: $gray-500;
-      font-size: 0.83rem;
+    > span:last-of-type {
+      color: t.$muted;
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .quick-arrow {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 0.68rem;
+      color: t.$gold-strong;
+      opacity: 0;
+      transform: translate(-3px, 3px);
+      transition: opacity 0.2s t.$ease, transform 0.2s t.$ease;
     }
 
     &:hover {
-      border-color: $primary-light;
+      border-color: t.$gold;
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.14);
+      box-shadow: 0 18px 34px -26px rgba(23, 26, 33, 0.35);
+
+      .quick-arrow {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid t.$primary;
+      outline-offset: 2px;
     }
   }
 }
@@ -129,32 +163,41 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  background: rgba(99, 102, 241, 0.07);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: $radius;
+  background: t.$surface-2;
+  border: 1px solid t.$border;
+  border-radius: 16px;
   padding: 18px 20px;
 
-  i {
-    color: $primary;
-    font-size: 1.1rem;
+  > i {
+    color: t.$gold-strong;
+    font-size: 1.05rem;
     margin-top: 2px;
   }
 
   strong {
-    color: $dark;
+    color: t.$ink;
     font-size: 0.92rem;
   }
 
   p {
     margin: 4px 0 0;
-    color: $gray-700;
+    color: t.$muted;
     font-size: 0.87rem;
     line-height: 1.5;
   }
 }
 
-/* En celular: dos tarjetas por fila (dos columnas) */
+@media (hover: none) {
+  .quick-arrow {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
+  .page-header h1 {
+    font-size: 1.9rem;
+  }
+
   .stats-grid,
   .quick-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -166,26 +209,48 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     gap: 10px;
 
     .stat-icon {
-      width: 40px;
-      height: 40px;
-      font-size: 1rem;
+      width: 38px;
+      height: 38px;
+      font-size: 0.92rem;
       border-radius: 10px;
     }
 
     .stat-body .stat-value {
-      font-size: 1.25rem;
+      font-size: 1.45rem;
     }
 
     .stat-body .stat-label {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
     }
   }
 
   .quick-card {
-    padding: 14px;
+    padding: 13px;
 
-    i { font-size: 1.15rem; margin-bottom: 4px; }
-    strong { font-size: 0.86rem; }
-    span { font-size: 0.74rem; }
+    .quick-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+    }
+
+    strong { font-size: 0.84rem; }
+
+    > span:last-of-type { font-size: 0.7rem; }
+
+    .quick-arrow { display: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .quick-card,
+  .quick-card .quick-arrow {
+    transition: none;
+  }
+
+  .stat-card:hover,
+  .quick-card:hover {
+    transform: none;
   }
 }

@@ -3,14 +3,14 @@
 $bp-lg: t.$bp-lg;
 $bp-sm: t.$bp-sm;
 
-$ink:      #0a1020;
-$indigo:   #4f46e5;
+$ink:      #0b1220;
+$indigo:   #4338ca;
 $indigo-3: #818cf8;
 $sand:     #e7d7b8;
-$mist:     #f6f7fb;
-$text:     #0f172a;
-$muted:    #64748b;
-$line:     #e6e9f2;
+$mist:     #f6f3ec;
+$text:     #171a21;
+$muted:    #6b665c;
+$line:     #e5dfd3;
 
 $radius:   24px;
 
@@ -23,7 +23,7 @@ $radius:   24px;
   min-height: 100vh;
   background: $mist;
   color: $text;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ============================================== */
@@ -38,22 +38,8 @@ $radius:   24px;
   isolation: isolate;
   color: #fff;
   background:
-    radial-gradient(120% 90% at 82% 0%, rgba(99, 102, 241, 0.38) 0%, transparent 58%),
-    linear-gradient(160deg, #0a1020 0%, #101a34 52%, #0a1122 100%);
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-    background-size: 56px 56px;
-    -webkit-mask-image: radial-gradient(120% 90% at 30% 20%, #000 20%, transparent 75%);
-    mask-image: radial-gradient(120% 90% at 30% 20%, #000 20%, transparent 75%);
-    opacity: 0.6;
-  }
+    radial-gradient(120% 90% at 82% 0%, rgba(67, 56, 202, 0.4) 0%, transparent 58%),
+    linear-gradient(160deg, #0b1220 0%, #131f39 52%, #0b1220 100%);
 }
 
 .brand {
@@ -79,7 +65,7 @@ $radius:   24px;
   justify-content: center;
   padding: 4px;
   background: #fff;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.22);
+  box-shadow: 0 8px 22px rgba(23, 26, 33, 0.22);
   flex-shrink: 0;
   overflow: hidden;
 
@@ -107,7 +93,7 @@ $radius:   24px;
 
   h1 {
     margin: 0 0 18px;
-    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
     font-size: clamp(2.1rem, 3.5vw, 3.3rem);
     font-weight: 600;
     line-height: 1.06;
@@ -167,22 +153,8 @@ $radius:   24px;
   padding: 40px 32px;
   overflow-y: auto;
   background:
-    radial-gradient(90% 60% at 100% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 55%),
+    radial-gradient(90% 60% at 100% 0%, rgba(194, 154, 91, 0.12) 0%, transparent 55%),
     $mist;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background-image:
-      linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
-    background-size: 44px 44px;
-    -webkit-mask-image: radial-gradient(80% 70% at 50% 50%, #000 10%, transparent 80%);
-    mask-image: radial-gradient(80% 70% at 50% 50%, #000 10%, transparent 80%);
-    pointer-events: none;
-  }
 }
 
 .form-wrapper {
@@ -206,7 +178,7 @@ $radius:   24px;
   border-radius: $radius;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.8) inset,
-    0 34px 70px -38px rgba(15, 23, 42, 0.35);
+    0 38px 80px -46px rgba(11, 18, 32, 0.42);
 }
 
 .form-header {
@@ -214,7 +186,7 @@ $radius:   24px;
 
   h2 {
     margin: 0;
-    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
     font-size: 1.85rem;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -233,7 +205,7 @@ $radius:   24px;
   margin: 18px 0 0;
   text-align: center;
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: #746e64;
 }
 
 .install-wrap {
@@ -255,12 +227,12 @@ $radius:   24px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 2px 8px rgba(23, 26, 33, 0.06);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 
   &:hover {
-    border-color: $indigo-3;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.16);
+    border-color: $sand;
+    box-shadow: 0 8px 18px -10px rgba(23, 26, 33, 0.32);
   }
 
   &:active {
@@ -299,7 +271,7 @@ $radius:   24px;
       border-radius: 12px;
       padding: 3px;
       border: 1px solid $line;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+      box-shadow: 0 4px 12px rgba(23, 26, 33, 0.1);
     }
 
     .brand-name {

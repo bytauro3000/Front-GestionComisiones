@@ -6,7 +6,7 @@
 
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon indigo"><i class="fas fa-users"></i></div>
+      <div class="stat-icon indigo"><i class="fas fa-users" aria-hidden="true"></i></div>
       <div class="stat-body">
         <span class="stat-value">{{ totalUsuarios }}</span>
         <span class="stat-label">Usuarios totales</span>
@@ -14,7 +14,7 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon green"><i class="fas fa-user-tie"></i></div>
+      <div class="stat-icon green"><i class="fas fa-user-tie" aria-hidden="true"></i></div>
       <div class="stat-body">
         <span class="stat-value">{{ totalVendedores }}</span>
         <span class="stat-label">Vendedores</span>
@@ -22,7 +22,7 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon amber"><i class="fas fa-user-shield"></i></div>
+      <div class="stat-icon amber"><i class="fas fa-user-shield" aria-hidden="true"></i></div>
       <div class="stat-body">
         <span class="stat-value">{{ totalAdmins }}</span>
         <span class="stat-label">Administradores</span>
@@ -30,7 +30,7 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon blue"><i class="fas fa-desktop"></i></div>
+      <div class="stat-icon blue"><i class="fas fa-desktop" aria-hidden="true"></i></div>
       <div class="stat-body">
         <span class="stat-value">{{ sesiones?.totalActivas ?? '—' }}</span>
         <span class="stat-label">Sesiones activas</span>
@@ -40,24 +40,27 @@
 
   <div class="quick-grid">
     <a routerLink="/admin/usuarios" class="quick-card">
-      <i class="fas fa-users-cog"></i>
+      <span class="quick-icon"><i class="fas fa-users-cog" aria-hidden="true"></i></span>
       <strong>Gestionar usuarios</strong>
       <span>Crear, editar y restablecer contraseñas</span>
+      <i class="fas fa-arrow-right quick-arrow" aria-hidden="true"></i>
     </a>
     <a routerLink="/admin/sesiones" class="quick-card">
-      <i class="fas fa-desktop"></i>
+      <span class="quick-icon"><i class="fas fa-desktop" aria-hidden="true"></i></span>
       <strong>Sesiones activas</strong>
       <span>Ver quién está conectado ahora</span>
+      <i class="fas fa-arrow-right quick-arrow" aria-hidden="true"></i>
     </a>
     <a routerLink="/admin/auditoria" class="quick-card">
-      <i class="fas fa-history"></i>
+      <span class="quick-icon"><i class="fas fa-history" aria-hidden="true"></i></span>
       <strong>Auditoría</strong>
       <span>Historial de logins y operaciones</span>
+      <i class="fas fa-arrow-right quick-arrow" aria-hidden="true"></i>
     </a>
   </div>
 
   <div class="info-banner">
-    <i class="fas fa-info-circle"></i>
+    <i class="fas fa-info-circle" aria-hidden="true"></i>
     <div>
       <strong>Fase 1: autenticación</strong>
       <p>El registro de ventas y comisiones de vendedores estará disponible en la siguiente fase.</p>

@@ -2,13 +2,13 @@
 
 $bp-sm: t.$bp-sm;
 
-$primary:       #4f46e5;
+$primary:       #4338ca;
 $primary-light: #818cf8;
-$dark:          #0f172a;
-$gray-100:      #f1f5f9;
-$gray-200:      #e2e8f0;
-$gray-500:      #64748b;
-$gray-700:      #334155;
+$dark:          #171a21;
+$gray-100:      #f1ece2;
+$gray-200:      #e5dfd3;
+$gray-500:      #6b665c;
+$gray-700:      #34302a;
 $radius:        12px;
 $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -75,7 +75,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       &:focus {
         outline: none;
         border-color: $primary-light;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+        box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.12);
       }
     }
   }
@@ -96,7 +96,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     &:focus {
       outline: none;
       border-color: $primary-light;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.12);
     }
   }
 
@@ -171,8 +171,8 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   width: 56px;
   height: 42px;
   border-radius: 6px;
-  border: 1.5px solid rgba(79, 70, 229, 0.28);
-  background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(129, 140, 248, 0.18));
+  border: 1.5px solid rgba(67, 56, 202, 0.28);
+  background: linear-gradient(135deg, rgba(67, 56, 202, 0.12), rgba(129, 140, 248, 0.18));
   color: $primary;
   font-size: 1.15rem;
   cursor: pointer;
@@ -180,7 +180,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
     transform: scale(1.08);
-    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.22);
+    box-shadow: 0 4px 10px rgba(67, 56, 202, 0.22);
   }
 }
 
@@ -225,7 +225,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     transition: background 0.2s $ease;
 
     &:hover:not(:disabled) {
-      background: rgba(99, 102, 241, 0.12);
+      background: rgba(67, 56, 202, 0.12);
     }
 
     &:disabled {
@@ -255,10 +255,10 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   border: none;
 
   i {
-    color: #ef4444;
+    color: #b42318;
     font-size: 30px;
     line-height: 1;
-    filter: drop-shadow(0 3px 4px rgba(15, 23, 42, 0.35));
+    filter: drop-shadow(0 3px 4px rgba(23, 26, 33, 0.35));
   }
 }
 
@@ -321,7 +321,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   position: fixed;
   inset: 0;
   z-index: 1300;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(23, 26, 33, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -372,7 +372,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 .marco-recorte {
   position: absolute;
   border: 2px solid $primary-light;
-  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.5);
+  box-shadow: 0 0 0 9999px rgba(23, 26, 33, 0.5);
   cursor: move;
   touch-action: none;
 
