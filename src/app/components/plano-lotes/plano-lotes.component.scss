@@ -22,8 +22,14 @@
   position: absolute;
   left: 50%;
   top: 50%;
+  transform:
+    translate(-50%, -50%)
+    translate3d(var(--pan-x, 0px), var(--pan-y, 0px), 0)
+    rotate(var(--rot, 0deg))
+    scale(var(--zoom-preview, 1));
   transform-origin: center center;
   will-change: transform;
+  backface-visibility: hidden;
   user-select: none;
 }
 

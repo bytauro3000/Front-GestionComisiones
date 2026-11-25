@@ -1,10 +1,4 @@
-<div
-  class="plano-viewport"
-  #viewport
-  (pointerdown)="onPointerDown($event)"
-  (pointermove)="onPointerMove($event)"
-  (pointerup)="onPointerUp($event)"
-  (pointercancel)="onPointerUp($event)">
+<div class="plano-viewport" #viewport>
   @if (cargando()) {
     <div class="plano-msg">Cargando plano…</div>
   }
@@ -15,9 +9,9 @@
 
   <div
     class="plano-canvas"
+    #canvas
     [style.width.px]="contenido().w"
-    [style.height.px]="contenido().h"
-    [style.transform]="transformCanvas()">
+    [style.height.px]="contenido().h">
     <img [src]="svgUrl" alt="Plano de lotes" draggable="false" decoding="async" />
 
     @if (vb(); as v) {
