@@ -1,4 +1,10 @@
-<div class="plano-viewport" #viewport>
+<div
+  class="plano-viewport"
+  #viewport
+  (pointerdown)="onPointerDown($event)"
+  (pointermove)="onPointerMove($event)"
+  (pointerup)="onPointerUp($event)"
+  (pointercancel)="onPointerUp($event)">
   @if (cargando()) {
     <div class="plano-msg">Cargando plano…</div>
   }
@@ -7,7 +13,11 @@
     <div class="plano-msg plano-error">{{ error() }}</div>
   }
 
-  <div class="plano-canvas" #canvas>
+  <div
+    class="plano-canvas"
+    [style.width.px]="contenido().w"
+    [style.height.px]="contenido().h"
+    [style.transform]="transformCanvas()">
     <img [src]="svgUrl" alt="Plano de lotes" draggable="false" decoding="async" />
 
     @if (vb(); as v) {
@@ -44,7 +54,7 @@
     }
   </div>
 
-  <div class="plano-controles">
+  <div class="plano-controles" (pointerdown)="$event.stopPropagation()">
     <button type="button" (click)="zoomIn()" title="Acercar" aria-label="Acercar">
       <i class="fas fa-plus"></i>
     </button>
@@ -53,6 +63,9 @@
     </button>
     <button type="button" (click)="resetZoom()" title="Restablecer" aria-label="Restablecer">
       <i class="fas fa-expand"></i>
+    </button>
+    <button type="button" (click)="rotar()" title="Girar plano" aria-label="Girar plano">
+      <i class="fas fa-rotate"></i>
     </button>
   </div>
 

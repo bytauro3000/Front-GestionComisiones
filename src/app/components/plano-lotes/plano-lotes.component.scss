@@ -11,12 +11,18 @@
   overflow: hidden;
   background: #f8fafc;
   touch-action: none;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .plano-canvas {
   position: absolute;
-  inset: 0;
-  transform-origin: 0 0;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
   will-change: transform;
   user-select: none;
 }
