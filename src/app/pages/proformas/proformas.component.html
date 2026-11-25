@@ -279,6 +279,9 @@
               </div>
 
               <div class="fila-lote-resumen">
+                @if (areaFila(fila) != null) {
+                  <span>Área: <strong>{{ areaFila(fila) | number:'1.0-2' }} m²</strong></span>
+                }
                 <span>Saldo: <strong>{{ formatearMoneda(saldoFila(fila)) }}</strong></span>
                 @if ((fila.numCuotas || 0) > 0) {
                   <span>

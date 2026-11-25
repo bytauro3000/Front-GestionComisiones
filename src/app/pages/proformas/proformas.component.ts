@@ -410,6 +410,12 @@ export class ProformasComponent implements OnInit, OnDestroy {
     return this.filas.reduce((s, f) => s + (Number(f.precioUnitario) || 0), 0);
   }
 
+  /** Área del lote de la fila (m²). */
+  areaFila(f: FilaDetalle): number | null {
+    const area = this.lotes.find(l => l.id === f.idLote)?.areaM2;
+    return area != null && !isNaN(Number(area)) ? Number(area) : null;
+  }
+
   /** Saldo a financiar de UN lote (total − inicial de ese lote). */
   saldoFila(f: FilaDetalle): number {
     const total = Number(f.precioUnitario) || 0;

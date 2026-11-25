@@ -211,6 +211,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
   }
 
   .campo-label {
@@ -228,6 +229,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     font-size: 0.95rem;
     font-family: inherit;
     text-align: right;
+    font-variant-numeric: tabular-nums;
 
     &:focus {
       outline: none;
@@ -273,10 +275,11 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       height: 40px;
       border: 1.5px solid $gray-200;
       border-radius: 10px;
-      padding: 0 12px 0 38px;
+      padding: 0 16px;
       font-size: 0.95rem;
       font-family: inherit;
       text-align: right;
+      font-variant-numeric: tabular-nums;
 
       &:focus {
         outline: none;
@@ -333,13 +336,15 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
 .fila-lote-resumen {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 6px;
+  gap: 4px 10px;
+  margin-top: 4px;
   font-size: 0.8rem;
+  line-height: 1.4;
   color: $gray-700;
 
   strong {
     color: $dark;
+    white-space: nowrap;
   }
 }
 
