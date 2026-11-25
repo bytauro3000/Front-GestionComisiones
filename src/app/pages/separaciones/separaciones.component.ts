@@ -146,8 +146,10 @@ export class SeparacionesComponent implements OnInit {
       .filter(l => l.id != null)
       .map(l => ({
         id: l.id!,
-        label: this.etiquetaLote(l),
-        badge: l.precio != null ? this.formatearMoneda(l.precio) : undefined
+        label: `Mz.${l.manzana} Lt.${l.numero}${l.areaM2 != null ? ` · ${l.areaM2} m²` : ''}`,
+        badge: l.precio != null ? this.formatearMoneda(l.precio) : undefined,
+        // Permite buscar "B-6", "B 6", "B6", "Mz.B" o "Lt.6".
+        keywords: `${l.manzana}-${l.numero} ${l.manzana} ${l.numero} ${l.manzana}${l.numero} Mz.${l.manzana} Lt.${l.numero}`
       }));
   }
 
@@ -165,7 +167,11 @@ export class SeparacionesComponent implements OnInit {
     if (valor == null) return;
     this.loteService.listar({ idProyecto: valor }).subscribe({
       next: (lotes) => {
-        this.lotesDisponibles = lotes.filter(l => l.estado !== 'VENDIDO' && !l.ventaActiva);
+        this.lotesDisponibles = lotes
+          .filter(l => l.estado !== 'VENDIDO'
+            && !l.ventaActiva
+            && l.idEmpresa === this.form.idEmpresa)
+          .sort((a, b) => this.compararLotes(a, b));
       },
       error: () => this.alert.toastError('No se pudieron cargar los lotes', 'Error')
     });
@@ -256,6 +262,19 @@ export class SeparacionesComponent implements OnInit {
 
   etiquetaLote(l: Lote): string {
     return `${l.proyecto} Mz.${l.manzana} Lt.${l.numero}`;
+  }
+
+  /** Ordena por manzana y luego por lote, comparando números de forma natural. */
+  private compararLotes(a: Lote, b: Lote): number {
+    const mz = (a.manzana || '').localeCompare(b.manzana || '', undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
+    if (mz !== 0) return mz;
+    return (a.numero || '').localeCompare(b.numero || '', undefined, {
+      numeric: true,
+      sensitivity: 'base'
+    });
   }
 
   hoy(): string {
