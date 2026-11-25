@@ -191,6 +191,10 @@ $radius:   24px;
     font-weight: 600;
     letter-spacing: -0.02em;
     color: $text;
+
+    &.title-danger {
+      color: #b42318;
+    }
   }
 
   p {

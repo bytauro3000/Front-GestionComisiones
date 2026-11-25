@@ -59,7 +59,7 @@
 
       <div class="auth-card">
         <header class="form-header">
-          <h2>{{ titulo }}</h2>
+          <h2 [class.title-danger]="!esRegistro">{{ titulo }}</h2>
           @if (esRegistro) {
             <p>{{ subtitulo }}</p>
           }
