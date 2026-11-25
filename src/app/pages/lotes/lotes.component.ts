@@ -11,11 +11,24 @@ import {
   SearchableSelectComponent,
   SelectOption
 } from '../../components/searchable-select/searchable-select.component';
+import {
+  PlanoLotesComponent,
+  claveLote
+} from '../../components/plano-lotes/plano-lotes.component';
+
+const normalizarProyecto = (nombre: string) =>
+  (nombre || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\bRESIDENCIAL\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 @Component({
   selector: 'app-lotes',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableSelectComponent, CurrencyFormatterDirective],
+  imports: [CommonModule, FormsModule, SearchableSelectComponent, CurrencyFormatterDirective, PlanoLotesComponent],
   templateUrl: './lotes.component.html',
   styleUrl: './lotes.component.scss'
 })
@@ -30,6 +43,15 @@ export class LotesComponent implements OnInit, OnDestroy {
   filtroLt = '';
   filtroEstado: '' | 'DISPONIBLE' | 'RESERVADO' | 'VENDIDO' = '';
   procesandoId: number | null = null;
+
+  // Plano de lotes
+  planoAbierto = false;
+  private readonly planos: Record<string, { svg: string; json: string }> = {
+    'VILLA FAMILIA': {
+      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795614539/planovillafamilia.svg',
+      json: 'planos/villa-familia.json'
+    }
+  };
 
   // ── Paginación (el tamaño de página se adapta a la pantalla) ──────────────
   /** Filas/tarjetas por página según el ancho: móvil 6 · tablet 10 · escritorio 15. */
@@ -179,6 +201,45 @@ export class LotesComponent implements OnInit, OnDestroy {
   get proyectosFiltro(): Proyecto[] {
     return [...this.proyectos].sort((a, b) =>
       (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
+  }
+
+  get proyectoFiltro(): Proyecto | undefined {
+    return this.filtroProyecto === ''
+      ? undefined
+      : this.proyectos.find(p => p.id === this.filtroProyecto);
+  }
+
+  get planActual(): { svg: string; json: string } | null {
+    const proyecto = this.proyectoFiltro;
+    if (!proyecto) return null;
+    return this.planos[normalizarProyecto(proyecto.nombre)] ?? null;
+  }
+
+  get lotesDelProyecto(): Lote[] {
+    if (this.filtroProyecto === '') return [];
+    return this.lotes.filter(l => l.idProyecto === this.filtroProyecto);
+  }
+
+  abrirPlano(): void {
+    if (!this.filtroProyecto) {
+      this.alert.toastWarning('Selecciona un proyecto para ver su plano');
+      return;
+    }
+    if (!this.planActual) {
+      this.alert.toastWarning('Este proyecto todavía no tiene plano');
+      return;
+    }
+    this.planoAbierto = true;
+  }
+
+  seleccionarLotePlano(id: number | string): void {
+    const lote = this.lotesDelProyecto.find(l => l.id === id)
+      ?? this.lotesDelProyecto.find(l => claveLote(l.manzana, l.numero) === String(id));
+
+    if (!lote) return;
+
+    this.planoAbierto = false;
+    this.abrirEditar(lote);
   }
 
   /**
@@ -520,8 +581,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     this.loteService.cambiarEstado(lote.id!, estado, motivo).subscribe({
       next: (actualizado) => {
         this.procesandoId = null;
-        lote.estado = actualizado.estado;
-        lote.motivoEstado = actualizado.motivoEstado;
+        this.lotes = this.lotes.map(l => l.id === actualizado.id ? actualizado : l);
         this.alert.success(
           estado === 'VENDIDO' ? 'Lote marcado como VENDIDO' : 'Lote devuelto a DISPONIBLE');
       },

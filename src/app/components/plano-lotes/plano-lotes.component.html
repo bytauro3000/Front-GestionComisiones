@@ -1,0 +1,64 @@
+<div class="plano-viewport" #viewport>
+  @if (cargando()) {
+    <div class="plano-msg">Cargando plano…</div>
+  }
+
+  @if (error()) {
+    <div class="plano-msg plano-error">{{ error() }}</div>
+  }
+
+  <div class="plano-canvas" #canvas>
+    <img [src]="svgUrl" alt="Plano de lotes" draggable="false" decoding="async" />
+
+    @if (vb(); as v) {
+      <svg
+        [attr.viewBox]="v.join(' ')"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label="Plano de lotes con estados">
+        @for (m of marcas(); track m.id) {
+          @if (modoPunto) {
+            <circle
+              [attr.cx]="m.centro[0]"
+              [attr.cy]="m.centro[1]"
+              r="7"
+              [attr.fill]="m.color.stroke"
+              [attr.stroke]="m.color.fill"
+              stroke-width="2"
+              (click)="seleccionar(m.id, m.loteId)">
+              <title>Lote {{ m.id }} · {{ m.estado }}</title>
+            </circle>
+          } @else {
+            <polygon
+              [attr.points]="m.puntos"
+              [attr.fill]="m.color.fill"
+              [attr.stroke]="m.color.stroke"
+              stroke-width="1.5"
+              vector-effect="non-scaling-stroke"
+              (click)="seleccionar(m.id, m.loteId)">
+              <title>Lote {{ m.id }} · {{ m.estado }}</title>
+            </polygon>
+          }
+        }
+      </svg>
+    }
+  </div>
+
+  <div class="plano-controles">
+    <button type="button" (click)="zoomIn()" title="Acercar" aria-label="Acercar">
+      <i class="fas fa-plus"></i>
+    </button>
+    <button type="button" (click)="zoomOut()" title="Alejar" aria-label="Alejar">
+      <i class="fas fa-minus"></i>
+    </button>
+    <button type="button" (click)="resetZoom()" title="Restablecer" aria-label="Restablecer">
+      <i class="fas fa-expand"></i>
+    </button>
+  </div>
+
+  @if (!cargando() && faltantes().length) {
+    <div class="plano-msg plano-warn">
+      {{ faltantes().length }} lote(s) sin polígono
+    </div>
+  }
+</div>

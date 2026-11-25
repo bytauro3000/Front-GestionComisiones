@@ -611,3 +611,68 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     }
   }
 }
+
+/* ── Plano de lotes ─────────────────────────────────────────────────────── */
+.modal-plano {
+  display: flex;
+  flex-direction: column;
+  width: min(96vw, 1120px);
+  height: min(92dvh, 920px);
+  max-height: 92dvh;
+}
+
+.plano-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+app-plano-lotes {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.plano-leyenda {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  border-top: 1px solid $gray-200;
+  background: #fff;
+  font-size: 0.78rem;
+  color: $gray-500;
+
+  .punto {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+
+    &.vendido { background: #dc2626; }
+    &.separado { background: #f97316; }
+  }
+
+  .plano-hint {
+    margin-left: auto;
+    color: $gray-500;
+  }
+}
+
+@media (max-width: $bp-sm) {
+  .modal-plano {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .plano-leyenda {
+    gap: 12px;
+    padding: 9px 12px;
+
+    .plano-hint { display: none; }
+  }
+}

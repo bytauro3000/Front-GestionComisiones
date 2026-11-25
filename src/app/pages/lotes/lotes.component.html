@@ -33,6 +33,12 @@
         <option value="RESERVADO">RESERVADO</option>
         <option value="VENDIDO">VENDIDO</option>
       </select>
+
+      <button type="button" class="btn btn-outline btn-sm btn-plano"
+              (click)="abrirPlano()" [disabled]="!planActual"
+              title="Ver plano de lotes del proyecto seleccionado">
+        <i class="fas fa-map"></i> Ver plano
+      </button>
     </div>
 
     <span class="contador">{{ xFiltrados.length }} lote(s) · {{ tamanoPagina }} por página</span>
@@ -332,6 +338,34 @@
       </div>
     </div>
   </div>
+}
+
+@if (planoAbierto) {
+  @if (planActual; as plan) {
+    <div class="modal-overlay">
+      <div class="modal-card modal-plano">
+        <div class="modal-header">
+          <h3>Plano · {{ proyectoFiltro?.nombre }}</h3>
+          <button class="modal-close" (click)="planoAbierto = false">&times;</button>
+        </div>
+
+        <div class="modal-body plano-body">
+          <app-plano-lotes
+            [svgUrl]="plan.svg"
+            [jsonUrl]="plan.json"
+            [lotes]="lotesDelProyecto"
+            (loteClick)="seleccionarLotePlano($event)">
+          </app-plano-lotes>
+        </div>
+
+        <div class="plano-leyenda">
+          <span><i class="punto vendido"></i> Vendido</span>
+          <span><i class="punto separado"></i> Separado</span>
+          <span class="plano-hint">Toca un lote para editarlo</span>
+        </div>
+      </div>
+    </div>
+  }
 }
 
 @if (modalProyectoRapido) {
