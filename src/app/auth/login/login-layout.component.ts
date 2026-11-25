@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AnimationService } from '../../services/animation.service';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-login-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, ThemeToggleComponent],
   templateUrl: './login-layout.component.html',
   styleUrls: ['./login-layout.component.scss']
 })

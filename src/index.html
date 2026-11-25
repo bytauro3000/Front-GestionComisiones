@@ -5,7 +5,24 @@
   <title>Closure | Control de Comisiones</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual">
-  <meta name="theme-color" content="#4338ca">
+  <meta name="theme-color" content="#4338ca" id="theme-color-meta">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      try {
+        var modo = localStorage.getItem('theme') || 'system';
+        var oscuro = modo === 'dark' ||
+          (modo === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var root = document.documentElement;
+        root.classList.toggle('dark', oscuro);
+        root.dataset.theme = oscuro ? 'dark' : 'light';
+        var meta = document.getElementById('theme-color-meta');
+        if (meta) {
+          meta.setAttribute('content', oscuro ? '#0b1220' : '#4338ca');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta name="description" content="Closure: sistema de control de comisiones para vendedores de lotes">
   <link rel="manifest" href="manifest.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />

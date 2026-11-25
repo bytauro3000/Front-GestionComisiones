@@ -303,3 +303,17 @@ $radius:   24px;
     transition: none !important;
   }
 }
+
+.auth-theme-toggle {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  z-index: 40;
+}
+
+@media (max-width: $bp-sm) {
+  .auth-theme-toggle {
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+  }
+}

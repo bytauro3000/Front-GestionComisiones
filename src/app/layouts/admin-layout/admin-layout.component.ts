@@ -12,11 +12,12 @@ import { filter, Subscription } from 'rxjs';
 import { TokenService } from '../../auth/token.service';
 import { LogoutService } from '../../auth/logout.service';
 import { AnimationService } from '../../services/animation.service';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ThemeToggleComponent],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'
 })

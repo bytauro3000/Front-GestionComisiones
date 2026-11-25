@@ -20,6 +20,7 @@
       </div>
       <span class="brand-name">Closure</span>
     </a>
+    <app-theme-toggle />
     <button class="btn-logout btn-logout-top" (click)="logout()" title="Cerrar sesión">
       <i class="fas fa-sign-out-alt"></i>
     </button>
@@ -63,6 +64,7 @@
           <small>Administrador</small>
         </div>
       </div>
+      <app-theme-toggle [compact]="true" />
       <button class="btn-logout" (click)="logout()" title="Cerrar sesión">
         <i class="fas fa-sign-out-alt"></i>
       </button>
