@@ -41,6 +41,26 @@ export class TokenService {
     }
   }
 
+  getNombreCorto(): string {
+    const token = this.getToken();
+    if (!token) return '';
+
+    try {
+      const decoded: any = jwtDecode(token);
+      const nombre: string = String(decoded.nombre || '').trim();
+      const apellidos: string = String(decoded.apellidos || '').trim();
+      const iniciales = apellidos
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((a: string) => a.charAt(0).toUpperCase() + '.')
+        .join(' ');
+
+      return [nombre, iniciales].filter(Boolean).join(' ');
+    } catch {
+      return '';
+    }
+  }
+
   getExpiresAt(): number | null {
     const token = this.getToken();
     if (!token) return null;

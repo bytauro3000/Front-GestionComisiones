@@ -20,22 +20,26 @@
       </div>
       <span class="brand-name">Closure</span>
     </a>
+    <app-theme-toggle />
     <app-notificacion-bell />
     <button class="btn-logout btn-logout-top" (click)="logout()" title="Cerrar sesión">
       <i class="fas fa-sign-out-alt"></i>
     </button>
   </header>
 
-  <!-- Hamburguesa fija (solo escritorio): hover abre, click fija -->
+  <!-- Hamburguesa fija (solo escritorio): hover abre; se oculta con el menú abierto -->
   <button
     class="menu-toggle menu-toggle-fixed"
-    (click)="toggleMenu()"
+    [class.oculto]="menuAbierto"
+    (click)="entrarHover()"
     (mouseenter)="entrarHover()"
     (mouseleave)="salirHover()"
     [attr.aria-expanded]="menuAbierto"
     aria-label="Abrir menú de navegación">
     <i class="fas" [ngClass]="menuAbierto ? 'fa-times' : 'fa-bars'"></i>
   </button>
+
+  <app-theme-toggle class="theme-toggle-fixed" [compact]="true" />
 
   <!-- Sidebar (oculto por defecto en escritorio) -->
   <aside
@@ -101,8 +105,8 @@
       <div class="user-chip">
         <div class="user-avatar">{{ nombreUsuario.charAt(0) }}</div>
         <div class="user-info">
-          <strong>{{ nombreUsuario }}</strong>
           <small>Vendedor</small>
+          <strong>{{ nombreCorto }}</strong>
         </div>
       </div>
       <app-notificacion-bell />

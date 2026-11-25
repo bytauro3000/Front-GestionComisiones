@@ -14,11 +14,12 @@ import { LogoutService } from '../../auth/logout.service';
 import { NotificacionBellComponent } from '../../components/notificacion-bell/notificacion-bell.component';
 import { ProformaUiService } from '../../services/proforma-ui.service';
 import { AnimationService } from '../../services/animation.service';
+import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-vendedor-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificacionBellComponent],
+  imports: [CommonModule, RouterModule, NotificacionBellComponent, ThemeToggleComponent],
   templateUrl: './vendedor-layout.component.html',
   styleUrl: './vendedor-layout.component.scss'
 })
@@ -27,8 +28,9 @@ export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
   @ViewChild('contenido') contenido?: ElementRef<HTMLElement>;
 
   readonly nombreUsuario: string;
+  readonly nombreCorto: string;
 
-  /** Click en la hamburguesa: el menú queda abierto hasta cerrarlo. */
+  /** En móvil, el drawer queda abierto hasta cerrarlo. */
   fijado = false;
 
   /** Mouse sobre la hamburguesa o el sidebar: el menú se muestra mientras dure. */
@@ -48,6 +50,7 @@ export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
     private animations: AnimationService
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Vendedor';
+    this.nombreCorto = this.tokenService.getNombreCorto() || this.nombreUsuario;
     this.actualizarFab(this.router.url);
     this.routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
