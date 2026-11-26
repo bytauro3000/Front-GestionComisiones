@@ -417,21 +417,21 @@ html.dark app-searchable-select .ss-list {
 }
 
 html.dark app-searchable-select .ss-list li:hover {
-  background: var(--surface-3);
+  background: var(--surface-3) !important;
 }
 
 html.dark app-searchable-select .ss-label {
-  color: var(--text);
+  color: var(--text) !important;
 }
 
 html.dark app-searchable-select .ss-badge {
-  background: var(--brand-bg);
-  color: var(--brand);
+  background: var(--brand-bg) !important;
+  color: var(--brand) !important;
 }
 
 html.dark app-searchable-select .ss-sub,
 html.dark app-searchable-select .ss-empty {
-  color: var(--muted);
+  color: var(--muted) !important;
 }
 
 /* ── Botones ──────────────────────────────────────────────── */
@@ -1410,6 +1410,14 @@ html.dark .radio-op {
   background: var(--surface) !important;
   border-color: var(--border) !important;
   color: var(--text-2) !important;
+}
+
+html.dark .custom-select-list li {
+  color: var(--text-2) !important;
+}
+
+html.dark .custom-select-list li.no-data {
+  color: var(--muted) !important;
 }
 
 html.dark .custom-select-list li:hover,
