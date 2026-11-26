@@ -185,8 +185,7 @@
         <button class="modal-close" (click)="cerrarModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <h4 class="seccion-titulo"><i class="fas fa-user"></i> Cliente (o prospecto)</h4>
-        <div class="form-row">
+        <div class="form-row form-row-single">
           <div class="form-field">
             <label>DNI *</label>
             <div class="input-accion">
@@ -203,10 +202,6 @@
               </button>
             </div>
           </div>
-          <div class="form-field">
-            <label>Celular (WhatsApp)</label>
-            <input type="tel" [(ngModel)]="form.telefono" maxlength="20" placeholder="Ej. 987654321">
-          </div>
         </div>
 
         <div class="form-row">
@@ -217,6 +212,13 @@
           <div class="form-field">
             <label>Apellidos</label>
             <input type="text" [(ngModel)]="form.apellidos" placeholder="Apellidos">
+          </div>
+        </div>
+
+        <div class="form-row form-row-single">
+          <div class="form-field">
+            <label>Celular (WhatsApp)</label>
+            <input type="tel" [(ngModel)]="form.telefono" maxlength="20" placeholder="Ej. 987654321">
           </div>
         </div>
         @if (form.idCliente) {

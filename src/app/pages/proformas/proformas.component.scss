@@ -117,6 +117,10 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   gap: 12px;
 }
 
+.form-row.form-row-single {
+  grid-template-columns: 1fr;
+}
+
 .input-accion {
   position: relative;
   display: block;
