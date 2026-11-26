@@ -1306,6 +1306,15 @@ html.dark table.tabla-cards td {
   border-bottom-color: var(--border) !important;
 }
 
+/* En móvil las tarjetas van sueltas: el contenedor-tabla no debe mostrar borde ni fondo */
+@media (max-width: 576px) {
+  html.dark table.tabla-cards {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
 /* Chips de filtros (usuarios, comprobantes, etc.) */
 html.dark .chip {
   background: var(--surface) !important;
