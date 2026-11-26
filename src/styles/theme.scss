@@ -357,11 +357,20 @@ html.dark .form-panel input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--text);
 }
 
+html.dark select option,
+html.dark select optgroup,
 html.dark .page select option,
 html.dark .modal-card select option,
 html.dark .form-panel select option {
   background: var(--surface);
   color: var(--text);
+}
+
+html.dark select,
+html.dark .page select option:checked,
+html.dark .modal-card select option:checked,
+html.dark .form-panel select option:checked {
+  color-scheme: dark;
 }
 
 html.dark .page input[type="checkbox"],
