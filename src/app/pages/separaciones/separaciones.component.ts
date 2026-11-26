@@ -168,7 +168,7 @@ export class SeparacionesComponent implements OnInit {
     this.loteService.listar({ idProyecto: valor }).subscribe({
       next: (lotes) => {
         this.lotesDisponibles = lotes
-          .filter(l => l.estado !== 'VENDIDO'
+          .filter(l => l.estado === 'DISPONIBLE'
             && !l.ventaActiva
             && l.idEmpresa === this.form.idEmpresa)
           .sort((a, b) => this.compararLotes(a, b));
