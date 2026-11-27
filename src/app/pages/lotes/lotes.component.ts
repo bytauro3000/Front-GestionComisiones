@@ -13,6 +13,7 @@ import {
 } from '../../components/searchable-select/searchable-select.component';
 import {
   PlanoLotesComponent,
+  LoteEstado,
   claveLote
 } from '../../components/plano-lotes/plano-lotes.component';
 
@@ -231,6 +232,22 @@ export class LotesComponent implements OnInit, OnDestroy {
     return this.lotes.filter(l => l.idProyecto === this.filtroProyecto);
   }
 
+  get lotesParaPlano(): LoteEstado[] {
+    return this.lotes.flatMap(l => {
+      const programa = this.programaDeProyecto(l.idProyecto);
+      return programa ? [{ ...l, programa }] : [];
+    });
+  }
+
+  private programaDeProyecto(idProyecto?: number): string | null {
+    if (idProyecto == null) return null;
+
+    const proyecto = this.proyectos.find(p => p.id === idProyecto);
+    if (!proyecto) return null;
+
+    return this.planos[normalizarProyecto(proyecto.nombre)]?.programa ?? null;
+  }
+
   abrirPlano(): void {
     if (!this.filtroProyecto) {
       this.alert.toastWarning('Selecciona un proyecto para ver su plano');
@@ -244,8 +261,8 @@ export class LotesComponent implements OnInit, OnDestroy {
   }
 
   seleccionarLotePlano(id: number | string): void {
-    const lote = this.lotesDelProyecto.find(l => l.id === id)
-      ?? this.lotesDelProyecto.find(l => claveLote(l.manzana, l.numero) === String(id));
+    const lote = this.lotes.find(l => l.id === id)
+      ?? this.lotes.find(l => claveLote(l.manzana, l.numero) === String(id));
 
     if (!lote) return;
 

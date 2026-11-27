@@ -342,7 +342,7 @@
 
 @if (planoAbierto) {
   @if (planActual; as plan) {
-    <div class="modal-overlay">
+    <div class="modal-overlay modal-overlay-plano">
       <div class="modal-card modal-plano">
         <div class="modal-header">
           <h3>Plano · {{ proyectoFiltro?.nombre }}</h3>
@@ -354,7 +354,7 @@
             [svgUrl]="plan.svg"
             [jsonUrl]="plan.json"
             [programa]="plan.programa"
-            [lotes]="lotesDelProyecto"
+            [lotes]="lotesParaPlano"
             (loteClick)="seleccionarLotePlano($event)">
           </app-plano-lotes>
         </div>

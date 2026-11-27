@@ -37,6 +37,7 @@ type EstadoPlano = 'DISPONIBLE' | 'RESERVADO' | 'VENDIDO' | 'SEPARADO';
 
 export interface LoteEstado {
   id?: number;
+  programa?: string;
   manzana: string;
   numero: string | number;
   estado?: EstadoPlano | string;
@@ -127,8 +128,8 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly faltantes = computed(() => {
     const geo = this.geo();
     return this._lotes()
-      .filter(l => !geo.has(this.claveDe(l.manzana, l.numero)))
-      .map(l => this.claveDe(l.manzana, l.numero));
+      .filter(l => !geo.has(this.claveDe(l.manzana, l.numero, l.programa)))
+      .map(l => this.claveDe(l.manzana, l.numero, l.programa));
   });
 
   readonly marcas = computed<Marca[]>(() => {
@@ -146,7 +147,7 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
       const color = COLORES[estado];
       if (!color) continue;
 
-      const g = geo.get(this.claveDe(l.manzana, l.numero));
+      const g = geo.get(this.claveDe(l.manzana, l.numero, l.programa));
       if (!g) continue;
 
       const puntos = Array.isArray(g.puntos)
@@ -475,10 +476,14 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loteClick.emit(loteId ?? id);
   }
 
-  private claveDe(manzana: string, numero: string | number): string {
-    const programa = this.programaActual();
-    return programa
-      ? claveLotePrograma(programa, manzana, numero)
+  private claveDe(
+    manzana: string,
+    numero: string | number,
+    programa = this.programaActual()
+  ): string {
+    const prog = (programa || '').trim().toUpperCase();
+    return prog
+      ? claveLotePrograma(prog, manzana, numero)
       : claveLote(manzana, numero);
   }
 
