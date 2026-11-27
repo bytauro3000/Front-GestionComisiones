@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { UsuarioService, UsuarioListado } from '../../services/usuario.service';
@@ -22,6 +22,15 @@ export class AdminInicioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargarResumen();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
+    this.cargarResumen();
+  }
+
+  private cargarResumen(): void {
     this.usuarioService.listar().subscribe({
       next: (data) => this.usuarios = data,
       error: () => {}

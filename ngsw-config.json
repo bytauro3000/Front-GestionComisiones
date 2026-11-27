@@ -13,7 +13,8 @@
           "/icons/**",
           "/index.html",
           "/*.css",
-          "/*.js"
+          "/*.js",
+          "/*.json"
         ]
       }
     },

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -82,6 +82,11 @@ export class ProyectosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.cargarProyectos();
     this.cargarEmpresas();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
+    this.cargarProyectos();
   }
 
   ngOnDestroy(): void {

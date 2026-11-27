@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -98,6 +98,11 @@ export class ProformasComponent implements OnInit, OnDestroy {
     private alert: AlertService,
     private proformaUi: ProformaUiService
   ) { }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
+    this.cargarProformas();
+  }
 
   ngOnInit(): void {
     this.cargarProformas();

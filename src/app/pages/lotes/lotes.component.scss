@@ -637,6 +637,7 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     border-bottom: 0;
 
     h3 {
+      flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
       font-size: 0.92rem;
@@ -650,6 +651,20 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
       min-width: 34px;
       min-height: 34px;
       font-size: 1.05rem;
+    }
+
+    .plano-share {
+      color: #16a34a;
+
+      &:hover {
+        color: #15803d;
+        background: #f0fdf4;
+      }
+
+      &:disabled {
+        cursor: wait;
+        opacity: 0.65;
+      }
     }
   }
 
@@ -675,6 +690,40 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     );
     pointer-events: none;
     font-size: 0.72rem;
+  }
+}
+
+.modal-overlay.modal-overlay-compartir {
+  z-index: 1100;
+}
+
+.modal-compartir {
+  .compartir-texto {
+    margin: 0 0 18px;
+    color: $gray-500;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .btn-contacto {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .compartir-acciones {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+
+    .btn {
+      flex: 1 1 auto;
+      min-height: 44px;
+    }
+  }
+
+  .field-hint-block {
+    display: block;
+    margin-top: 12px;
   }
 }
 
@@ -741,5 +790,9 @@ app-plano-lotes {
     padding: 16px 10px max(4px, env(safe-area-inset-bottom));
 
     .plano-hint { display: none; }
+  }
+
+  .modal-compartir .compartir-acciones {
+    flex-direction: column;
   }
 }

@@ -346,6 +346,15 @@
       <div class="modal-card modal-plano">
         <div class="modal-header">
           <h3>Plano · {{ proyectoFiltro?.nombre }}</h3>
+          <button type="button" class="modal-close plano-share"
+                  (click)="compartirPlano()" [disabled]="generandoEnlace"
+                  title="Compartir plano por WhatsApp" aria-label="Compartir plano por WhatsApp">
+            @if (generandoEnlace) {
+              <i class="fas fa-spinner fa-spin"></i>
+            } @else {
+              <i class="fab fa-whatsapp"></i>
+            }
+          </button>
           <button class="modal-close" (click)="planoAbierto = false">&times;</button>
         </div>
 
@@ -367,6 +376,51 @@
       </div>
     </div>
   }
+}
+
+@if (compartirAbierto) {
+  <div class="modal-overlay modal-overlay-compartir">
+    <div class="modal-card modal-compartir">
+      <div class="modal-header">
+        <h3>Compartir plano</h3>
+        <button class="modal-close" (click)="cerrarCompartir()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="compartir-texto">
+          Envía el plano actualizado por WhatsApp. El cliente podrá ver los lotes vendidos,
+          separados y disponibles, sin poder modificarlos.
+        </p>
+
+        <div class="form-field">
+          <label>Número de WhatsApp</label>
+          <input type="tel" [(ngModel)]="telefonoCompartir"
+                 placeholder="Ej. +51 999 999 999" autocomplete="tel">
+        </div>
+
+        @if (contactPickerDisponible) {
+          <button type="button" class="btn btn-outline btn-contacto" (click)="elegirContacto()">
+            <i class="fas fa-address-book"></i> Elegir de mis contactos
+          </button>
+        }
+
+        <div class="compartir-acciones">
+          <button type="button" class="btn btn-primary" (click)="abrirWhatsApp()">
+            <i class="fab fa-whatsapp"></i> Abrir WhatsApp
+          </button>
+          <button type="button" class="btn btn-outline" (click)="compartirNativo()">
+            <i class="fas fa-share-nodes"></i> Compartir
+          </button>
+        </div>
+
+        <small class="field-hint field-hint-block">
+          Si no escribes un número, WhatsApp te dejará elegir el contacto.
+        </small>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="cerrarCompartir()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 }
 
 @if (modalProyectoRapido) {

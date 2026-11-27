@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 import { AdminSesionesService, SesionResumen } from '../../services/admin-sesiones.service';
@@ -22,6 +22,11 @@ export class AdminSesionesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargar();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
     this.cargar();
   }
 

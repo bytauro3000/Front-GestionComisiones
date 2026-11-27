@@ -15,6 +15,7 @@ import { NotificacionBellComponent } from '../../components/notificacion-bell/no
 import { ProformaUiService } from '../../services/proforma-ui.service';
 import { AnimationService } from '../../services/animation.service';
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
+import { RealtimeService } from '../../services/realtime.service';
 
 @Component({
   selector: 'app-vendedor-layout',
@@ -47,11 +48,13 @@ export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
     private logoutService: LogoutService,
     private proformaUi: ProformaUiService,
     private router: Router,
-    private animations: AnimationService
+    private animations: AnimationService,
+    private realtime: RealtimeService
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Vendedor';
     this.nombreCorto = this.tokenService.getNombreCorto() || this.nombreUsuario;
     this.actualizarFab(this.router.url);
+    this.realtime.connectInternal();
     this.routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e) => {
@@ -127,6 +130,7 @@ export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.realtime.disconnect();
     this.routerSub?.unsubscribe();
     this.limpiarTimer();
     document.body.style.overflow = '';

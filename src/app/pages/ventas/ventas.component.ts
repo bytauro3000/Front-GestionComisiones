@@ -139,6 +139,11 @@ export class VentasComponent implements OnInit {
     this.cargar();
   }
 
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
+    this.cargar();
+  }
+
   cargar(): void {
     this.cargando = true;
     this.ventaService.listar().subscribe({

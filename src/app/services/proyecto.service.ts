@@ -58,4 +58,8 @@ export class ProyectoService {
   descargarPlano(id: number): Observable<Blob> {
     return this.http.get(`${this.URL}/${id}/plano`, { responseType: 'blob' });
   }
+
+  obtenerTokenPlanoPublico(id: number): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(`${this.URL}/${id}/plano-publico`, {});
+  }
 }

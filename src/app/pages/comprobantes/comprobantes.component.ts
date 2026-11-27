@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 import { FormsModule } from '@angular/forms';
@@ -58,6 +58,11 @@ export class ComprobantesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargar();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
     this.cargar();
   }
 

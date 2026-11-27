@@ -29,6 +29,14 @@ export const routes: Routes = [
     ]
   },
 
+  {
+    path: 'plano/:token',
+    loadComponent: () =>
+      import('./pages/plano-publico/plano-publico.component').then(
+        (m) => m.PlanoPublicoComponent
+      )
+  },
+
   // ── Panel del administrador ───────────────────────────────────────
   {
     path: 'admin',

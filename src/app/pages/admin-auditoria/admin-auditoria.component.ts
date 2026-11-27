@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuditoriaService, AuditoriaFila, PaginaAuditoria } from '../../services/auditoria.service';
@@ -29,6 +29,11 @@ export class AdminAuditoriaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cargar();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
     this.cargar();
   }
 

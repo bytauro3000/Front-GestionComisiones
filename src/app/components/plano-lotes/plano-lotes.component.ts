@@ -94,6 +94,7 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input({ required: true }) svgUrl!: string;
   @Input() jsonUrl = 'planos/villa-familia.json';
   @Input() modoPunto = false;
+  @Input() interactivo = true;
   @Output() loteClick = new EventEmitter<number | string>();
 
   private readonly programaActual = signal('');
@@ -469,6 +470,7 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   seleccionar(id: string, loteId?: number): void {
+    if (!this.interactivo) return;
     if (this.suprimirClick) {
       this.suprimirClick = false;
       return;

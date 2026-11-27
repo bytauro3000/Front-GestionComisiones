@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
@@ -47,6 +47,11 @@ export class ComisionesComponent implements OnInit {
   ngOnInit(): void {
     this.cargar();
     this.fechaPago = this.hoy();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
+    this.cargar();
   }
 
   cargar(): void {

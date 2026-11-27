@@ -1,0 +1,35 @@
+<div class="public-plan">
+  <header class="public-plan__header">
+    <div class="public-plan__brand">Closure</div>
+    <div class="public-plan__title">
+      <h1>{{ proyecto || 'Plano de lotes' }}</h1>
+      <span class="public-plan__live">
+        <i></i>
+        Actualización en vivo
+        @if (actualizadoEn) { · {{ actualizadoEn }} }
+      </span>
+    </div>
+  </header>
+
+  <main class="public-plan__body">
+    @if (cargando) {
+      <div class="public-plan__estado">Cargando plano…</div>
+    } @else if (error) {
+      <div class="public-plan__estado public-plan__estado--error">{{ error }}</div>
+    } @else if (plan; as p) {
+      <app-plano-lotes
+        [svgUrl]="p.svg"
+        [jsonUrl]="p.json"
+        [programa]="programa"
+        [lotes]="lotes"
+        [interactivo]="false">
+      </app-plano-lotes>
+    }
+  </main>
+
+  <footer class="public-plan__footer">
+    <span><i class="punto vendido"></i> Vendido</span>
+    <span><i class="punto separado"></i> Separado</span>
+    <span class="public-plan__hint">Los lotes sin color están disponibles</span>
+  </footer>
+</div>

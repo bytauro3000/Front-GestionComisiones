@@ -16,15 +16,7 @@ import {
   LoteEstado,
   claveLote
 } from '../../components/plano-lotes/plano-lotes.component';
-
-const normalizarProyecto = (nombre: string) =>
-  (nombre || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toUpperCase()
-    .replace(/\bRESIDENCIAL\b/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+import { PLANOS, normalizarProyecto } from '../../config/planos.config';
 
 @Component({
   selector: 'app-lotes',
@@ -47,23 +39,12 @@ export class LotesComponent implements OnInit, OnDestroy {
 
   // Plano de lotes
   planoAbierto = false;
-  private readonly planos: Record<string, { svg: string; json: string; programa: string }> = {
-    'VILLA FAMILIA': {
-      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
-      json: 'planos/villa-familia-prudencia-v.json',
-      programa: 'VF'
-    },
-    'PRUDENCIA ETAPA 5': {
-      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
-      json: 'planos/villa-familia-prudencia-v.json',
-      programa: 'PV'
-    },
-    'PRUDENCIA V ETAPA': {
-      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
-      json: 'planos/villa-familia-prudencia-v.json',
-      programa: 'PV'
-    }
-  };
+  compartirAbierto = false;
+  generandoEnlace = false;
+  telefonoCompartir = '';
+  enlaceCompartir = '';
+  readonly contactPickerDisponible =
+    typeof navigator !== 'undefined' && 'contacts' in navigator;
 
   // ── Paginación (el tamaño de página se adapta a la pantalla) ──────────────
   /** Filas/tarjetas por página según el ancho: móvil 6 · tablet 10 · escritorio 15. */
@@ -94,6 +75,12 @@ export class LotesComponent implements OnInit, OnDestroy {
     this.ajustarTamanoPagina();
     this.cargarLotes();
     this.cargarEmpresas();
+    this.cargarProyectos();
+  }
+
+  @HostListener('window:app:data-changed')
+  onRealtimeChange(): void {
+    this.cargarLotes();
     this.cargarProyectos();
   }
 
@@ -224,7 +211,7 @@ export class LotesComponent implements OnInit, OnDestroy {
   get planActual(): { svg: string; json: string; programa: string } | null {
     const proyecto = this.proyectoFiltro;
     if (!proyecto) return null;
-    return this.planos[normalizarProyecto(proyecto.nombre)] ?? null;
+    return PLANOS[normalizarProyecto(proyecto.nombre)] ?? null;
   }
 
   get lotesDelProyecto(): Lote[] {
@@ -245,7 +232,7 @@ export class LotesComponent implements OnInit, OnDestroy {
     const proyecto = this.proyectos.find(p => p.id === idProyecto);
     if (!proyecto) return null;
 
-    return this.planos[normalizarProyecto(proyecto.nombre)]?.programa ?? null;
+    return PLANOS[normalizarProyecto(proyecto.nombre)]?.programa ?? null;
   }
 
   abrirPlano(): void {
@@ -258,6 +245,80 @@ export class LotesComponent implements OnInit, OnDestroy {
       return;
     }
     this.planoAbierto = true;
+  }
+
+  compartirPlano(): void {
+    const proyecto = this.proyectoFiltro;
+    if (!proyecto?.id || this.generandoEnlace) return;
+
+    this.generandoEnlace = true;
+    this.proyectoService.obtenerTokenPlanoPublico(proyecto.id).subscribe({
+      next: ({ token }) => {
+        this.generandoEnlace = false;
+        this.enlaceCompartir = `${window.location.origin}/plano/${token}`;
+        this.telefonoCompartir = '';
+        this.compartirAbierto = true;
+      },
+      error: () => {
+        this.generandoEnlace = false;
+        this.alert.toastError('No se pudo generar el enlace del plano', 'Error');
+      }
+    });
+  }
+
+  cerrarCompartir(): void {
+    this.compartirAbierto = false;
+  }
+
+  elegirContacto(): void {
+    const contacts = (navigator as any).contacts;
+    if (!contacts?.select) {
+      this.alert.toastWarning('Este navegador no permite elegir contactos');
+      return;
+    }
+
+    contacts.select(['tel'], { multiple: false })
+      .then((resultado: Array<{ tel?: string[] }>) => {
+        const telefono = resultado?.[0]?.tel?.[0];
+        if (telefono) {
+          this.telefonoCompartir = telefono;
+        }
+      })
+      .catch(() => {
+        // El usuario canceló el selector.
+      });
+  }
+
+  abrirWhatsApp(): void {
+    if (!this.enlaceCompartir) return;
+
+    const telefono = this.telefonoCompartir.replace(/\D/g, '');
+    const mensaje = encodeURIComponent(
+      `Hola, te comparto el plano actualizado de lotes: ${this.enlaceCompartir}`
+    );
+    const destino = telefono
+      ? `https://wa.me/${telefono}?text=${mensaje}`
+      : `https://wa.me/?text=${mensaje}`;
+
+    window.open(destino, '_blank', 'noopener,noreferrer');
+    this.compartirAbierto = false;
+  }
+
+  compartirNativo(): void {
+    if (!this.enlaceCompartir) return;
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'Plano de lotes actualizado',
+        text: 'Te comparto el plano actualizado de lotes.',
+        url: this.enlaceCompartir
+      }).catch(() => {
+        // El usuario canceló el menú nativo.
+      });
+      return;
+    }
+
+    this.abrirWhatsApp();
   }
 
   seleccionarLotePlano(id: number | string): void {

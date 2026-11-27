@@ -13,6 +13,7 @@ import { TokenService } from '../../auth/token.service';
 import { LogoutService } from '../../auth/logout.service';
 import { AnimationService } from '../../services/animation.service';
 import { ThemeToggleComponent } from '../../components/theme-toggle/theme-toggle.component';
+import { RealtimeService } from '../../services/realtime.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -33,9 +34,11 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
     private tokenService: TokenService,
     private logoutService: LogoutService,
     private router: Router,
-    private animations: AnimationService
+    private animations: AnimationService,
+    private realtime: RealtimeService
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Administrador';
+    this.realtime.connectInternal();
     this.routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => this.animations.pageEnter(this.contenido?.nativeElement));
@@ -64,6 +67,7 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.realtime.disconnect();
     this.routerSub?.unsubscribe();
     document.body.style.overflow = '';
   }

@@ -12,7 +12,8 @@ export const AuthInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
 
   const reqWithCredentials = req.clone({ withCredentials: true });
 
-  if (req.url.includes('/auth/refresh') || req.url.includes('/auth/login')) {
+  if (req.url.includes('/auth/refresh') || req.url.includes('/auth/login')
+      || req.url.includes('/api/public/')) {
     return next(reqWithCredentials);
   }
 

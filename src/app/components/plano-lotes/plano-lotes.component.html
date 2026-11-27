@@ -1,4 +1,4 @@
-<div class="plano-viewport" #viewport>
+<div class="plano-viewport" #viewport [class.solo-lectura]="!interactivo">
   @if (cargando()) {
     <div class="plano-msg">Cargando plano…</div>
   }
