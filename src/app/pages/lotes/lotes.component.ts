@@ -46,10 +46,16 @@ export class LotesComponent implements OnInit, OnDestroy {
 
   // Plano de lotes
   planoAbierto = false;
-  private readonly planos: Record<string, { svg: string; json: string }> = {
+  private readonly planos: Record<string, { svg: string; json: string; programa: string }> = {
     'VILLA FAMILIA': {
-      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795614539/planovillafamilia.svg',
-      json: 'planos/villa-familia.json'
+      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
+      json: 'planos/villa-familia-prudencia-v.json',
+      programa: 'VF'
+    },
+    'PRUDENCIA V ETAPA': {
+      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
+      json: 'planos/villa-familia-prudencia-v.json',
+      programa: 'PV'
     }
   };
 
@@ -209,7 +215,7 @@ export class LotesComponent implements OnInit, OnDestroy {
       : this.proyectos.find(p => p.id === this.filtroProyecto);
   }
 
-  get planActual(): { svg: string; json: string } | null {
+  get planActual(): { svg: string; json: string; programa: string } | null {
     const proyecto = this.proyectoFiltro;
     if (!proyecto) return null;
     return this.planos[normalizarProyecto(proyecto.nombre)] ?? null;

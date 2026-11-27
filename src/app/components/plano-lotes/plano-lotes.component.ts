@@ -17,11 +17,13 @@ import { HttpClient } from '@angular/common/http';
 
 interface LotePoligono {
   id: string;
+  programa?: string;
   manzana: string;
   lote: number;
   area: number;
   centro: [number, number];
-  puntos: [number, number][];
+  puntos?: string | [number, number][];
+  coordenadas?: [number, number][];
 }
 
 interface PlanoJson {
@@ -72,6 +74,12 @@ export const normNumero = (n: string | number) => {
 export const claveLote = (manzana: string, numero: string | number) =>
   `${normManzana(manzana)}-${normNumero(numero)}`;
 
+export const claveLotePrograma = (
+  programa: string,
+  manzana: string,
+  numero: string | number
+) => `${(programa || '').trim().toUpperCase()}-${claveLote(manzana, numero)}`;
+
 const clamp = (v: number, min: number, max: number) =>
   Math.min(max, Math.max(min, v));
 
@@ -86,6 +94,13 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() jsonUrl = 'planos/villa-familia.json';
   @Input() modoPunto = false;
   @Output() loteClick = new EventEmitter<number | string>();
+
+  private readonly programaActual = signal('');
+
+  @Input()
+  set programa(v: string | undefined) {
+    this.programaActual.set((v || '').trim().toUpperCase());
+  }
 
   @ViewChild('viewport') private viewport?: ElementRef<HTMLElement>;
   @ViewChild('canvas') private canvas?: ElementRef<HTMLElement>;
@@ -112,8 +127,8 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly faltantes = computed(() => {
     const geo = this.geo();
     return this._lotes()
-      .filter(l => !geo.has(claveLote(l.manzana, l.numero)))
-      .map(l => claveLote(l.manzana, l.numero));
+      .filter(l => !geo.has(this.claveDe(l.manzana, l.numero)))
+      .map(l => this.claveDe(l.manzana, l.numero));
   });
 
   readonly marcas = computed<Marca[]>(() => {
@@ -131,8 +146,13 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
       const color = COLORES[estado];
       if (!color) continue;
 
-      const g = geo.get(claveLote(l.manzana, l.numero));
+      const g = geo.get(this.claveDe(l.manzana, l.numero));
       if (!g) continue;
+
+      const puntos = Array.isArray(g.puntos)
+        ? g.puntos
+        : (g.coordenadas ?? []);
+      if (!puntos.length) continue;
 
       salida.push({
         id: g.id,
@@ -140,7 +160,7 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
         estado,
         color,
         centro: g.centro,
-        puntos: g.puntos.map(p => p.join(',')).join(' ')
+        puntos: puntos.map(p => p.join(',')).join(' ')
       });
     }
 
@@ -220,7 +240,12 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.vb.set(j.viewBox);
         this.geo.set(
-          new Map(j.lotes.map(x => [claveLote(x.manzana, x.lote), x]))
+          new Map(j.lotes.map(x => [
+            x.programa
+              ? claveLotePrograma(x.programa, x.manzana, x.lote)
+              : claveLote(x.manzana, x.lote),
+            x
+          ]))
         );
         this.cargando.set(false);
       },
@@ -448,6 +473,13 @@ export class PlanoLotesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.loteClick.emit(loteId ?? id);
+  }
+
+  private claveDe(manzana: string, numero: string | number): string {
+    const programa = this.programaActual();
+    return programa
+      ? claveLotePrograma(programa, manzana, numero)
+      : claveLote(manzana, numero);
   }
 
   private aplicarZoom(factor: number): void {
