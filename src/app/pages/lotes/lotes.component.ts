@@ -52,6 +52,11 @@ export class LotesComponent implements OnInit, OnDestroy {
       json: 'planos/villa-familia-prudencia-v.json',
       programa: 'VF'
     },
+    'PRUDENCIA ETAPA 5': {
+      svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
+      json: 'planos/villa-familia-prudencia-v.json',
+      programa: 'PV'
+    },
     'PRUDENCIA V ETAPA': {
       svg: 'https://res.cloudinary.com/kqee6exq/image/upload/q_auto/v1795744435/planovfypv.svg',
       json: 'planos/villa-familia-prudencia-v.json',
