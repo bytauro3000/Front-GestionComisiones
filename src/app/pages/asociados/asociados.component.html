@@ -70,6 +70,35 @@
           y pídele que la cambie al ingresar.
         </p>
 
+        <div class="form-row persona-doc-row">
+          <div class="form-field">
+            <label>Tipo Doc. *</label>
+            <select [(ngModel)]="form.tipoDocumento">
+              <option value="DNI">DNI</option>
+              <option value="CE">CE</option>
+              <option value="RUC">RUC</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>N° Doc. *</label>
+            <div class="persona-doc-input">
+              <input type="text" [(ngModel)]="form.numDocumento"
+                     [maxlength]="form.tipoDocumento === 'RUC' ? 11 : 15"
+                     placeholder="Número de documento" autocomplete="off">
+              <button type="button" class="persona-doc-search"
+                      (click)="buscarDocumento()" [disabled]="buscandoDocumento"
+                      title="Buscar nombres por documento">
+                @if (buscandoDocumento) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-search"></i>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-field">
             <label>Nombres *</label>
@@ -90,35 +119,6 @@
           <label>Contraseña temporal *</label>
           <input type="password" [(ngModel)]="form.contrasena" minlength="6" maxlength="100"
                  autocomplete="new-password">
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label>Tipo de documento *</label>
-            <select [(ngModel)]="form.tipoDocumento">
-              <option value="DNI">DNI</option>
-              <option value="CE">CE</option>
-              <option value="RUC">RUC</option>
-              <option value="OTRO">Otro</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label>N° de documento *</label>
-            <div class="doc-input">
-              <input type="text" [(ngModel)]="form.numDocumento"
-                     [maxlength]="form.tipoDocumento === 'RUC' ? 11 : 15"
-                     placeholder="Número de documento" autocomplete="off">
-              <button type="button" class="btn btn-outline btn-sm"
-                      (click)="buscarDocumento()" [disabled]="buscandoDocumento"
-                      title="Buscar nombres por documento">
-                @if (buscandoDocumento) {
-                  <i class="fas fa-spinner fa-spin"></i>
-                } @else {
-                  <i class="fas fa-search"></i>
-                }
-              </button>
-            </div>
-          </div>
         </div>
 
         <div class="form-field">

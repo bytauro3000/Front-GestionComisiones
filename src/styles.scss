@@ -1208,3 +1208,64 @@ input[type="number"] {
     padding: 8px 10px !important;
   }
 }
+
+/* Fila estándar Tipo Doc. (35%) + N° Doc. (65%) en modales de personas */
+.form-row.persona-doc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  > .form-field:first-child {
+    flex: 0 0 35%;
+    max-width: 35%;
+    min-width: 0;
+  }
+
+  > .form-field:last-child {
+    flex: 1 1 65%;
+    min-width: 0;
+  }
+}
+
+.persona-doc-input {
+  position: relative;
+
+  input {
+    width: 100%;
+    padding-right: 46px;
+  }
+}
+
+.persona-doc-search {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #4338ca;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  &:hover:not(:disabled) {
+    background: rgba(67, 56, 202, 0.12);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-row.persona-doc-row { gap: 8px; }
+}
+
