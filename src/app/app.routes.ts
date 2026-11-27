@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
 import { roleGuard } from './auth/role.guard';
 import { LoginLayoutComponent } from './auth/login/login-layout.component';
@@ -79,9 +79,18 @@ export const routes: Routes = [
     path: 'vendedor',
     component: VendedorLayoutComponent,
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ROLE_VENDEDOR'] },
+    data: { roles: ['ROLE_VENDEDOR', 'ROLE_VENDEDOR_ASOCIADO'] },
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+      {
+        path: 'asociados',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
+        loadComponent: () =>
+          import('./pages/asociados/asociados.component').then(
+            (m) => m.AsociadosComponent
+          )
+      },
       {
         path: 'inicio',
         loadComponent: () =>
@@ -91,6 +100,8 @@ export const routes: Routes = [
       },
       {
         path: 'empresas',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/empresas/empresas.component').then((m) => m.EmpresasComponent)
       },
@@ -101,11 +112,15 @@ export const routes: Routes = [
       },
       {
         path: 'socios',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/socios/socios.component').then((m) => m.SociosComponent)
       },
       {
         path: 'proyectos',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/proyectos/proyectos.component').then((m) => m.ProyectosComponent)
       },
@@ -121,6 +136,8 @@ export const routes: Routes = [
       },
       {
         path: 'parametros-comision',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/parametros-comision/parametros-comision.component').then(
             (m) => m.ParametrosComisionComponent
@@ -133,6 +150,8 @@ export const routes: Routes = [
       },
       {
         path: 'separaciones',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/separaciones/separaciones.component').then(
             (m) => m.SeparacionesComponent
@@ -140,11 +159,15 @@ export const routes: Routes = [
       },
       {
         path: 'comisiones',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/comisiones/comisiones.component').then((m) => m.ComisionesComponent)
       },
       {
         path: 'liquidaciones',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/liquidaciones/liquidaciones.component').then(
             (m) => m.LiquidacionesComponent
@@ -152,6 +175,8 @@ export const routes: Routes = [
       },
       {
         path: 'comprobantes',
+        canActivate: [roleGuard],
+        data: { roles: ['ROLE_VENDEDOR'] },
         loadComponent: () =>
           import('./pages/comprobantes/comprobantes.component').then(
             (m) => m.ComprobantesComponent
@@ -164,3 +189,4 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: '**', redirectTo: 'login' }
 ];
+

@@ -63,49 +63,62 @@
       <a routerLink="/vendedor/inicio" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-home"></i><span>Inicio</span>
       </a>
-      <a routerLink="/vendedor/empresas" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-building"></i><span>Empresas</span>
-      </a>
+      @if (esJefe) {
+        <a routerLink="/vendedor/asociados" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-users"></i><span>Mis vendedores</span>
+        </a>
+      }
+      @if (!esAsociado) {
+        <a routerLink="/vendedor/empresas" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-building"></i><span>Empresas</span>
+        </a>
+      }
       <a routerLink="/vendedor/clientes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-address-book"></i><span>Clientes</span>
       </a>
-      <a routerLink="/vendedor/socios" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-user-friends"></i><span>Socios</span>
-      </a>
-      <a routerLink="/vendedor/proyectos" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-drafting-compass"></i><span>Proyectos</span>
-      </a>
+      @if (!esAsociado) {
+        <a routerLink="/vendedor/socios" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-user-friends"></i><span>Socios</span>
+        </a>
+        <a routerLink="/vendedor/proyectos" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-drafting-compass"></i><span>Proyectos</span>
+        </a>
+      }
       <a routerLink="/vendedor/lotes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-map-pin"></i><span>Lotes</span>
       </a>
       <a routerLink="/vendedor/proformas" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-file-signature"></i><span>Proformas</span>
       </a>
-      <a routerLink="/vendedor/parametros-comision" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-percent"></i><span>Parámetros</span>
-      </a>
+      @if (!esAsociado) {
+        <a routerLink="/vendedor/parametros-comision" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-percent"></i><span>Parámetros</span>
+        </a>
+      }
       <a routerLink="/vendedor/ventas" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
         <i class="fas fa-handshake"></i><span>Ventas</span>
       </a>
-      <a routerLink="/vendedor/separaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-hourglass-half"></i><span>Separaciones</span>
-      </a>
-      <a routerLink="/vendedor/comisiones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-coins"></i><span>Comisiones</span>
-      </a>
-      <a routerLink="/vendedor/liquidaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-hand-holding-usd"></i><span>Liquidaciones</span>
-      </a>
-      <a routerLink="/vendedor/comprobantes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-        <i class="fas fa-file-invoice-dollar"></i><span>Facturación</span>
-      </a>
+      @if (!esAsociado) {
+        <a routerLink="/vendedor/separaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-hourglass-half"></i><span>Separaciones</span>
+        </a>
+        <a routerLink="/vendedor/comisiones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-coins"></i><span>Comisiones</span>
+        </a>
+        <a routerLink="/vendedor/liquidaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-hand-holding-usd"></i><span>Liquidaciones</span>
+        </a>
+        <a routerLink="/vendedor/comprobantes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+          <i class="fas fa-file-invoice-dollar"></i><span>Facturación</span>
+        </a>
+      }
     </nav>
 
     <div class="sidebar-footer">
       <div class="user-chip">
         <div class="user-avatar">{{ nombreUsuario.charAt(0) }}</div>
         <div class="user-info">
-          <small>Vendedor</small>
+          <small>{{ esAsociado ? 'Vendedor asociado' : 'Vendedor jefe' }}</small>
           <strong>{{ nombreCorto }}</strong>
         </div>
       </div>

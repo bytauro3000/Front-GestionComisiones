@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 export interface Cliente {
   id?: number;
   idVendedor?: number;
+  idVendedorAsociado?: number | null;
   tipoDocumento?: string;
   numDocumento: string;
   nombres: string;

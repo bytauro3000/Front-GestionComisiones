@@ -135,6 +135,23 @@
             </div>
           </div>
 
+          @if (detalle.idVendedorAsociado) {
+            <h4 class="seccion-titulo"><i class="fas fa-user-friends"></i> Reparto 50/50</h4>
+            <div class="resumen-grid">
+              <div class="dato">
+                <span>Vendedor jefe</span>
+                <strong>{{ detalle.montoJefe | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+              <div class="dato">
+                <span>Asociado · {{ detalle.vendedorAsociado }}</span>
+                <strong>{{ detalle.montoAsociado | currency:'USD':'symbol-narrow':'1.0-2' }}</strong>
+              </div>
+            </div>
+            <p class="reparto-nota">
+              La comisión se cobra en una sola cuenta a nombre del jefe. El 50% del asociado se paga fuera del sistema.
+            </p>
+          }
+
           @if (repartosDe(detalle).length > 0) {
             <h4 class="seccion-titulo"><i class="fas fa-user-friends"></i> Reparto con socios</h4>
             <div class="table-wrap">

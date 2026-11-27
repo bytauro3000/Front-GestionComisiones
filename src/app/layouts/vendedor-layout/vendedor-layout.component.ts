@@ -30,6 +30,8 @@ export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
 
   readonly nombreUsuario: string;
   readonly nombreCorto: string;
+  readonly esAsociado: boolean;
+  readonly esJefe: boolean;
 
   /** En móvil, el drawer queda abierto hasta cerrarlo. */
   fijado = false;
@@ -53,6 +55,8 @@ export class VendedorLayoutComponent implements AfterViewInit, OnDestroy {
   ) {
     this.nombreUsuario = this.tokenService.getNombreCompleto() || 'Vendedor';
     this.nombreCorto = this.tokenService.getNombreCorto() || this.nombreUsuario;
+    this.esAsociado = this.tokenService.esAsociado();
+    this.esJefe = this.tokenService.esVendedorJefe();
     this.actualizarFab(this.router.url);
     this.realtime.connectInternal();
     this.routerSub = this.router.events

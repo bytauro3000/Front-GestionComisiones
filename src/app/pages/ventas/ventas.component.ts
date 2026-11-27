@@ -18,11 +18,14 @@ import { SocioService, Socio } from '../../services/socio.service';
 import { ParametroComisionService, ParametroComision } from '../../services/parametro-comision.service';
 import { PagoComision } from '../../services/comision.service';
 import { AlertService } from '../../services/alert.service';
+import { Asociado, AsociadoService } from '../../services/asociado.service';
+import { TokenService } from '../../auth/token.service';
 import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 
 interface VentaForm {
   idEmpresa: number | null;
   idProyecto: number | null;
+  idVendedorAsociado: number | null;
   fechaVenta: string;
   precioVenta: number | null;
   modalidad: string;
@@ -72,6 +75,8 @@ export class VentasComponent implements OnInit {
   clientesSeleccionados: Cliente[] = [];
   repartos: RepartoForm[] = [];
   parametro: ParametroComision | null = null;
+  asociados: Asociado[] = [];
+  esAsociado = false;
 
   cargandoCatalogos = false;
   modalAbierto = false;
@@ -115,6 +120,8 @@ export class VentasComponent implements OnInit {
     private proyectoService: ProyectoService,
     private socioService: SocioService,
     private parametroService: ParametroComisionService,
+    private asociadoService: AsociadoService,
+    private tokenService: TokenService,
     private alert: AlertService
   ) { }
 
@@ -136,12 +143,26 @@ export class VentasComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.esAsociado = this.tokenService.esAsociado();
     this.cargar();
+    if (!this.esAsociado) {
+      this.cargarAsociados();
+    }
+  }
+
+  private cargarAsociados(): void {
+    this.asociadoService.listar().subscribe({
+      next: (data) => this.asociados = data.filter(a => a.estado === 'activo'),
+      error: () => this.asociados = []
+    });
   }
 
   @HostListener('window:app:data-changed')
   onRealtimeChange(): void {
     this.cargar();
+    if (!this.esAsociado) {
+      this.cargarAsociados();
+    }
   }
 
   cargar(): void {
@@ -640,7 +661,8 @@ export class VentasComponent implements OnInit {
       idsClientes: this.clientesSeleccionados.map(c => c.id!),
       fechaVenta,
       precioVenta: precio,
-      modalidad
+      modalidad,
+      idVendedorAsociado: this.form.idVendedorAsociado
     };
 
     if (modalidad === 'FINANCIADO') {
@@ -829,6 +851,7 @@ export class VentasComponent implements OnInit {
     return {
       idEmpresa: null,
       idProyecto: null,
+      idVendedorAsociado: null,
       fechaVenta: this.hoy(),
       precioVenta: null,
       modalidad: 'CONTADO',

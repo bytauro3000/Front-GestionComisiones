@@ -23,6 +23,7 @@ export interface Proforma {
   /** Empresa referencial (opcional). */
   idEmpresa?: number | null;
   idCliente: number;
+  idVendedorAsociado?: number | null;
   /** Token no adivinable para el enlace público del PDF. */
   publicToken?: string | null;
   observaciones?: string | null;

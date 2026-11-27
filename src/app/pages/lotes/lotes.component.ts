@@ -7,6 +7,7 @@ import { LoteService, Lote, LoteSeparacion } from '../../services/lote.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
 import { AlertService } from '../../services/alert.service';
+import { TokenService } from '../../auth/token.service';
 import {
   SearchableSelectComponent,
   SelectOption
@@ -39,6 +40,7 @@ export class LotesComponent implements OnInit, OnDestroy {
 
   // Plano de lotes
   planoAbierto = false;
+  readonly esAsociado: boolean;
   compartirAbierto = false;
   generandoEnlace = false;
   telefonoCompartir = '';
@@ -68,8 +70,11 @@ export class LotesComponent implements OnInit, OnDestroy {
     private loteService: LoteService,
     private empresaService: EmpresaService,
     private proyectoService: ProyectoService,
-    private alert: AlertService
-  ) { }
+    private alert: AlertService,
+    private tokenService: TokenService
+  ) {
+    this.esAsociado = this.tokenService.esAsociado();
+  }
 
   ngOnInit(): void {
     this.ajustarTamanoPagina();

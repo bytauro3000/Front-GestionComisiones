@@ -74,7 +74,7 @@ export class LoginComponent implements OnInit {
         // Cada rol entra a su propio menú
         if (userRole === 'ROLE_ADMINISTRADOR') {
           this.router.navigate(['/admin/inicio']);
-        } else if (userRole === 'ROLE_VENDEDOR') {
+        } else if (userRole === 'ROLE_VENDEDOR' || userRole === 'ROLE_VENDEDOR_ASOCIADO') {
           this.router.navigate(['/vendedor/inicio']);
         } else {
           this.router.navigate(['/']);

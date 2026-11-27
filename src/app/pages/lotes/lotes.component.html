@@ -4,9 +4,11 @@
       <h1>Gestión de lotes</h1>
       <p>Administra los lotes disponibles, reservados y vendidos</p>
     </div>
-    <button class="btn btn-primary" (click)="abrirCrear()">
-      <i class="fas fa-plus"></i> Nuevo lote
-    </button>
+    @if (!esAsociado) {
+      <button class="btn btn-primary" (click)="abrirCrear()">
+        <i class="fas fa-plus"></i> Nuevo lote
+      </button>
+    }
   </div>
 
   <div class="toolbar">
@@ -90,7 +92,7 @@
                           title="Tiene una venta activa en el sistema: anule la venta en Ventas para liberar el lote">
                       <i class="fas fa-lock"></i>
                     </span>
-                  } @else {
+                  } @else if (!esAsociado) {
                     <label class="switch"
                            [title]="l.motivoEstado ? 'Motivo: ' + l.motivoEstado : 'Marcar / desmarcar VENDIDO'">
                       <input type="checkbox" role="switch"
@@ -104,13 +106,17 @@
                 </div>
               </td>
               <td class="actions-cell cell-actions" data-label="Acciones">
-                <button class="btn btn-outline btn-sm" (click)="abrirEditar(l)" title="Editar">
-                  <i class="fas fa-pen"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" (click)="eliminar(l)"
-                        [disabled]="procesandoId === l.id" title="Eliminar">
-                  <i class="fas fa-trash"></i>
-                </button>
+                @if (!esAsociado) {
+                  <button class="btn btn-outline btn-sm" (click)="abrirEditar(l)" title="Editar">
+                    <i class="fas fa-pen"></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="eliminar(l)"
+                          [disabled]="procesandoId === l.id" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                } @else {
+                  <span class="texto-solo-lectura">Solo lectura</span>
+                }
               </td>
             </tr>
           }
@@ -346,15 +352,17 @@
       <div class="modal-card modal-plano">
         <div class="modal-header">
           <h3>Plano · {{ proyectoFiltro?.nombre }}</h3>
-          <button type="button" class="modal-close plano-share"
-                  (click)="compartirPlano()" [disabled]="generandoEnlace"
-                  title="Compartir plano por WhatsApp" aria-label="Compartir plano por WhatsApp">
-            @if (generandoEnlace) {
-              <i class="fas fa-spinner fa-spin"></i>
-            } @else {
-              <i class="fab fa-whatsapp"></i>
-            }
-          </button>
+          @if (!esAsociado) {
+            <button type="button" class="modal-close plano-share"
+                    (click)="compartirPlano()" [disabled]="generandoEnlace"
+                    title="Compartir plano por WhatsApp" aria-label="Compartir plano por WhatsApp">
+              @if (generandoEnlace) {
+                <i class="fas fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fab fa-whatsapp"></i>
+              }
+            </button>
+          }
           <button class="modal-close" (click)="planoAbierto = false">&times;</button>
         </div>
 
@@ -364,6 +372,7 @@
             [jsonUrl]="plan.json"
             [programa]="plan.programa"
             [lotes]="lotesParaPlano"
+            [interactivo]="!esAsociado"
             (loteClick)="seleccionarLotePlano($event)">
           </app-plano-lotes>
         </div>

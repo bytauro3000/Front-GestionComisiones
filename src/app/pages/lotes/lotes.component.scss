@@ -693,6 +693,12 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
+.texto-solo-lectura {
+  color: $gray-500;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
 .modal-overlay.modal-overlay-compartir {
   z-index: 1100;
 }

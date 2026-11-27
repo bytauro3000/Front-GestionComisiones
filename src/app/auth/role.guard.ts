@@ -48,6 +48,7 @@ function redirectSegunRol(rol: string, router: Router): void {
       router.navigate(['/admin/inicio']);
       break;
     case 'ROLE_VENDEDOR':
+    case 'ROLE_VENDEDOR_ASOCIADO':
       router.navigate(['/vendedor/inicio']);
       break;
     default:

@@ -29,24 +29,28 @@
       <h2><i class="fas fa-th-large" aria-hidden="true"></i> Tus módulos</h2>
     </div>
     <div class="modulos-grid">
+      @if (!esAsociado) {
       <a routerLink="/vendedor/empresas" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-building" aria-hidden="true"></i></span>
         <strong>Empresas</strong>
         <span class="modulo-desc">Clientes con RUC a los que les facturas</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      }
       <a routerLink="/vendedor/clientes" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-address-book" aria-hidden="true"></i></span>
         <strong>Clientes</strong>
         <span class="modulo-desc">Compradores con DNI/RUC autocompletados</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      @if (!esAsociado) {
       <a routerLink="/vendedor/proyectos" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-drafting-compass" aria-hidden="true"></i></span>
         <strong>Proyectos</strong>
         <span class="modulo-desc">Ubicación en mapa y datos de cada proyecto</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      }
       <a routerLink="/vendedor/lotes" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-map-pin" aria-hidden="true"></i></span>
         <strong>Lotes</strong>
@@ -59,30 +63,36 @@
         <span class="modulo-desc">Ofertas de lotes con número correlativo</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      @if (!esAsociado) {
       <a routerLink="/vendedor/parametros-comision" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-percent" aria-hidden="true"></i></span>
         <strong>Parámetros</strong>
         <span class="modulo-desc">Porcentajes de comisión y cuotas</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      }
       <a routerLink="/vendedor/ventas" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-handshake" aria-hidden="true"></i></span>
         <strong>Ventas</strong>
         <span class="modulo-desc">Contado y financiado con comisión automática</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      @if (!esAsociado) {
       <a routerLink="/vendedor/comisiones" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-coins" aria-hidden="true"></i></span>
         <strong>Comisiones</strong>
         <span class="modulo-desc">Anticipo, cuotas y cobros</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      }
+      @if (!esAsociado) {
       <a routerLink="/vendedor/comprobantes" class="modulo-card">
         <span class="modulo-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>
         <strong>Facturación</strong>
         <span class="modulo-desc">Facturas electrónicas con IGV y detracción</span>
         <i class="fas fa-arrow-right modulo-arrow" aria-hidden="true"></i>
       </a>
+      }
     </div>
   </div>
 </div>

@@ -1,0 +1,118 @@
+<div class="page page-asociados">
+  <div class="page-header">
+    <div>
+      <h1>Mis vendedores</h1>
+      <p>Cuentas asociadas a tu equipo. Ellos solo verán sus ventas, clientes y proformas.</p>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="abrirCrear()">
+      <i class="fas fa-user-plus"></i> Nuevo asociado
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table tabla-cards">
+      <thead>
+        <tr>
+          <th>Vendedor</th>
+          <th>Correo</th>
+          <th>Teléfono</th>
+          <th>Estado</th>
+          <th>Registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando) {
+          <tr><td colspan="6" class="empty-cell"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>
+        } @else if (asociados.length === 0) {
+          <tr><td colspan="6" class="empty-cell">Aún no tienes vendedores asociados.</td></tr>
+        } @else {
+          @for (a of asociados; track a.id) {
+            <tr>
+              <td data-label="Vendedor"><strong>{{ a.nombres }} {{ a.apellidos }}</strong></td>
+              <td data-label="Correo">{{ a.correo }}</td>
+              <td data-label="Teléfono">{{ a.telefono || '—' }}</td>
+              <td data-label="Estado">
+                <span class="badge" [class.badge-success]="a.estado === 'activo'"
+                      [class.badge-muted]="a.estado !== 'activo'">
+                  {{ a.estado === 'activo' ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td data-label="Registro">{{ a.fechaRegistro | date:'dd/MM/yyyy' }}</td>
+              <td data-label="Acciones" class="cell-acciones">
+                <button class="btn btn-outline btn-sm" type="button"
+                        (click)="resetPassword(a)" title="Restablecer contraseña">
+                  <i class="fas fa-key"></i>
+                </button>
+                <button class="btn btn-outline btn-sm" type="button"
+                        (click)="cambiarEstado(a)" [title]="a.estado === 'activo' ? 'Desactivar' : 'Activar'">
+                  <i class="fas" [ngClass]="a.estado === 'activo' ? 'fa-user-slash' : 'fa-user-check'"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Nuevo vendedor asociado</h3>
+        <button class="modal-close" type="button" (click)="cerrarModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="asociado-hint">
+          La cuenta tendrá acceso con el correo y contraseña que definas. Comparte la contraseña temporal
+          y pídele que la cambie al ingresar.
+        </p>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nombres *</label>
+            <input type="text" [(ngModel)]="form.nombres" maxlength="80">
+          </div>
+          <div class="form-field">
+            <label>Apellidos *</label>
+            <input type="text" [(ngModel)]="form.apellidos" maxlength="100">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Correo *</label>
+          <input type="email" [(ngModel)]="form.correo" maxlength="100" autocomplete="off">
+        </div>
+
+        <div class="form-field">
+          <label>Contraseña temporal *</label>
+          <input type="password" [(ngModel)]="form.contrasena" minlength="6" maxlength="100"
+                 autocomplete="new-password">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Teléfono</label>
+            <input type="tel" [(ngModel)]="form.telefono" maxlength="100">
+          </div>
+          <div class="form-field">
+            <label>DNI</label>
+            <input type="text" [(ngModel)]="form.dni" maxlength="8">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" type="button" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" type="button" (click)="guardar()" [disabled]="guardando">
+          @if (guardando) {
+            <i class="fas fa-spinner fa-spin"></i> Creando...
+          } @else {
+            <i class="fas fa-user-plus"></i> Crear asociado
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -30,6 +30,14 @@ export class TokenService {
     }
   }
 
+  esAsociado(): boolean {
+    return this.getRole() === 'ROLE_VENDEDOR_ASOCIADO';
+  }
+
+  esVendedorJefe(): boolean {
+    return this.getRole() === 'ROLE_VENDEDOR';
+  }
+
   getNombreCompleto(): string {
     const token = this.getToken();
     if (!token) return '';

@@ -4,9 +4,11 @@
       <h1>Ventas</h1>
       <p>Registro y seguimiento de ventas de lotes con sus comisiones</p>
     </div>
-    <button class="btn btn-primary" (click)="abrirCrear()">
-      <i class="fas fa-plus"></i> Nueva venta
-    </button>
+    @if (!esAsociado) {
+      <button class="btn btn-primary" (click)="abrirCrear()">
+        <i class="fas fa-plus"></i> Nueva venta
+      </button>
+    }
   </div>
 
   <div class="toolbar">
@@ -39,7 +41,12 @@
             <tr>
               <td class="cell-fecha" data-label="Fecha venta">{{ v.fechaVenta | date:'dd/MM/yyyy' }}</td>
               <td data-label="Lote(s)"><strong>{{ v.loteEtiqueta }}</strong></td>
-              <td data-label="Cliente(s)">{{ v.clienteNombre }}</td>
+              <td data-label="Cliente(s)">
+                {{ v.clienteNombre }}
+                @if (v.vendedorAsociado) {
+                  <small class="venta-asociado">Asociado: {{ v.vendedorAsociado }}</small>
+                }
+              </td>
               <td data-label="Empresa">{{ v.empresaNombre }}</td>
               <td data-label="Modalidad">
                 <span class="badge" [ngClass]="claseModalidad(v.modalidad)">{{ v.modalidad }}</span>
@@ -72,7 +79,7 @@
                 <button class="btn btn-outline btn-sm" (click)="abrirDetalle(v)" title="Ver detalle">
                   <i class="fas fa-eye"></i>
                 </button>
-                @if (v.estado === 'ACTIVA') {
+                @if (v.estado === 'ACTIVA' && !esAsociado) {
                   <button class="btn btn-danger btn-sm" (click)="anular(v.id)" title="Anular venta">
                     <i class="fas fa-ban"></i>
                   </button>
@@ -245,6 +252,19 @@
                 [(ngModel)]="form.precioVenta" (change)="recalcularRepartos()" placeholder="$ 0.00">
             </div>
           </div>
+
+          @if (!esAsociado) {
+            <div class="form-field">
+              <label>Vendedor asociado</label>
+              <select [(ngModel)]="form.idVendedorAsociado">
+                <option [ngValue]="null">Venta directa del jefe (100% jefe)</option>
+                @for (a of asociados; track a.id) {
+                  <option [ngValue]="a.id">{{ a.nombres }} {{ a.apellidos }} (50/50)</option>
+                }
+              </select>
+              <small class="field-hint">Si eliges un asociado, la comisión se muestra 50% jefe / 50% asociado.</small>
+            </div>
+          }
 
           <div class="form-field">
             <label>Modalidad *</label>
@@ -604,7 +624,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="cerrarDetalle()">Cerrar</button>
-        @if (detalle && detalle.estado === 'ACTIVA') {
+        @if (detalle && detalle.estado === 'ACTIVA' && !esAsociado) {
           <button class="btn btn-danger" (click)="anular(detalle!.id)">
             <i class="fas fa-ban"></i> Anular venta
           </button>

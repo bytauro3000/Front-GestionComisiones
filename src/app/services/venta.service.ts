@@ -18,6 +18,9 @@ export interface VentaCrear {
   idsLotes: number[];
   /** Uno o varios compradores de la misma venta. */
   idsClientes: number[];
+
+  /** Asociado al que se atribuye la venta (opcional; null = jefe). */
+  idVendedorAsociado?: number | null;
   fechaVenta: string;
   /** Total de la venta (suma de precios de lista, editable por descuento). */
   precioVenta: number;
@@ -44,6 +47,8 @@ export interface VentaListado {
   clienteNombre: string;
   idEmpresa: number;
   empresaNombre: string;
+  idVendedorAsociado?: number | null;
+  vendedorAsociado?: string | null;
   comisionTotal?: number;
   comisionPagada?: number;
   comisionEstado?: string;

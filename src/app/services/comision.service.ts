@@ -46,6 +46,10 @@ export interface ComisionListado {
   idEmpresa: number;
   empresaNombre: string;
   clienteNombre: string;
+  idVendedorAsociado?: number | null;
+  vendedorAsociado?: string | null;
+  montoJefe?: number;
+  montoAsociado?: number;
   pagosPendientes: number;
   montoPendiente: number;
   repartos?: RepartoComision[];
