@@ -122,9 +122,9 @@
           </div>
           <div class="form-field">
             <label>N° Doc. *</label>
-            <div class="input-accion">
-              <input type="text" [(ngModel)]="form.numDocumento" placeholder="Número">
-              <button type="button" class="btn-buscar-doc" (click)="buscarDocumento()"
+            <div class="persona-doc-input">
+              <input type="text" [(ngModel)]="form.numDocumento" placeholder="N° de documento">
+              <button type="button" class="persona-doc-search" (click)="buscarDocumento()"
                       [disabled]="buscando" title="Buscar en RENIEC/SUNAT"
                       aria-label="Buscar en RENIEC/SUNAT">
                 @if (buscando) {

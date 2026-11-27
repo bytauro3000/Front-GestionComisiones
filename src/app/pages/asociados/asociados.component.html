@@ -1,4 +1,4 @@
-<div class="page page-asociados">
+﻿<div class="page page-asociados">
   <div class="page-header">
     <div>
       <h1>Mis vendedores</h1>
@@ -85,7 +85,7 @@
             <div class="persona-doc-input">
               <input type="text" [(ngModel)]="form.numDocumento"
                      [maxlength]="form.tipoDocumento === 'RUC' ? 11 : 15"
-                     placeholder="Número de documento" autocomplete="off">
+                     placeholder="N° de documento" autocomplete="off">
               <button type="button" class="persona-doc-search"
                       (click)="buscarDocumento()" [disabled]="buscandoDocumento"
                       title="Buscar nombres por documento">
@@ -139,3 +139,4 @@
     </div>
   </div>
 }
+

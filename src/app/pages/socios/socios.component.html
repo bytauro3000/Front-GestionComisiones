@@ -1,4 +1,4 @@
-<div class="page">
+﻿<div class="page">
   <div class="page-header">
     <div>
       <h1>Socios</h1>
@@ -86,7 +86,7 @@
             <div class="persona-doc-input">
               <input type="text" [(ngModel)]="form.documento"
                      [maxlength]="form.tipoDocumento === 'RUC' ? 11 : 15"
-                     placeholder="Número de documento">
+                     placeholder="N° de documento">
               <button type="button" class="persona-doc-search"
                       (click)="buscarDocumento()" [disabled]="buscandoDocumento">
                 @if (buscandoDocumento) {
@@ -135,3 +135,4 @@
     </div>
   </div>
 }
+

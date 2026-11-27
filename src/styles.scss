@@ -1211,7 +1211,8 @@ input[type="number"] {
 
 /* Fila estándar Tipo Doc. (35%) + N° Doc. (65%) en modales de personas */
 .form-row.persona-doc-row {
-  display: flex;
+  display: flex !important;
+  flex-wrap: nowrap !important;
   align-items: flex-start;
   gap: 12px;
 
