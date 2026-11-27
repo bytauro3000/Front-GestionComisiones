@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { jwtDecode } from 'jwt-decode';
 import { UsuarioService, UsuarioListado, UsuarioRegistro } from '../../services/usuario.service';
 import { TokenService } from '../../auth/token.service';
+import { DeclectaService } from '../../services/decolecta.service';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
@@ -27,6 +28,7 @@ export class AdminUsuariosComponent implements OnInit {
   modoEdicion = false;
   usuarioEditando: UsuarioListado | null = null;
   guardando = false;
+  buscandoDocumento = false;
   form: UsuarioRegistro = this.formVacio();
   telefonos: string[] = [''];
 
@@ -40,6 +42,7 @@ export class AdminUsuariosComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
+    private decolectaService: DeclectaService,
     private alert: AlertService,
     tokenService: TokenService
   ) {
@@ -161,6 +164,8 @@ export class AdminUsuariosComponent implements OnInit {
       contrasena: '',
       telefono: usuario.telefono || '',
       dni: usuario.dni || '',
+      tipoDocumento: usuario.tipoDocumento || 'DNI',
+      numDocumento: usuario.numDocumento || usuario.dni || '',
       rol: usuario.rol,
       estado: usuario.estado
     };
@@ -194,6 +199,57 @@ export class AdminUsuariosComponent implements OnInit {
   private parseTelefonos(valor?: string): string[] {
     const lista = this.listaTelefonos(valor);
     return lista.length ? lista : [''];
+  }
+
+  buscarDocumento(): void {
+    if (this.buscandoDocumento) return;
+    const tipo = this.form.tipoDocumento || 'DNI';
+    const numero = (this.form.numDocumento || '').trim();
+
+    if (tipo === 'DNI') {
+      if (!/^\d{8}$/.test(numero)) {
+        this.alert.toastWarning('El DNI debe tener exactamente 8 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.dni(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.first_name) this.form.nombres = data.first_name;
+          const apellidos = [data.first_last_name, data.second_last_name]
+            .filter(Boolean).join(' ');
+          if (apellidos) this.form.apellidos = apellidos;
+          this.alert.toastSuccess('Datos completados desde RENIEC');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese DNI');
+        }
+      });
+      return;
+    }
+
+    if (tipo === 'RUC') {
+      if (!/^\d{11}$/.test(numero)) {
+        this.alert.toastWarning('El RUC debe tener exactamente 11 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.ruc(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.razon_social) this.form.nombres = data.razon_social;
+          this.alert.toastSuccess('Datos completados desde SUNAT');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese RUC');
+        }
+      });
+      return;
+    }
+
+    this.alert.toastInfo('Para CE u otro documento, completa los nombres manualmente');
   }
 
   async guardar(): Promise<void> {
@@ -365,6 +421,8 @@ export class AdminUsuariosComponent implements OnInit {
       contrasena: '',
       telefono: '',
       dni: '',
+      tipoDocumento: 'DNI',
+      numDocumento: '',
       rol: 'VENDEDOR',
       estado: 'activo'
     };

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { RegistroService, RegistroPublico } from '../../auth/registro.service';
+import { DeclectaService } from '../../services/decolecta.service';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
@@ -21,16 +22,20 @@ export class RegistroComponent {
     correo: '',
     contrasena: '',
     telefono: '',
-    dni: ''
+    dni: '',
+    tipoDocumento: 'DNI',
+    numDocumento: ''
   };
   telefonos: string[] = [''];
   confirmarContrasena = '';
   verContrasena = false;
   cargando = false;
+  buscandoDocumento = false;
   correoDuplicado = false;
 
   constructor(
     private registroService: RegistroService,
+    private decolectaService: DeclectaService,
     private router: Router,
     private alert: AlertService,
     private titleService: Title
@@ -51,6 +56,57 @@ export class RegistroComponent {
     if (!this.telefonos.length) this.telefonos.push('');
   }
 
+  buscarDocumento(): void {
+    if (this.buscandoDocumento) return;
+    const tipo = this.form.tipoDocumento || 'DNI';
+    const numero = (this.form.numDocumento || '').trim();
+
+    if (tipo === 'DNI') {
+      if (!/^\d{8}$/.test(numero)) {
+        this.alert.toastWarning('El DNI debe tener exactamente 8 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.dni(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.first_name) this.form.nombres = data.first_name;
+          const apellidos = [data.first_last_name, data.second_last_name]
+            .filter(Boolean).join(' ');
+          if (apellidos) this.form.apellidos = apellidos;
+          this.alert.toastSuccess('Datos completados desde RENIEC');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese DNI');
+        }
+      });
+      return;
+    }
+
+    if (tipo === 'RUC') {
+      if (!/^\d{11}$/.test(numero)) {
+        this.alert.toastWarning('El RUC debe tener exactamente 11 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.ruc(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.razon_social) this.form.nombres = data.razon_social;
+          this.alert.toastSuccess('Datos completados desde SUNAT');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese RUC');
+        }
+      });
+      return;
+    }
+
+    this.alert.toastInfo('Para CE u otro documento, completa los nombres manualmente');
+  }
+
   onRegistrar(): void {
     if (this.cargando) return;
 
@@ -66,8 +122,14 @@ export class RegistroComponent {
       this.alert.toastWarning('Las contraseñas no coinciden');
       return;
     }
-    if (this.form.dni && !/^\d{8}$/.test(this.form.dni)) {
+    const tipo = this.form.tipoDocumento || 'DNI';
+    const numero = (this.form.numDocumento || '').trim();
+    if (tipo === 'DNI' && numero && !/^\d{8}$/.test(numero)) {
       this.alert.toastWarning('El DNI debe tener 8 dígitos');
+      return;
+    }
+    if (tipo === 'RUC' && numero && !/^\d{11}$/.test(numero)) {
+      this.alert.toastWarning('El RUC debe tener 11 dígitos');
       return;
     }
 
@@ -77,7 +139,9 @@ export class RegistroComponent {
     const dto: RegistroPublico = {
       ...this.form,
       telefono: tels.join(',') || undefined,
-      dni: this.form.dni?.trim() || undefined
+      dni: tipo === 'DNI' ? (numero || undefined) : undefined,
+      tipoDocumento: tipo,
+      numDocumento: numero || undefined
     };
 
     this.registroService.registrar(dto).subscribe({

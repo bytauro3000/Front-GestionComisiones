@@ -102,6 +102,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
   @HostListener('window:app:data-changed')
   onRealtimeChange(): void {
     this.cargarProformas();
+    this.cargarLotes();
   }
 
   ngOnInit(): void {
@@ -109,7 +110,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
     this.empresaService.listar().subscribe({ next: (d) => this.empresas = d, error: () => undefined });
     this.proyectoService.listar().subscribe({ next: (d) => this.proyectos = d, error: () => undefined });
     this.clienteService.listar().subscribe({ next: (d) => this.clientes = d, error: () => undefined });
-    this.loteService.listar().subscribe({ next: (d) => this.lotes = d, error: () => undefined });
+    this.cargarLotes();
     this.usuarioService.perfil().subscribe({ next: (d) => this.perfil = d, error: () => this.perfil = null });
 
     // Permite abrir el modal desde el botón flotante global del layout.
@@ -127,6 +128,13 @@ export class ProformasComponent implements OnInit, OnDestroy {
   }
 
   // ── Carga y filtros ───────────────────────────────────────────────────────
+
+  private cargarLotes(): void {
+    this.loteService.listar().subscribe({
+      next: (d) => this.lotes = d,
+      error: () => undefined
+    });
+  }
 
   cargarProformas(): void {
     this.cargando = true;
@@ -198,6 +206,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
 
   recargar(): void {
     this.cargarProformas();
+    this.cargarLotes();
     if (this.tab === 'SEGUIMIENTO') {
       this.cargarSeguimiento();
     }
@@ -337,7 +346,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
       .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
   }
 
-  /** Lotes disponibles del programa elegido en la fila (sin vendidos ni repetidos). */
+  /** Lotes disponibles del programa elegido en la fila (sin vendidos, separados ni repetidos). */
   lotesDeFila(indice: number): Lote[] {
     const fila = this.filas[indice];
     if (fila.idEmpresa == null || fila.idProyecto == null) return [];
@@ -349,6 +358,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
         && l.idEmpresa === fila.idEmpresa
         && l.idProyecto === fila.idProyecto
         && l.estado !== 'VENDIDO'
+        && l.estado !== 'RESERVADO'
         && !l.ventaActiva
         && !usados.includes(l.id))
       .sort((a, b) => this.compararLotes(a, b));

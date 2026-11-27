@@ -21,29 +21,51 @@
 
   <div class="form-row">
     <div class="form-field">
-      <label>DNI (opcional)</label>
-      <input type="text" name="dni" [(ngModel)]="form.dni" placeholder="8 dígitos" maxlength="8" autocomplete="off">
+      <label>Tipo de documento</label>
+      <select name="tipoDocumento" [(ngModel)]="form.tipoDocumento">
+        <option value="DNI">DNI</option>
+        <option value="CE">CE</option>
+        <option value="RUC">RUC</option>
+        <option value="OTRO">Otro</option>
+      </select>
     </div>
     <div class="form-field">
-      <label>Celulares</label>
-      <div class="tel-lista">
-        @for (tel of telefonos; track $index) {
-          <div class="tel-fila">
-            <div class="tel-campo" [class.con-agregar]="$last">
-              <input type="tel" name="tel{{ $index }}" [(ngModel)]="telefonos[$index]"
-                     placeholder="Celular {{ $index + 1 }}" maxlength="15" autocomplete="off">
-              @if ($last) {
-                <button type="button" class="btn-agregar-tel" (click)="agregarTelefono()"
-                        title="Agregar celular">+</button>
-              }
-            </div>
-            @if (telefonos.length > 1) {
-              <button type="button" class="btn-quitar-tel" (click)="quitarTelefono($index)"
-                      title="Quitar celular">&times;</button>
+      <label>N° de documento</label>
+      <div class="doc-input">
+        <input type="text" name="numDocumento" [(ngModel)]="form.numDocumento"
+               [maxlength]="form.tipoDocumento === 'RUC' ? 11 : 15"
+               placeholder="Número de documento" autocomplete="off">
+        <button type="button" class="btn-doc-search" (click)="buscarDocumento()"
+                [disabled]="buscandoDocumento" title="Buscar nombres por documento">
+          @if (buscandoDocumento) {
+            <i class="fas fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fas fa-search"></i>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>Celulares</label>
+    <div class="tel-lista">
+      @for (tel of telefonos; track $index) {
+        <div class="tel-fila">
+          <div class="tel-campo" [class.con-agregar]="$last">
+            <input type="tel" name="tel{{ $index }}" [(ngModel)]="telefonos[$index]"
+                   placeholder="Celular {{ $index + 1 }}" maxlength="15" autocomplete="off">
+            @if ($last) {
+              <button type="button" class="btn-agregar-tel" (click)="agregarTelefono()"
+                      title="Agregar celular">+</button>
             }
           </div>
-        }
-      </div>
+          @if (telefonos.length > 1) {
+            <button type="button" class="btn-quitar-tel" (click)="quitarTelefono($index)"
+                    title="Quitar celular">&times;</button>
+          }
+        </div>
+      }
     </div>
   </div>
 

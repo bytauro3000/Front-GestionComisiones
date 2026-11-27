@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { Asociado, AsociadoCrear, AsociadoService } from '../../services/asociado.service';
+import { DeclectaService } from '../../services/decolecta.service';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
@@ -17,10 +18,12 @@ export class AsociadosComponent implements OnInit {
   cargando = false;
   modalAbierto = false;
   guardando = false;
+  buscandoDocumento = false;
   form: AsociadoCrear = this.formVacio();
 
   constructor(
     private asociadoService: AsociadoService,
+    private decolectaService: DeclectaService,
     private alert: AlertService
   ) { }
 
@@ -62,6 +65,10 @@ export class AsociadosComponent implements OnInit {
       this.alert.toastWarning('Completa nombres, apellidos, correo y contraseña');
       return;
     }
+    if (!this.form.numDocumento?.trim()) {
+      this.alert.toastWarning('Ingresa el número de documento');
+      return;
+    }
 
     this.guardando = true;
     this.asociadoService.crear({
@@ -69,7 +76,9 @@ export class AsociadosComponent implements OnInit {
       nombres: this.form.nombres.trim(),
       apellidos: this.form.apellidos.trim(),
       correo: this.form.correo.trim().toLowerCase(),
-      contrasena: this.form.contrasena.trim()
+      contrasena: this.form.contrasena.trim(),
+      numDocumento: this.form.numDocumento?.trim(),
+      dni: this.form.tipoDocumento === 'DNI' ? this.form.numDocumento?.trim() : undefined
     }).subscribe({
       next: () => {
         this.guardando = false;
@@ -82,6 +91,57 @@ export class AsociadosComponent implements OnInit {
         this.alert.toastError(err?.error?.mensaje || 'No se pudo crear el asociado', 'Error');
       }
     });
+  }
+
+  buscarDocumento(): void {
+    if (this.buscandoDocumento) return;
+    const tipo = this.form.tipoDocumento || 'DNI';
+    const numero = (this.form.numDocumento || '').trim();
+
+    if (tipo === 'DNI') {
+      if (!/^\d{8}$/.test(numero)) {
+        this.alert.toastWarning('El DNI debe tener exactamente 8 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.dni(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.first_name) this.form.nombres = data.first_name;
+          const apellidos = [data.first_last_name, data.second_last_name]
+            .filter(Boolean).join(' ');
+          if (apellidos) this.form.apellidos = apellidos;
+          this.alert.toastSuccess('Datos completados desde RENIEC');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese DNI');
+        }
+      });
+      return;
+    }
+
+    if (tipo === 'RUC') {
+      if (!/^\d{11}$/.test(numero)) {
+        this.alert.toastWarning('El RUC debe tener exactamente 11 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.ruc(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.razon_social) this.form.nombres = data.razon_social;
+          this.alert.toastSuccess('Datos completados desde SUNAT');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese RUC');
+        }
+      });
+      return;
+    }
+
+    this.alert.toastInfo('Para CE u otro documento, completa los nombres manualmente');
   }
 
   async cambiarEstado(asociado: Asociado): Promise<void> {
@@ -133,7 +193,9 @@ export class AsociadosComponent implements OnInit {
       correo: '',
       contrasena: '',
       telefono: '',
-      dni: ''
+      dni: '',
+      tipoDocumento: 'DNI',
+      numDocumento: ''
     };
   }
 }

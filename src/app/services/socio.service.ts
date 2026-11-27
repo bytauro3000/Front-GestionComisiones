@@ -7,6 +7,7 @@ export interface Socio {
   id?: number;
   nombres: string;
   apellidos?: string;
+  tipoDocumento?: string;
   documento?: string;
   telefono?: string;
   activo?: boolean;

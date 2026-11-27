@@ -11,6 +11,8 @@ export interface RegistroPublico {
   contrasena: string;
   telefono?: string;
   dni?: string;
+  tipoDocumento?: string;
+  numDocumento?: string;
 }
 
 @Injectable({

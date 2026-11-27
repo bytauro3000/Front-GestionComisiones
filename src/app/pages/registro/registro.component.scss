@@ -92,3 +92,23 @@ $bp-sm: t.$bp-sm;
     &:hover { text-decoration: underline; }
   }
 }
+
+.doc-input {
+  display: flex;
+  gap: 8px;
+
+  input { flex: 1 1 auto; }
+}
+
+.btn-doc-search {
+  flex: 0 0 auto;
+  width: 44px;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #4338ca;
+  cursor: pointer;
+
+  &:disabled { cursor: wait; opacity: .65; }
+}
+

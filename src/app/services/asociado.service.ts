@@ -10,6 +10,8 @@ export interface Asociado {
   correo: string;
   telefono?: string | null;
   dni?: string | null;
+  tipoDocumento?: string | null;
+  numDocumento?: string | null;
   estado: string;
   fechaRegistro?: string;
 }
@@ -21,6 +23,8 @@ export interface AsociadoCrear {
   contrasena: string;
   telefono?: string;
   dni?: string;
+  tipoDocumento?: string;
+  numDocumento?: string;
 }
 
 @Injectable({ providedIn: 'root' })

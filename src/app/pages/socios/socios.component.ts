@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { SocioService, Socio } from '../../services/socio.service';
+import { DeclectaService } from '../../services/decolecta.service';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
@@ -23,10 +24,12 @@ export class SociosComponent implements OnInit {
   modoEdicion = false;
   socioEditando: Socio | null = null;
   guardando = false;
+  buscandoDocumento = false;
   form: Socio = this.formVacio();
 
   constructor(
     private socioService: SocioService,
+    private decolectaService: DeclectaService,
     private alert: AlertService
   ) { }
 
@@ -77,12 +80,67 @@ export class SociosComponent implements OnInit {
   abrirEditar(socio: Socio): void {
     this.modoEdicion = true;
     this.socioEditando = socio;
-    this.form = { ...socio, activo: socio.activo !== false };
+    this.form = {
+      ...socio,
+      tipoDocumento: socio.tipoDocumento || 'DNI',
+      activo: socio.activo !== false
+    };
     this.modalAbierto = true;
   }
 
   cerrarModal(): void {
     this.modalAbierto = false;
+  }
+
+  buscarDocumento(): void {
+    if (this.buscandoDocumento) return;
+    const tipo = this.form.tipoDocumento || 'DNI';
+    const numero = (this.form.documento || '').trim();
+
+    if (tipo === 'DNI') {
+      if (!/^\d{8}$/.test(numero)) {
+        this.alert.toastWarning('El DNI debe tener exactamente 8 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.dni(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.first_name) this.form.nombres = data.first_name;
+          const apellidos = [data.first_last_name, data.second_last_name]
+            .filter(Boolean).join(' ');
+          if (apellidos) this.form.apellidos = apellidos;
+          this.alert.toastSuccess('Datos completados desde RENIEC');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese DNI');
+        }
+      });
+      return;
+    }
+
+    if (tipo === 'RUC') {
+      if (!/^\d{11}$/.test(numero)) {
+        this.alert.toastWarning('El RUC debe tener exactamente 11 dígitos');
+        return;
+      }
+      this.buscandoDocumento = true;
+      this.decolectaService.ruc(numero).subscribe({
+        next: (data) => {
+          this.buscandoDocumento = false;
+          if (data.razon_social) this.form.nombres = data.razon_social;
+          this.alert.toastSuccess('Datos completados desde SUNAT');
+        },
+        error: () => {
+          this.buscandoDocumento = false;
+          this.alert.toastWarning('No se encontró información para ese RUC');
+        }
+      });
+      return;
+    }
+
+    this.alert.toastInfo('Para CE u otro documento, completa los nombres manualmente');
   }
 
   async guardar(): Promise<void> {
@@ -145,6 +203,7 @@ export class SociosComponent implements OnInit {
     return {
       nombres: '',
       apellidos: '',
+      tipoDocumento: 'DNI',
       documento: '',
       telefono: '',
       activo: true

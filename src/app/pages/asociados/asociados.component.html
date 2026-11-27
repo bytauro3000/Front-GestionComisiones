@@ -94,13 +94,36 @@
 
         <div class="form-row">
           <div class="form-field">
-            <label>Teléfono</label>
-            <input type="tel" [(ngModel)]="form.telefono" maxlength="100">
+            <label>Tipo de documento *</label>
+            <select [(ngModel)]="form.tipoDocumento">
+              <option value="DNI">DNI</option>
+              <option value="CE">CE</option>
+              <option value="RUC">RUC</option>
+              <option value="OTRO">Otro</option>
+            </select>
           </div>
           <div class="form-field">
-            <label>DNI</label>
-            <input type="text" [(ngModel)]="form.dni" maxlength="8">
+            <label>N° de documento *</label>
+            <div class="doc-input">
+              <input type="text" [(ngModel)]="form.numDocumento"
+                     [maxlength]="form.tipoDocumento === 'RUC' ? 11 : 15"
+                     placeholder="Número de documento" autocomplete="off">
+              <button type="button" class="btn btn-outline btn-sm"
+                      (click)="buscarDocumento()" [disabled]="buscandoDocumento"
+                      title="Buscar nombres por documento">
+                @if (buscandoDocumento) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-search"></i>
+                }
+              </button>
+            </div>
           </div>
+        </div>
+
+        <div class="form-field">
+          <label>Teléfono</label>
+          <input type="tel" [(ngModel)]="form.telefono" maxlength="100">
         </div>
       </div>
       <div class="modal-footer">

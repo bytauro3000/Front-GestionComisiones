@@ -10,6 +10,8 @@ export interface UsuarioListado {
   correo: string;
   telefono?: string;
   dni?: string;
+  tipoDocumento?: string;
+  numDocumento?: string;
   rol: string;
   estado: string;
   fechaRegistro?: string;
@@ -22,6 +24,8 @@ export interface UsuarioRegistro {
   contrasena?: string;
   telefono?: string;
   dni?: string;
+  tipoDocumento?: string;
+  numDocumento?: string;
   rol: string;
   estado?: string;
 }
