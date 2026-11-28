@@ -10,6 +10,7 @@ import {
 } from '../../services/liquidacion-socio.service';
 import { CurrencyFormatterDirective } from '../../directives/currency-formatter';
 import { AlertService } from '../../services/alert.service';
+import { TokenService } from '../../auth/token.service';
 
 @Component({
   selector: 'app-liquidaciones',
@@ -32,11 +33,15 @@ export class LiquidacionesComponent implements OnInit {
   sugerencia: LiquidacionResumen | null = null;
 
   form = this.formVacio();
+  readonly esAsociado: boolean;
 
   constructor(
     private liquidacionService: LiquidacionSocioService,
-    private alert: AlertService
-  ) { }
+    private alert: AlertService,
+    tokenService: TokenService
+  ) {
+    this.esAsociado = tokenService.esAsociado();
+  }
 
   ngOnInit(): void {
     this.cargar();

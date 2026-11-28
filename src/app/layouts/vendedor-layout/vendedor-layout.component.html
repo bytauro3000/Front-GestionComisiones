@@ -77,9 +77,6 @@
         <i class="fas fa-address-book"></i><span>Clientes</span>
       </a>
       @if (!esAsociado) {
-        <a routerLink="/vendedor/socios" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-          <i class="fas fa-user-friends"></i><span>Socios</span>
-        </a>
         <a routerLink="/vendedor/proyectos" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
           <i class="fas fa-drafting-compass"></i><span>Proyectos</span>
         </a>
@@ -102,16 +99,16 @@
         <a routerLink="/vendedor/separaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
           <i class="fas fa-hourglass-half"></i><span>Separaciones</span>
         </a>
-        <a routerLink="/vendedor/comisiones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-          <i class="fas fa-coins"></i><span>Comisiones</span>
-        </a>
-        <a routerLink="/vendedor/liquidaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
-          <i class="fas fa-hand-holding-usd"></i><span>Liquidaciones</span>
-        </a>
         <a routerLink="/vendedor/comprobantes" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
           <i class="fas fa-file-invoice-dollar"></i><span>Facturación</span>
         </a>
       }
+      <a routerLink="/vendedor/comisiones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-coins"></i><span>Comisiones</span>
+      </a>
+      <a routerLink="/vendedor/liquidaciones" routerLinkActive="active" class="nav-item" (click)="cerrarMenu()">
+        <i class="fas fa-hand-holding-usd"></i><span>Liquidaciones</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">

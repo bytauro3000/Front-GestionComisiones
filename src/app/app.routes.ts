@@ -111,13 +111,6 @@ export const routes: Routes = [
           import('./pages/clientes/clientes.component').then((m) => m.ClientesComponent)
       },
       {
-        path: 'socios',
-        canActivate: [roleGuard],
-        data: { roles: ['ROLE_VENDEDOR'] },
-        loadComponent: () =>
-          import('./pages/socios/socios.component').then((m) => m.SociosComponent)
-      },
-      {
         path: 'proyectos',
         canActivate: [roleGuard],
         data: { roles: ['ROLE_VENDEDOR'] },
@@ -160,14 +153,14 @@ export const routes: Routes = [
       {
         path: 'comisiones',
         canActivate: [roleGuard],
-        data: { roles: ['ROLE_VENDEDOR'] },
+        data: { roles: ['ROLE_VENDEDOR', 'ROLE_VENDEDOR_ASOCIADO'] },
         loadComponent: () =>
           import('./pages/comisiones/comisiones.component').then((m) => m.ComisionesComponent)
       },
       {
         path: 'liquidaciones',
         canActivate: [roleGuard],
-        data: { roles: ['ROLE_VENDEDOR'] },
+        data: { roles: ['ROLE_VENDEDOR', 'ROLE_VENDEDOR_ASOCIADO'] },
         loadComponent: () =>
           import('./pages/liquidaciones/liquidaciones.component').then(
             (m) => m.LiquidacionesComponent

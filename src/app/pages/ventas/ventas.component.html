@@ -4,11 +4,9 @@
       <h1>Ventas</h1>
       <p>Registro y seguimiento de ventas de lotes con sus comisiones</p>
     </div>
-    @if (!esAsociado) {
-      <button class="btn btn-primary" (click)="abrirCrear()">
-        <i class="fas fa-plus"></i> Nueva venta
-      </button>
-    }
+    <button class="btn btn-primary" (click)="abrirCrear()">
+      <i class="fas fa-plus"></i> Nueva venta
+    </button>
   </div>
 
   <div class="toolbar">
@@ -79,6 +77,14 @@
                 <button class="btn btn-outline btn-sm" (click)="abrirDetalle(v)" title="Ver detalle">
                   <i class="fas fa-eye"></i>
                 </button>
+                @if (v.estado === 'PENDIENTE' && !esAsociado) {
+                  <button class="btn btn-primary btn-sm" (click)="aprobar(v.id)" title="Aprobar venta">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="rechazar(v.id)" title="Rechazar venta">
+                    <i class="fas fa-times"></i>
+                  </button>
+                }
                 @if (v.estado === 'ACTIVA' && !esAsociado) {
                   <button class="btn btn-danger btn-sm" (click)="anular(v.id)" title="Anular venta">
                     <i class="fas fa-ban"></i>
@@ -348,12 +354,13 @@
             </div>
           </div>
 
+          @if (!esAsociado) {
           <hr class="reparto-sep">
           <h4 class="seccion-titulo"><i class="fas fa-user-friends"></i> Reparto con socios (opcional)</h4>
           @if (socios.length === 0) {
             <p class="nota-info">
               <i class="fas fa-info-circle"></i>
-              Aún no tienes socios. Créalos en la sección <strong>Socios</strong> del menú.
+              Aún no tienes vendedores. Créalos en la sección <strong>Mis vendedores</strong> del menú.
             </p>
           } @else {
             @for (r of repartos; track $index; let i = $index) {
@@ -429,6 +436,7 @@
                 }
               </div>
             }
+          }
           }
         }
       </div>

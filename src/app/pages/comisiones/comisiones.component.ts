@@ -10,6 +10,7 @@ import {
   RepartoComision
 } from '../../services/comision.service';
 import { AlertService } from '../../services/alert.service';
+import { TokenService } from '../../auth/token.service';
 
 @Component({
   selector: 'app-comisiones',
@@ -38,11 +39,15 @@ export class ComisionesComponent implements OnInit {
   formaPago = 'TRANSFERENCIA';
   referencia = '';
   notas = '';
+  readonly esAsociado: boolean;
 
   constructor(
     private comisionService: ComisionService,
-    private alert: AlertService
-  ) { }
+    private alert: AlertService,
+    tokenService: TokenService
+  ) {
+    this.esAsociado = tokenService.esAsociado();
+  }
 
   ngOnInit(): void {
     this.cargar();

@@ -236,7 +236,7 @@
                       <td class="actions-cell cell-actions"
                           [class.celda-vacia]="p.estado !== 'PAGADO'"
                           [attr.data-label]="p.estado === 'PAGADO' ? 'Acción' : null">
-                        @if (p.estado === 'PAGADO') {
+                        @if (p.estado === 'PAGADO' && !esAsociado) {
                           <button class="btn btn-outline btn-sm" (click)="revertir(p)"
                                   [disabled]="procesandoId === p.id" title="Revertir pago">
                             <i class="fas fa-undo"></i>
@@ -283,6 +283,7 @@
               </div>
 
               <button class="btn btn-primary btn-block" (click)="cobrar()"
+                      *ngIf="!esAsociado"
                       [disabled]="cobrando || pagosSeleccionados.length === 0">
                 @if (cobrando) {
                   <i class="fas fa-spinner fa-spin"></i> Registrando...

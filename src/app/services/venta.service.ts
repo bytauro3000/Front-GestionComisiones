@@ -96,4 +96,12 @@ export class VentaService {
   anular(id: number): Observable<VentaDetalle> {
     return this.http.post<VentaDetalle>(`${this.URL}/${id}/anular`, {});
   }
+
+  aprobar(id: number): Observable<VentaDetalle> {
+    return this.http.post<VentaDetalle>(`${this.URL}/${id}/aprobar`, {});
+  }
+
+  rechazar(id: number): Observable<VentaDetalle> {
+    return this.http.post<VentaDetalle>(`${this.URL}/${id}/rechazar`, {});
+  }
 }

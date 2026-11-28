@@ -36,9 +36,11 @@
                 <strong [class.saldo-pendiente]="s.montoPendiente > 0">{{ moneda(s.montoPendiente) }}</strong>
               </td>
               <td class="actions-cell cell-actions" data-label="Acciones">
-                <button class="btn btn-primary btn-sm" (click)="abrirLiquidar(s)" title="Liquidar">
-                  <i class="fas fa-hand-holding-usd"></i> Liquidar
-                </button>
+                @if (!esAsociado) {
+                  <button class="btn btn-primary btn-sm" (click)="abrirLiquidar(s)" title="Liquidar">
+                    <i class="fas fa-hand-holding-usd"></i> Liquidar
+                  </button>
+                }
               </td>
             </tr>
           }
@@ -78,10 +80,12 @@
               <td data-label="Neto pagado"><strong>{{ moneda(l.montoNeto || 0) }}</strong></td>
               <td data-label="Referencia">{{ l.referencia || '—' }}</td>
               <td class="actions-cell cell-actions" data-label="Acciones">
-                <button class="btn btn-danger btn-sm" (click)="eliminar(l)"
-                        [disabled]="procesandoId === l.id" title="Eliminar">
-                  <i class="fas fa-trash"></i>
-                </button>
+                @if (!esAsociado) {
+                  <button class="btn btn-danger btn-sm" (click)="eliminar(l)"
+                          [disabled]="procesandoId === l.id" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                }
               </td>
             </tr>
           }

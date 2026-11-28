@@ -14,7 +14,7 @@ import { LoteService, Lote } from '../../services/lote.service';
 import { ClienteService, Cliente } from '../../services/cliente.service';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 import { ProyectoService, Proyecto } from '../../services/proyecto.service';
-import { SocioService, Socio } from '../../services/socio.service';
+
 import { ParametroComisionService, ParametroComision } from '../../services/parametro-comision.service';
 import { PagoComision } from '../../services/comision.service';
 import { AlertService } from '../../services/alert.service';
@@ -70,7 +70,7 @@ export class VentasComponent implements OnInit {
   proyectos: Proyecto[] = [];
   lotes: Lote[] = [];               // lotes del programa seleccionado (sin VENDIDOS)
   clientes: Cliente[] = [];
-  socios: Socio[] = [];
+  socios: Asociado[] = [];
   lotesSeleccionados: Lote[] = [];
   clientesSeleccionados: Cliente[] = [];
   repartos: RepartoForm[] = [];
@@ -118,7 +118,6 @@ export class VentasComponent implements OnInit {
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
     private proyectoService: ProyectoService,
-    private socioService: SocioService,
     private parametroService: ParametroComisionService,
     private asociadoService: AsociadoService,
     private tokenService: TokenService,
@@ -201,16 +200,18 @@ export class VentasComponent implements OnInit {
     this.cargandoCatalogos = true;
 
     try {
-      const [empresas, proyectos, clientes, socios] = await Promise.all([
+      const [empresas, proyectos, clientes, vendedores] = await Promise.all([
         firstValueFrom(this.empresaService.listar()),
         firstValueFrom(this.proyectoService.listar()),
         firstValueFrom(this.clienteService.listar()),
-        firstValueFrom(this.socioService.listar(true))
+        this.esAsociado
+          ? Promise.resolve([] as Asociado[])
+          : firstValueFrom(this.asociadoService.listar())
       ]);
       this.empresas = empresas;
       this.proyectos = proyectos;
       this.clientes = clientes;
-      this.socios = socios;
+      this.socios = vendedores.filter(a => a.estado === 'activo');
       // Las listas se calculan al enfocar cada campo (focus),
       // así el modal NO se abre con los desplegables ya visibles.
     } catch (err: any) {
@@ -466,7 +467,7 @@ export class VentasComponent implements OnInit {
     this.recalcularRepartos();
   }
 
-  sociosDisponiblesPara(indice: number): Socio[] {
+  sociosDisponiblesPara(indice: number): Asociado[] {
     const usados = this.repartos
       .filter((_, i) => i !== indice)
       .map(r => r.idSocio)
@@ -804,6 +805,51 @@ export class VentasComponent implements OnInit {
     });
   }
 
+  aprobar(id: number): void {
+    Swal.fire({
+      title: 'Aprobar venta',
+      html: `¿Confirmar la venta <strong>#${id}</strong>?<br><small>Se generará la comisión y el lote quedará vendido.</small>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, aprobar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.ventaService.aprobar(id).subscribe({
+        next: () => {
+          this.alert.success('Venta aprobada');
+          this.cargar();
+        },
+        error: (err) => {
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo aprobar la venta', 'Error');
+        }
+      });
+    });
+  }
+
+  rechazar(id: number): void {
+    Swal.fire({
+      title: 'Rechazar venta',
+      html: `¿Rechazar la venta <strong>#${id}</strong>?<br><small>No se generará comisión.</small>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, rechazar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ef4444'
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.ventaService.rechazar(id).subscribe({
+        next: () => {
+          this.alert.success('Venta rechazada');
+          this.cargar();
+        },
+        error: (err) => {
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo rechazar la venta', 'Error');
+        }
+      });
+    });
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   hoy(): string {
@@ -818,7 +864,14 @@ export class VentasComponent implements OnInit {
   }
 
   claseEstadoVenta(estado: string): string {
-    return estado === 'ACTIVA' ? 'badge-activo' : 'badge-inactivo';
+    switch (estado) {
+      case 'ACTIVA':
+        return 'badge-activo';
+      case 'PENDIENTE':
+        return 'badge-warning';
+      default:
+        return 'badge-inactivo';
+    }
   }
 
   claseEstadoComision(estado?: string): string {
