@@ -220,6 +220,11 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
     grid-template-columns: 1fr;
     gap: 0;
   }
+
+  /* La fila Tipo Doc. + N° Doc. debe conservar separación entre campos. */
+  .form-row.persona-doc-row {
+    gap: 10px;
+  }
 }
 
 .doc-input {

@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { Asociado, AsociadoCrear, AsociadoService } from '../../services/asociado.service';
+import { Asociado, AsociadoCrear, AsociadoEditar, AsociadoService } from '../../services/asociado.service';
 import { DeclectaService } from '../../services/decolecta.service';
 import { AlertService } from '../../services/alert.service';
 
@@ -19,6 +19,8 @@ export class AsociadosComponent implements OnInit {
   modalAbierto = false;
   guardando = false;
   buscandoDocumento = false;
+  modoEdicion = false;
+  asociadoEditando: Asociado | null = null;
   form: AsociadoCrear = this.formVacio();
 
   constructor(
@@ -51,7 +53,25 @@ export class AsociadosComponent implements OnInit {
   }
 
   abrirCrear(): void {
+    this.modoEdicion = false;
+    this.asociadoEditando = null;
     this.form = this.formVacio();
+    this.modalAbierto = true;
+  }
+
+  abrirEditar(a: Asociado): void {
+    this.modoEdicion = true;
+    this.asociadoEditando = a;
+    this.form = {
+      nombres: a.nombres,
+      apellidos: a.apellidos,
+      correo: a.correo,
+      contrasena: '',
+      telefono: a.telefono || '',
+      dni: a.dni || '',
+      tipoDocumento: a.tipoDocumento || 'DNI',
+      numDocumento: a.numDocumento || ''
+    };
     this.modalAbierto = true;
   }
 
@@ -59,14 +79,45 @@ export class AsociadosComponent implements OnInit {
     this.modalAbierto = false;
   }
 
+  eliminar(a: Asociado): void {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Eliminar vendedor asociado',
+      html: `¿Eliminar a <strong>${a.nombres} ${a.apellidos}</strong>?`,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ef4444'
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.asociadoService.eliminar(a.id).subscribe({
+        next: () => {
+          this.alert.success('Vendedor asociado eliminado');
+          this.cargar();
+        },
+        error: (err) =>
+          this.alert.toastError(err?.error?.mensaje || 'No se pudo eliminar el asociado', 'Error')
+      });
+    });
+  }
+
   guardar(): void {
-    if (!this.form.nombres.trim() || !this.form.apellidos.trim()
-        || !this.form.correo.trim() || !this.form.contrasena.trim()) {
-      this.alert.toastWarning('Completa nombres, apellidos, correo y contraseña');
+    if (!this.form.nombres.trim() || !this.form.apellidos.trim() || !this.form.correo.trim()) {
+      this.alert.toastWarning('Completa nombres, apellidos y correo');
       return;
     }
     if (!this.form.numDocumento?.trim()) {
       this.alert.toastWarning('Ingresa el número de documento');
+      return;
+    }
+
+    if (this.modoEdicion) {
+      this.guardarEdicion();
+      return;
+    }
+
+    if (!this.form.contrasena.trim()) {
+      this.alert.toastWarning('Ingresa una contraseña temporal');
       return;
     }
 
@@ -89,6 +140,34 @@ export class AsociadosComponent implements OnInit {
       error: (err) => {
         this.guardando = false;
         this.alert.toastError(err?.error?.mensaje || 'No se pudo crear el asociado', 'Error');
+      }
+    });
+  }
+
+  private guardarEdicion(): void {
+    if (!this.asociadoEditando) return;
+
+    const dto: AsociadoEditar = {
+      nombres: this.form.nombres.trim(),
+      apellidos: this.form.apellidos.trim(),
+      correo: this.form.correo.trim().toLowerCase(),
+      telefono: this.form.telefono?.trim(),
+      numDocumento: this.form.numDocumento?.trim(),
+      tipoDocumento: this.form.tipoDocumento,
+      dni: this.form.tipoDocumento === 'DNI' ? this.form.numDocumento?.trim() : undefined
+    };
+
+    this.guardando = true;
+    this.asociadoService.editar(this.asociadoEditando.id, dto).subscribe({
+      next: () => {
+        this.guardando = false;
+        this.modalAbierto = false;
+        this.alert.success('Vendedor asociado actualizado');
+        this.cargar();
+      },
+      error: (err) => {
+        this.guardando = false;
+        this.alert.toastError(err?.error?.mensaje || 'No se pudo actualizar el asociado', 'Error');
       }
     });
   }

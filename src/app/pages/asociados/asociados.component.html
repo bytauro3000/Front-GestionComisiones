@@ -41,12 +41,20 @@
               <td data-label="Registro">{{ a.fechaRegistro | date:'dd/MM/yyyy' }}</td>
               <td data-label="Acciones" class="cell-acciones">
                 <button class="btn btn-outline btn-sm" type="button"
+                        (click)="abrirEditar(a)" title="Editar datos">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button class="btn btn-outline btn-sm" type="button"
                         (click)="resetPassword(a)" title="Restablecer contraseña">
                   <i class="fas fa-key"></i>
                 </button>
                 <button class="btn btn-outline btn-sm" type="button"
                         (click)="cambiarEstado(a)" [title]="a.estado === 'activo' ? 'Desactivar' : 'Activar'">
                   <i class="fas" [ngClass]="a.estado === 'activo' ? 'fa-user-slash' : 'fa-user-check'"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" type="button"
+                        (click)="eliminar(a)" title="Eliminar vendedor asociado">
+                  <i class="fas fa-trash"></i>
                 </button>
               </td>
             </tr>
@@ -61,13 +69,18 @@
   <div class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Nuevo vendedor asociado</h3>
+        <h3>{{ modoEdicion ? 'Editar vendedor asociado' : 'Nuevo vendedor asociado' }}</h3>
         <button class="modal-close" type="button" (click)="cerrarModal()">&times;</button>
       </div>
       <div class="modal-body">
         <p class="asociado-hint">
-          La cuenta tendrá acceso con el correo y contraseña que definas. Comparte la contraseña temporal
-          y pídele que la cambie al ingresar.
+          @if (modoEdicion) {
+            Corrige el correo u otros datos del vendedor. La contraseña se cambia con el botón
+            "Restablecer contraseña".
+          } @else {
+            La cuenta tendrá acceso con el correo y contraseña que definas. Comparte la contraseña temporal
+            y pídele que la cambie al ingresar.
+          }
         </p>
 
         <div class="form-row persona-doc-row">
@@ -115,11 +128,13 @@
           <input type="email" [(ngModel)]="form.correo" maxlength="100" autocomplete="off">
         </div>
 
-        <div class="form-field">
-          <label>Contraseña temporal *</label>
-          <input type="password" [(ngModel)]="form.contrasena" minlength="6" maxlength="100"
-                 autocomplete="new-password">
-        </div>
+        @if (!modoEdicion) {
+          <div class="form-field">
+            <label>Contraseña temporal *</label>
+            <input type="password" [(ngModel)]="form.contrasena" minlength="6" maxlength="100"
+                   autocomplete="new-password">
+          </div>
+        }
 
         <div class="form-field">
           <label>Teléfono</label>
@@ -130,9 +145,9 @@
         <button class="btn btn-outline" type="button" (click)="cerrarModal()">Cancelar</button>
         <button class="btn btn-primary" type="button" (click)="guardar()" [disabled]="guardando">
           @if (guardando) {
-            <i class="fas fa-spinner fa-spin"></i> Creando...
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
           } @else {
-            <i class="fas fa-user-plus"></i> Crear asociado
+            <i class="fas fa-user-plus"></i> {{ modoEdicion ? 'Guardar cambios' : 'Crear asociado' }}
           }
         </button>
       </div>

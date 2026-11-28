@@ -27,6 +27,16 @@ export interface AsociadoCrear {
   numDocumento?: string;
 }
 
+export interface AsociadoEditar {
+  nombres: string;
+  apellidos: string;
+  correo: string;
+  telefono?: string;
+  dni?: string;
+  tipoDocumento?: string;
+  numDocumento?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AsociadoService {
   private readonly URL = `${environment.apiUrl}/api/asociados`;
@@ -39,6 +49,14 @@ export class AsociadoService {
 
   crear(dto: AsociadoCrear): Observable<Asociado> {
     return this.http.post<Asociado>(this.URL, dto);
+  }
+
+  editar(id: number, dto: AsociadoEditar): Observable<Asociado> {
+    return this.http.put<Asociado>(`${this.URL}/${id}`, dto);
+  }
+
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.URL}/${id}`);
   }
 
   cambiarEstado(id: number, estado: 'activo' | 'inactivo'): Observable<Asociado> {
