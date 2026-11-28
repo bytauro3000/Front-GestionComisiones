@@ -320,10 +320,26 @@ export class ProformasComponent implements OnInit, OnDestroy {
       }));
   }
 
-  programaOptions(indice: number): SelectOption[] {
-    return this.programasDeFila(indice)
-      .filter(p => p.id != null)
-      .map(p => ({ id: p.id!, label: p.nombre }));
+  /** Todos los programas de todas las empresas (la empresa va como subtítulo). */
+  programaOptions(_indice: number): SelectOption[] {
+    return [...this.proyectos]
+      .filter(p => p.id != null && p.estado !== 'INACTIVO')
+      .sort((a, b) => {
+        const ea = this.empresaNombreProyecto(a.idEmpresa);
+        const eb = this.empresaNombreProyecto(b.idEmpresa);
+        return ea.localeCompare(eb) || (a.nombre || '').localeCompare(b.nombre || '');
+      })
+      .map(p => ({
+        id: p.id!,
+        label: p.nombre,
+        sub: this.empresaNombreProyecto(p.idEmpresa),
+        keywords: `${p.nombre} ${this.empresaNombreProyecto(p.idEmpresa)}`
+      }));
+  }
+
+  private empresaNombreProyecto(idEmpresa?: number): string {
+    const e = this.empresas.find(x => x.id === idEmpresa);
+    return e ? (e.nombreComercial?.trim() || e.razonSocial) : 'Empresa';
   }
 
   loteOptions(indice: number): SelectOption[] {
@@ -388,6 +404,9 @@ export class ProformasComponent implements OnInit, OnDestroy {
   onProgramaFila(indice: number, valor: number | null): void {
     const fila = this.filas[indice];
     fila.idProyecto = valor;
+    // La empresa se deduce del programa elegido (ya no hay select de empresa).
+    const proyecto = this.proyectos.find(p => p.id === valor);
+    fila.idEmpresa = proyecto?.idEmpresa ?? null;
     fila.idLote = null;
     fila.precioUnitario = null;
   }
@@ -447,14 +466,6 @@ export class ProformasComponent implements OnInit, OnDestroy {
   async guardar(): Promise<void> {
     if (this.guardando) return;
 
-    if (!/^\d{8}$/.test((this.form.numDocumento || '').trim())) {
-      this.alert.toastWarning('Ingrese un DNI de 8 dígitos');
-      return;
-    }
-    if (!this.form.nombres || !this.form.nombres.trim()) {
-      this.alert.toastWarning('Ingrese el nombre del cliente');
-      return;
-    }
     const validas = this.filas.filter(f => f.idLote != null && Number(f.precioUnitario) > 0);
     if (validas.length !== this.filas.length) {
       this.alert.toastWarning('Cada fila debe tener un lote y un precio mayor a 0');
@@ -499,11 +510,17 @@ export class ProformasComponent implements OnInit, OnDestroy {
   }
 
   /** Usa el cliente existente o crea un prospecto mínimo (DNI, nombre, celular). */
-  private async resolverCliente(): Promise<number> {
+  private async resolverCliente(): Promise<number | null> {
     if (this.form.idCliente) {
       return this.form.idCliente;
     }
-    const doc = this.form.numDocumento.trim();
+    const doc = (this.form.numDocumento || '').trim();
+    const nombres = (this.form.nombres || '').trim();
+    // Los datos del cliente son opcionales: sin documento o sin nombre no se
+    // crea cliente y la proforma se emite sin cliente.
+    if (!doc || !nombres) {
+      return null;
+    }
     try {
       const existente = await firstValueFrom(this.clienteService.buscarPorDocumento(doc));
       if (existente.id) {
@@ -848,7 +865,7 @@ export class ProformasComponent implements OnInit, OnDestroy {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  clienteDe(id?: number): Cliente | undefined {
+  clienteDe(id?: number | null): Cliente | undefined {
     return this.clientes.find(c => c.id === id);
   }
 
