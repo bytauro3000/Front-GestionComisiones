@@ -206,3 +206,18 @@ $ease:          cubic-bezier(0.16, 1, 0.3, 1);
   gap: 8px;
   cursor: pointer;
 }
+
+/* Móvil: las tarjetas de separaciones deben verse sueltas, igual que en las
+   demás listas. El contenedor de la tabla no aporta borde, fondo ni sombra. */
+@media (max-width: $bp-sm) {
+  .table-wrap {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .data-table td {
+    border-top: 0;
+  }
+}
